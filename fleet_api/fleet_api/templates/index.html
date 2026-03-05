@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fleet API Console</title>
+  <style>
+    body { font-family: Consolas, monospace; margin: 20px; background: #0f1720; color: #d9e2ec; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    button { background: #264653; color: #fff; border: 0; padding: 8px 12px; cursor: pointer; }
+    input { background: #1f2933; color: #fff; border: 1px solid #52606d; padding: 8px; width: 420px; }
+    pre { background: #111827; border: 1px solid #334e68; padding: 10px; overflow: auto; max-height: 70vh; }
+  </style>
+</head>
+<body>
+  <h2>Fleet API Console</h2>
+  <div class="row">
+    <input id="apiKey" placeholder="X-API-Key" />
+  </div>
+  <div class="row">
+    <button onclick="callApi('GET','/v1/info')">Info</button>
+    <button onclick="callApi('GET','/v1/fleet/status')">Fleet Status</button>
+    <button onclick="callApi('POST','/v1/fleet/resync', {async:true})">Resync Fleet (Async)</button>
+    <button onclick="callApi('POST','/v1/fleet/sync-corpus', {async:true})">Sync Corpus (Async)</button>
+    <button onclick="callApi('GET','/v1/policy/snapshot')">Policy Snapshot</button>
+    <button onclick="callApi('POST','/v1/policy/tests', {async:true})">Policy Tests (Async)</button>
+    <button onclick="callApi('GET','/v1/jobs?limit=20')">Jobs</button>
+  </div>
+  <pre id="out">Ready.</pre>
+  <script>
+    async function callApi(method, path, body) {
+      const key = document.getElementById('apiKey').value.trim();
+      const headers = { 'Content-Type': 'application/json' };
+      if (key) headers['X-API-Key'] = key;
+      const opts = { method, headers };
+      if (body) opts.body = JSON.stringify(body);
+      try {
+        const res = await fetch(path, opts);
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch { data = text; }
+        document.getElementById('out').textContent = JSON.stringify(
+          { status: res.status, data },
+          null,
+          2
+        );
+      } catch (err) {
+        document.getElementById('out').textContent = String(err);
+      }
+    }
+  </script>
+</body>
+</html>
+

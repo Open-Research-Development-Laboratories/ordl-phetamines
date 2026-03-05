@@ -1,0 +1,104 @@
+2026-03-05T22:38:04.483Z [gateway] [plugins] kimi-claw: loaded without install/load-path provenance; treat as untracked local code and pin trust via plugins.allow or install records (C:\Users\Winsock\.openclaw\extensions\kimi-claw\dist\index.js)
+2026-03-05T22:38:04.555Z [gateway] ⚠️  Gateway is binding to a non-loopback address. Ensure authentication is configured before exposing to public networks.
+2026-03-05T22:38:04.911Z [hooks] gmail watcher not started: gog binary not found
+2026-03-05T22:38:09.736Z [ws] unauthorized conn=dcf5b6e2-e10d-43d0-92e6-948576c63ef5 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=token_missing
+2026-03-05T22:38:09.810Z [ws] closed before connect conn=dcf5b6e2-e10d-43d0-92e6-948576c63ef5 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:11.195Z [ws] unauthorized conn=319c6c04-d80e-4fd2-829d-649fb6e66237 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=token_missing
+2026-03-05T22:38:11.326Z [ws] closed before connect conn=319c6c04-d80e-4fd2-829d-649fb6e66237 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:12.860Z [ws] unauthorized conn=c13b80d2-5ec3-46aa-82d1-43a74caec934 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=token_missing
+2026-03-05T22:38:13.000Z [ws] closed before connect conn=c13b80d2-5ec3-46aa-82d1-43a74caec934 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:15.494Z [ws] unauthorized conn=170f292f-b582-4351-a91d-99dfd96baa47 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=token_missing
+2026-03-05T22:38:15.576Z [ws] closed before connect conn=170f292f-b582-4351-a91d-99dfd96baa47 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:19.984Z [ws] closed before connect conn=5587d4a7-a6c2-47ab-ac82-d828bb36aa0c remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=1006 reason=n/a
+2026-03-05T22:38:22.619Z [ws] unauthorized conn=4e4462e5-8474-4b4d-b87f-28d5516b06af remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=token_missing
+2026-03-05T22:38:22.834Z [ws] closed before connect conn=4e4462e5-8474-4b4d-b87f-28d5516b06af remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:23.822Z [ws] unauthorized conn=aeec889e-ddca-416f-9303-8b35f9581e6a remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=token_missing
+2026-03-05T22:38:23.908Z [ws] closed before connect conn=aeec889e-ddca-416f-9303-8b35f9581e6a remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:29.033Z [ws] unauthorized conn=5f013771-0bd1-4836-9249-c6e549d17f8d remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=token_missing
+2026-03-05T22:38:29.114Z [ws] closed before connect conn=5f013771-0bd1-4836-9249-c6e549d17f8d remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:30.255Z [ws] unauthorized conn=3ef3d2a0-711b-4b2b-a7b9-ac9f05d266e5 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=token_missing
+2026-03-05T22:38:30.362Z [ws] closed before connect conn=3ef3d2a0-711b-4b2b-a7b9-ac9f05d266e5 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:31.994Z [ws] unauthorized conn=1170ae7e-d674-44aa-b32c-3400f66e1d57 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=token_missing
+2026-03-05T22:38:32.074Z [ws] closed before connect conn=1170ae7e-d674-44aa-b32c-3400f66e1d57 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:34.699Z [ws] unauthorized conn=b01b302b-6915-4282-83e8-a68296bd2f7e remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=token_missing
+2026-03-05T22:38:34.818Z [ws] closed before connect conn=b01b302b-6915-4282-83e8-a68296bd2f7e remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:39.006Z [ws] unauthorized conn=32f24ab6-e36b-4e3e-9f33-08ba553eeb62 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=rate_limited
+2026-03-05T22:38:39.090Z [ws] closed before connect conn=32f24ab6-e36b-4e3e-9f33-08ba553eeb62 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:46.101Z [ws] unauthorized conn=888610f7-2c9f-4aa1-8567-d3600e2187f1 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=rate_limited
+2026-03-05T22:38:46.162Z [ws] closed before connect conn=888610f7-2c9f-4aa1-8567-d3600e2187f1 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:57.087Z [ws] unauthorized conn=2eff1242-8e4f-4a44-b039-2cc4c9e00be8 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=rate_limited
+2026-03-05T22:38:57.158Z [ws] closed before connect conn=2eff1242-8e4f-4a44-b039-2cc4c9e00be8 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:58.207Z [ws] unauthorized conn=fd747fe0-19ac-4084-9a25-1125f44f046f remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=rate_limited
+2026-03-05T22:38:58.288Z [ws] closed before connect conn=fd747fe0-19ac-4084-9a25-1125f44f046f remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:38:59.879Z [ws] unauthorized conn=0413fe5a-1b81-4a6f-8b74-a991257576e0 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=rate_limited
+2026-03-05T22:38:59.961Z [ws] closed before connect conn=0413fe5a-1b81-4a6f-8b74-a991257576e0 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:39:02.506Z [ws] unauthorized conn=f5ceb923-1e6b-4cda-b03d-e977ecdfd375 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=rate_limited
+2026-03-05T22:39:02.577Z [ws] closed before connect conn=f5ceb923-1e6b-4cda-b03d-e977ecdfd375 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:39:06.703Z [ws] unauthorized conn=ce71f4eb-23ef-4353-9699-55b21e5112b2 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=rate_limited
+2026-03-05T22:39:06.783Z [ws] closed before connect conn=ce71f4eb-23ef-4353-9699-55b21e5112b2 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:39:13.655Z [ws] unauthorized conn=6a6c6d44-91ce-4544-9cd8-d82dc4bec70c remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=rate_limited
+2026-03-05T22:39:13.719Z [ws] closed before connect conn=6a6c6d44-91ce-4544-9cd8-d82dc4bec70c remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:39:25.290Z [ws] unauthorized conn=5912615a-828a-42d9-9e5b-844c6de40acd remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=rate_limited
+2026-03-05T22:39:25.359Z [ws] closed before connect conn=5912615a-828a-42d9-9e5b-844c6de40acd remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:39:40.822Z [ws] unauthorized conn=595cb27b-98eb-4d64-8455-f920fd9902e3 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=rate_limited
+2026-03-05T22:39:40.894Z [ws] closed before connect conn=595cb27b-98eb-4d64-8455-f920fd9902e3 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T22:39:56.202Z [ws] unauthorized conn=79082cb8-e950-4b69-8031-f88f6bda6687 remote=127.0.0.1 client=openclaw-control-ui webchat vdev reason=rate_limited
+2026-03-05T22:39:56.276Z [ws] closed before connect conn=79082cb8-e950-4b69-8031-f88f6bda6687 remote=127.0.0.1 fwd=2605:59ca:2904:1800:3d42:e96c:c7c0:927a origin=https://flint.ordl.org host=flint.ordl.org ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=4008 reason=connect failed
+2026-03-05T23:05:44.420Z [gateway] [kimi-bridge] [bridge-acp] closed code=1006 reason=
+2026-03-05T23:05:44.426Z [gateway] [kimi-bridge] bridge ACP disconnected
+2026-03-05T23:08:22.979Z [reload] config change requires gateway restart (plugins.allow)
+2026-03-05T23:08:23.001Z [gateway] [kimi-bridge] manual reconnect signal received signal=SIGUSR1
+2026-03-05T23:08:23.055Z [gateway] [kimi-bridge] [bridge-acp] error: Error: WebSocket was closed before the connection was established
+2026-03-05T23:08:23.060Z [gateway] [kimi-bridge] [bridge-acp] closed code=1006 reason=
+2026-03-05T23:08:23.065Z [gateway] [kimi-bridge] bridge ACP disconnected
+2026-03-05T23:08:23.070Z [gateway] [kimi-bridge] [gateway] error: Error: WebSocket was closed before the connection was established
+2026-03-05T23:08:23.076Z [gateway] [kimi-bridge] [gateway] closed code=1006 reason=
+2026-03-05T23:08:23.082Z [gateway] [kimi-bridge] local gateway disconnected
+2026-03-05T23:08:23.103Z [gateway] [kimi-bridge] [gateway] closed code=1005 reason=
+2026-03-05T23:08:23.109Z [gateway] [kimi-bridge] local gateway disconnected
+2026-03-05T18:08:32.150-05:00 Config overwrite: C:\Users\Winsock\.openclaw\openclaw.json (sha256 c5523a46d8b1a410375f01fcf2b558f6e3115a79ee55531d307afcbe6100a6e0 -> 9be094b8151e9ef85124e7fefa858877f38e84ac589cd07284d44e75ddfb84a4, backup=C:\Users\Winsock\.openclaw\openclaw.json.bak)
+2026-03-05T18:08:32.177-05:00 Config write anomaly: C:\Users\Winsock\.openclaw\openclaw.json (size-drop:12813->5109)
+2026-03-05T23:08:41.682Z [gateway] [plugins] kimi-claw: loaded without install/load-path provenance; treat as untracked local code and pin trust via plugins.allow or install records (C:\Users\Winsock\.openclaw\extensions\kimi-claw\dist\index.js)
+2026-03-05T23:08:41.744Z [gateway] ⚠️  Gateway is binding to a non-loopback address. Ensure authentication is configured before exposing to public networks.
+2026-03-05T23:08:42.060Z [hooks] gmail watcher not started: gog binary not found
+2026-03-05T23:14:57.354Z [reload] config change requires gateway restart (plugins.allow)
+2026-03-05T23:14:57.378Z [gateway] [kimi-bridge] manual reconnect signal received signal=SIGUSR1
+2026-03-05T23:14:57.445Z [gateway] [kimi-bridge] [bridge-acp] error: Error: WebSocket was closed before the connection was established
+2026-03-05T23:14:57.452Z [gateway] [kimi-bridge] [bridge-acp] closed code=1006 reason=
+2026-03-05T23:14:57.458Z [gateway] [kimi-bridge] bridge ACP disconnected
+2026-03-05T23:14:57.464Z [gateway] [kimi-bridge] [gateway] error: Error: WebSocket was closed before the connection was established
+2026-03-05T23:14:57.471Z [gateway] [kimi-bridge] [gateway] closed code=1006 reason=
+2026-03-05T23:14:57.479Z [gateway] [kimi-bridge] local gateway disconnected
+2026-03-05T23:14:57.493Z [gateway] [kimi-bridge] [gateway] closed code=1005 reason=
+2026-03-05T23:14:57.500Z [gateway] [kimi-bridge] local gateway disconnected
+2026-03-05T23:15:07.023Z [gateway] [plugins] kimi-claw: loaded without install/load-path provenance; treat as untracked local code and pin trust via plugins.allow or install records (C:\Users\Winsock\.openclaw\extensions\kimi-claw\dist\index.js)
+2026-03-05T23:15:07.150Z [gateway] ⚠️  Gateway is binding to a non-loopback address. Ensure authentication is configured before exposing to public networks.
+2026-03-05T23:15:07.525Z [hooks] gmail watcher not started: gog binary not found
+2026-03-05T23:15:07.649Z [ws] closed before connect conn=03b02857-c0ed-40e6-af73-515dcc0aa6c1 remote=10.0.0.48 fwd=n/a origin=http://127.0.0.1:18789 host=10.0.0.48:18789 ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=1006 reason=n/a
+2026-03-05T23:16:13.217Z [reload] config change requires gateway restart (plugins.allow)
+2026-03-05T23:16:13.245Z [gateway] [kimi-bridge] manual reconnect signal received signal=SIGUSR1
+2026-03-05T23:16:13.318Z [gateway] [kimi-bridge] [bridge-acp] error: Error: WebSocket was closed before the connection was established
+2026-03-05T23:16:13.327Z [gateway] [kimi-bridge] [bridge-acp] closed code=1006 reason=
+2026-03-05T23:16:13.334Z [gateway] [kimi-bridge] bridge ACP disconnected
+2026-03-05T23:16:13.339Z [gateway] [kimi-bridge] [gateway] error: Error: WebSocket was closed before the connection was established
+2026-03-05T23:16:13.345Z [gateway] [kimi-bridge] [gateway] closed code=1006 reason=
+2026-03-05T23:16:13.353Z [gateway] [kimi-bridge] local gateway disconnected
+2026-03-05T23:16:13.369Z [gateway] [kimi-bridge] [gateway] closed code=1005 reason=
+2026-03-05T23:16:13.376Z [gateway] [kimi-bridge] local gateway disconnected
+2026-03-05T23:16:32.515Z [gateway] [plugins] kimi-claw: loaded without install/load-path provenance; treat as untracked local code and pin trust via plugins.allow or install records (C:\Users\Winsock\.openclaw\extensions\kimi-claw\dist\index.js)
+2026-03-05T23:16:32.659Z [gateway] ⚠️  Gateway is binding to a non-loopback address. Ensure authentication is configured before exposing to public networks.
+2026-03-05T23:16:32.980Z [hooks] gmail watcher not started: gog binary not found
+2026-03-05T23:16:41.786Z [reload] config change requires gateway restart (plugins.allow, plugins.slots)
+2026-03-05T23:16:41.806Z [gateway] [kimi-bridge] manual reconnect signal received signal=SIGUSR1
+2026-03-05T23:16:41.858Z [gateway] [kimi-bridge] [bridge-acp] error: Error: WebSocket was closed before the connection was established
+2026-03-05T23:16:41.866Z [gateway] [kimi-bridge] [bridge-acp] closed code=1006 reason=
+2026-03-05T23:16:41.872Z [gateway] [kimi-bridge] bridge ACP disconnected
+2026-03-05T23:16:41.878Z [gateway] [kimi-bridge] [gateway] error: Error: WebSocket was closed before the connection was established
+2026-03-05T23:16:41.883Z [gateway] [kimi-bridge] [gateway] closed code=1006 reason=
+2026-03-05T23:16:41.890Z [gateway] [kimi-bridge] local gateway disconnected
+2026-03-05T23:16:41.900Z [gateway] [kimi-bridge] [gateway] closed code=1005 reason=
+2026-03-05T23:16:41.906Z [gateway] [kimi-bridge] local gateway disconnected
+2026-03-05T23:16:59.603Z [gateway] [plugins] kimi-claw: loaded without install/load-path provenance; treat as untracked local code and pin trust via plugins.allow or install records (C:\Users\Winsock\.openclaw\extensions\kimi-claw\dist\index.js)
+2026-03-05T23:16:59.733Z [gateway] ⚠️  Gateway is binding to a non-loopback address. Ensure authentication is configured before exposing to public networks.
+2026-03-05T23:17:00.114Z [hooks] gmail watcher not started: gog binary not found
+2026-03-05T23:17:32.842Z [reload] config reload skipped (invalid config): plugins.allow: plugin not found: discord, plugins.allow: plugin not found: memory-core, plugins.slots.memory: plugin not found: memory-core
