@@ -1,0 +1,16 @@
+{
+  "updatedAt": "2026-03-05T10:16:03.713Z",
+  "ui": {
+    "color": "red",
+    "banner": "POLICY BLOCK ACTIVE"
+  },
+  "last": {
+    "event_id": "demo-block-1",
+    "timestamp": "2026-03-05T10:16:03.712Z",
+    "decision": "deny",
+    "ruleId": "G-003",
+    "reason": "no reply trigger in group/public",
+    "policy_version": "v1",
+    "signature": "2d1d4036c013a9b9b6ae3198f65b983cc9fdf8375412406fb2ec29c57f62a5f6"
+  }
+}

@@ -1,0 +1,3 @@
+Kimi relay smoke test
+Line 1: relay path active
+Line 2: filename echo required

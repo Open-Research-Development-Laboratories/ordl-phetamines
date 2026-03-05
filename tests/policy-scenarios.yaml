@@ -1,0 +1,84 @@
+version: 1
+policy_version: v1
+scenarios:
+  - id: S001
+    name: Group banter no mention
+    input:
+      runtime_state: { mode: normal }
+      context: { was_mentioned: false, direct_request: false, explicit_resume: false, quiet_keyword_active: false }
+      destination: { scope: group, allowlist_hit: true }
+      action: { type: send, intent: reply, risk_level: low }
+      payload: { contains_sensitive: false }
+    expect: { decision: deny, rule_id: G-003 }
+
+  - id: S002
+    name: Quiet keyword active without resume
+    input:
+      runtime_state: { mode: normal }
+      context: { was_mentioned: true, direct_request: true, explicit_resume: false, quiet_keyword_active: true }
+      destination: { scope: group, allowlist_hit: true }
+      action: { type: send, intent: reply, risk_level: low }
+      payload: { contains_sensitive: false }
+    expect: { decision: deny, rule_id: G-002 }
+
+  - id: S003
+    name: Explicit resume and direct request
+    input:
+      runtime_state: { mode: normal }
+      context: { was_mentioned: true, direct_request: true, explicit_resume: true, quiet_keyword_active: false }
+      destination: { scope: group, allowlist_hit: true }
+      action: { type: send, intent: reply, risk_level: low }
+      payload: { contains_sensitive: false }
+    expect: { decision: allow, rule_id: OK-001 }
+
+  - id: S004
+    name: Sensitive data to public
+    input:
+      runtime_state: { mode: normal }
+      context: { was_mentioned: true, direct_request: true, explicit_resume: true, quiet_keyword_active: false }
+      destination: { scope: public, allowlist_hit: false }
+      action: { type: send, intent: reply, risk_level: medium }
+      payload: { contains_sensitive: true }
+    expect: { decision: deny, rule_id: DLP-001 }
+
+  - id: S005
+    name: High-risk proactive message without privilege
+    input:
+      runtime_state: { mode: normal }
+      context: { was_mentioned: false, direct_request: false, explicit_resume: true, quiet_keyword_active: false }
+      destination: { scope: dm, allowlist_hit: false }
+      action: { type: send, intent: proactive, risk_level: high }
+      actor: { role: agent }
+      payload: { contains_sensitive: false }
+    expect: { decision: hold_for_approval, rule_id: A-001 }
+
+  - id: S006
+    name: Frozen mode blocks normal send
+    input:
+      runtime_state: { mode: frozen }
+      context: { was_mentioned: true, direct_request: true, explicit_resume: true, quiet_keyword_active: false }
+      destination: { scope: dm, allowlist_hit: true }
+      action: { type: send, intent: reply, risk_level: low }
+      payload: { contains_sensitive: false }
+    expect: { decision: deny, rule_id: G-001 }
+
+  - id: S007
+    name: Authorized controller explicit command
+    input:
+      runtime_state: { mode: normal }
+      context: { was_mentioned: true, direct_request: true, explicit_resume: true, quiet_keyword_active: false }
+      destination: { scope: dm, allowlist_hit: true }
+      action: { type: send, intent: automation, risk_level: low }
+      actor: { role: controller }
+      payload: { contains_sensitive: false }
+    expect: { decision: allow, rule_id: AUTH-001 }
+
+  - id: S008
+    name: Unknown DM requires approval
+    input:
+      runtime_state: { mode: normal }
+      context: { was_mentioned: false, direct_request: false, explicit_resume: true, quiet_keyword_active: false }
+      destination: { scope: dm, allowlist_hit: false }
+      action: { type: send, intent: proactive, risk_level: medium }
+      payload: { contains_sensitive: false }
+    expect: { decision: hold_for_approval, rule_id: A-003 }

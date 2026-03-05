@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ordl.local/schemas/policy-event.schema.json",
+  "title": "OutboundPolicyEvent",
+  "type": "object",
+  "required": [
+    "event_id",
+    "timestamp",
+    "actor",
+    "session",
+    "action",
+    "channel",
+    "destination",
+    "payload",
+    "context",
+    "runtime_state"
+  ],
+  "properties": {
+    "event_id": { "type": "string", "minLength": 8 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "actor": {
+      "type": "object",
+      "required": ["actor_id", "role"],
+      "properties": {
+        "actor_id": { "type": "string" },
+        "role": { "type": "string" },
+        "is_human": { "type": "boolean" }
+      }
+    },
+    "session": {
+      "type": "object",
+      "required": ["session_id", "surface"],
+      "properties": {
+        "session_id": { "type": "string" },
+        "surface": { "type": "string" },
+        "thread_id": { "type": "string" }
+      }
+    },
+    "action": {
+      "type": "object",
+      "required": ["type", "intent"],
+      "properties": {
+        "type": { "type": "string", "enum": ["send", "edit", "delete", "react", "notify", "email", "sms", "voice"] },
+        "intent": { "type": "string", "enum": ["reply", "proactive", "escalation", "automation"] },
+        "risk_level": { "type": "string", "enum": ["low", "medium", "high", "critical"] }
+      }
+    },
+    "channel": { "type": "string" },
+    "destination": {
+      "type": "object",
+      "required": ["target", "scope"],
+      "properties": {
+        "target": { "type": "string" },
+        "scope": { "type": "string", "enum": ["dm", "group", "public", "private"] },
+        "allowlist_hit": { "type": "boolean" }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "required": ["text", "hash"],
+      "properties": {
+        "text": { "type": "string" },
+        "hash": { "type": "string" },
+        "attachments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "mime", "hash"],
+            "properties": {
+              "name": { "type": "string" },
+              "mime": { "type": "string" },
+              "hash": { "type": "string" }
+            }
+          }
+        },
+        "contains_sensitive": { "type": "boolean" }
+      }
+    },
+    "context": {
+      "type": "object",
+      "required": ["was_mentioned", "direct_request"],
+      "properties": {
+        "was_mentioned": { "type": "boolean" },
+        "direct_request": { "type": "boolean" },
+        "explicit_resume": { "type": "boolean" },
+        "quiet_keyword_active": { "type": "boolean" },
+        "quoted_message_id": { "type": "string" }
+      }
+    },
+    "runtime_state": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["normal", "quiet", "frozen", "incident"] },
+        "policy_version": { "type": "string" }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "properties": {
+        "result": { "type": "string", "enum": ["allow", "deny", "hold_for_approval"] },
+        "rule_ids": { "type": "array", "items": { "type": "string" } },
+        "reason": { "type": "string" },
+        "approval_required": { "type": "boolean" }
+      }
+    }
+  },
+  "additionalProperties": false
+}
