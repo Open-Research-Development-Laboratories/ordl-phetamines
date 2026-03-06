@@ -67,6 +67,14 @@
   - OIDC token validation path (`OIDC + JWKS`).
   - Vault-backed secret resolver (`secret_backend=vault`).
   - Expanded provider registry for multi-vendor onboarding.
+- Implemented active connectivity monitor subsystem for autonomous worker resilience:
+  - New monitor config and run APIs:
+    - `POST /v1/workers/monitor/config`
+    - `GET /v1/workers/monitor/config`
+    - `POST /v1/workers/monitor/run-once`
+  - Added queue-throttled probe/reconnect action scheduling based on stale keepalive/down state.
+  - Added optional daemon lifecycle loop (FastAPI lifespan) to execute enabled monitor runs continuously when configured.
+  - Added regression tests for monitor run behavior, throttle dedupe, and force-run semantics.
 
 ## Remaining major implementation items
 
@@ -78,4 +86,3 @@
 - Advanced multi-tenant guardrails and row-level security at database level.
 - Kubernetes manifests/Helm baseline.
 - Formal control evidence pack generation automation.
-- Active gateway daemon for continuous worker probe scheduling and autonomous reconnect execution.

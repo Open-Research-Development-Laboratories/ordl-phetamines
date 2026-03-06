@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORDL Ultimate Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           ORDL DESIGN TOKENS
+           Industrial/Machinery Aesthetic
+           ============================================ */
+        :root {
+            /* Background Colors - Charcoal Scale */
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1a1a1a;
+            --bg-elevated: #1f1f1f;
+            --bg-hover: #262626;
+            --bg-active: #2e2e2e;
+            --bg-overlay: rgba(0, 0, 0, 0.85);
+            
+            /* Text Colors - Cream Scale */
+            --text-primary: #faf8f5;
+            --text-secondary: #d4cfc7;
+            --text-tertiary: #a8a39c;
+            --text-muted: #6b6660;
+            --text-disabled: #4a4743;
+            
+            /* Accent Colors - Amber Industrial */
+            --accent-primary: #f59e0b;
+            --accent-secondary: #d97706;
+            --accent-hover: #fbbf24;
+            --accent-dim: rgba(245, 158, 11, 0.15);
+            --accent-glow: rgba(245, 158, 11, 0.4);
+            
+            /* Semantic Colors */
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+            --live: #22c55e;
+            
+            /* Border Colors */
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-default: rgba(255, 255, 255, 0.1);
+            --border-strong: rgba(255, 255, 255, 0.15);
+            --border-accent: rgba(245, 158, 11, 0.5);
+            
+            /* Dimensions */
+            --topbar-height: 48px;
+            --sidebar-collapsed: 64px;
+            --sidebar-expanded: 240px;
+            
+            /* Typography */
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+            
+            /* Transitions */
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+            --transition-slow: 350ms ease;
+            
+            /* Shadows */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 20px var(--accent-glow);
+            
+            /* Z-Index Scale */
+            --z-base: 0;
+            --z-dropdown: 100;
+            --z-sticky: 200;
+            --z-sidebar: 300;
+            --z-topbar: 400;
+            --z-modal: 500;
+            --z-toast: 600;
+            --z-tooltip: 700;
+        }
+
+        /* ============================================
+           RESET & BASE
+           ============================================ */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ============================================
+           MAIN LAYOUT GRID
+           ============================================ */
+        .app-shell {
+            display: grid;
+            grid-template-areas:
+                "topbar topbar"
+                "sidebar main";
+            grid-template-rows: var(--topbar-height) 1fr;
+            grid-template-columns: var(--sidebar-collapsed) 1fr;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            transition: grid-template-columns var(--transition-normal);
+        }
+
+        .app-shell.expanded {
+            grid-template-columns: var(--sidebar-expanded) 1fr;
+        }
+
+        /* ============================================
+           TOP BAR
+           ============================================ */
+        .topbar {
+            grid-area: topbar;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: var(--topbar-height);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-default);
+            padding: 0 16px;
+            position: relative;
+            z-index: var(--z-topbar);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .brand-logo {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--bg-primary);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .brand-wordmark {
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            color: var(--text-primary);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-tertiary);
+            transition: color var(--transition-fast);
+        }
+
+        .breadcrumb-item:not(:last-child) {
+            cursor: pointer;
+        }
+
+        .breadcrumb-item:not(:last-child):hover {
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb-item:last-child {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .breadcrumb-separator {
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-trigger {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            color: var(--text-tertiary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .search-trigger:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-strong);
+            color: var(--text-secondary);
+        }
+
+        .search-trigger kbd {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 2px 6px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 4px;
+            color: var(--text-muted);
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 10px;
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--live);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .status-indicator::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: var(--live);
+            opacity: 0.4;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.5); opacity: 0; }
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
+            transition: background var(--transition-fast);
+        }
+
+        .user-menu:hover {
+            background: var(--bg-hover);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--bg-primary);
+            position: relative;
+        }
+
+        .clearance-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 14px;
+            height: 14px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--bg-secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clearance-badge::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.3;
+        }
+
+        .user-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .user-role {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* ============================================
+           SIDEBAR
+           ============================================ */
+        .sidebar {
+            grid-area: sidebar;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-default);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: var(--z-sidebar);
+            transition: width var(--transition-normal);
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .sidebar-toggle {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-strong);
+            color: var(--text-primary);
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 12px 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .nav-section {
+            margin-bottom: 8px;
+        }
+
+        .nav-section-title {
+            padding: 8px 16px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .app-shell.expanded .nav-section-title {
+            opacity: 1;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            margin: 2px 8px;
+            border-radius: 6px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--accent-dim);
+            color: var(--accent-primary);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 20px;
+            background: var(--accent-primary);
+            border-radius: 0 2px 2px 0;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .nav-label {
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .app-shell.expanded .nav-label {
+            opacity: 1;
+        }
+
+        .nav-tooltip {
+            position: fixed;
+            left: 70px;
+            padding: 6px 12px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-4px);
+            transition: all var(--transition-fast);
+            pointer-events: none;
+            z-index: var(--z-tooltip);
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-item:hover .nav-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .app-shell.expanded .nav-tooltip {
+            display: none;
+        }
+
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .quick-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .quick-action-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .quick-action-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-strong);
+            color: var(--text-primary);
+        }
+
+        /* ============================================
+           MAIN CONTENT AREA
+           ============================================ */
+        .main-content {
+            grid-area: main;
+            background: var(--bg-primary);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .content-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .content-header p {
+            font-size: 14px;
+            color: var(--text-tertiary);
+        }
+
+        .content-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-strong);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* ============================================
+           COMMAND PALETTE
+           ============================================ */
+        .command-palette-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-overlay);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 120px;
+            z-index: var(--z-modal);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-fast);
+        }
+
+        .command-palette-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .command-palette {
+            width: 100%;
+            max-width: 640px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg), 0 0 40px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            transform: scale(0.96) translateY(-8px);
+            transition: transform var(--transition-fast);
+        }
+
+        .command-palette-overlay.active .command-palette {
+            transform: scale(1) translateY(0);
+        }
+
+        .command-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .command-search-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--text-muted);
+        }
+
+        .command-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-family: var(--font-sans);
+            font-size: 16px;
+            color: var(--text-primary);
+            padding: 0;
+        }
+
+        .command-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .command-shortcut-hint {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-muted);
+            padding: 4px 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        .command-section {
+            padding: 8px 0;
+        }
+
+        .command-section-title {
+            padding: 8px 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        .command-list {
+            list-style: none;
+        }
+
+        .command-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .command-item:hover,
+        .command-item.selected {
+            background: var(--bg-hover);
+        }
+
+        .command-item.selected {
+            color: var(--accent-primary);
+        }
+
+        .command-icon {
+            width: 18px;
+            height: 18px;
+            color: var(--text-tertiary);
+        }
+
+        .command-item.selected .command-icon {
+            color: var(--accent-primary);
+        }
+
+        .command-text {
+            flex: 1;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .command-item.selected .command-text {
+            color: var(--text-primary);
+        }
+
+        .command-match {
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        .command-shortcut {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            padding: 2px 6px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        .command-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .command-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border-subtle);
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .command-footer-hints {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .command-footer-hint {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .command-footer-hint kbd {
+            font-family: var(--font-mono);
+            padding: 2px 6px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 4px;
+            font-size: 10px;
+        }
+
+        /* ============================================
+           DEMO CONTENT
+           ============================================ */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .dashboard-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all var(--transition-fast);
+        }
+
+        .dashboard-card:hover {
+            border-color: var(--border-strong);
+            box-shadow: var(--shadow-md);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-action {
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color var(--transition-fast);
+        }
+
+        .card-action:hover {
+            color: var(--text-primary);
+        }
+
+        .metric-value {
+            font-family: var(--font-mono);
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        .metric-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+        }
+
+        .metric-change.positive {
+            color: var(--success);
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .metric-change.negative {
+            color: var(--error);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .activity-list {
+            list-style: none;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-primary);
+            flex-shrink: 0;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .activity-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .status-badge.success::before {
+            background: var(--success);
+        }
+
+        .status-badge.warning::before {
+            background: var(--warning);
+        }
+
+        .status-badge.error::before {
+            background: var(--error);
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 768px) {
+            .app-shell {
+                grid-template-columns: 0 1fr;
+            }
+
+            .app-shell.expanded {
+                grid-template-columns: var(--sidebar-expanded) 1fr;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: var(--topbar-height);
+                height: calc(100vh - var(--topbar-height));
+                transform: translateX(-100%);
+            }
+
+            .app-shell.expanded .sidebar {
+                transform: translateX(0);
+            }
+
+            .breadcrumb {
+                display: none;
+            }
+
+            .user-info {
+                display: none;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ============================================
+           FOCUS STYLES
+           ============================================ */
+        *:focus-visible {
+            outline: 2px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+
+        /* ============================================
+           REDUCED MOTION
+           ============================================ */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-shell" id="appShell">
+        <!-- ============================================
+             TOP BAR
+             ============================================ -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <a href="#" class="brand">
+                    <div class="brand-logo">O</div>
+                    <span class="brand-wordmark">ORDL</span>
+                </a>
+                <nav class="breadcrumb">
+                    <span class="breadcrumb-item">
+                        Acme Corp
+                        <span class="breadcrumb-separator">›</span>
+                    </span>
+                    <span class="breadcrumb-item">
+                        Engineering
+                        <span class="breadcrumb-separator">›</span>
+                    </span>
+                    <span class="breadcrumb-item">
+                        Platform
+                        <span class="breadcrumb-separator">›</span>
+                    </span>
+                    <span class="breadcrumb-item">Ultimate Dashboard</span>
+                </nav>
+            </div>
+            <div class="topbar-right">
+                <button class="search-trigger" id="searchTrigger">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.3-4.3"></path>
+                    </svg>
+                    <span>Search</span>
+                    <kbd>⌘K</kbd>
+                </button>
+                <div class="system-status">
+                    <span class="status-indicator"></span>
+                    <span>Live</span>
+                </div>
+                <div class="user-menu">
+                    <div class="user-avatar">
+                        JD
+                        <span class="clearance-badge"></span>
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">John Doe</span>
+                        <span class="user-role">Admin</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ============================================
+             SIDEBAR
+             ============================================ -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                        <line x1="9" x2="9" y1="3" y2="21"></line>
+                    </svg>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Core</div>
+                    <a href="#" class="nav-item active" data-tooltip="Command Center">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="7" height="7" x="3" y="3" rx="1"></rect>
+                                <rect width="7" height="7" x="14" y="3" rx="1"></rect>
+                                <rect width="7" height="7" x="14" y="14" rx="1"></rect>
+                                <rect width="7" height="7" x="3" y="14" rx="1"></rect>
+                            </svg>
+                        </span>
+                        <span class="nav-label">Command Center</span>
+                        <span class="nav-tooltip">Command Center</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tooltip="Topology">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="18" cy="5" r="3"></circle>
+                                <circle cx="6" cy="12" r="3"></circle>
+                                <circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                            </svg>
+                        </span>
+                        <span class="nav-label">Topology</span>
+                        <span class="nav-tooltip">Topology</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tooltip="Fleet">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M2 22h20"></path>
+                                <path d="M4 22V6l8-4 8 4v16"></path>
+                                <path d="M12 6v16"></path>
+                                <path d="M12 12h8"></path>
+                                <path d="M12 18h8"></path>
+                            </svg>
+                        </span>
+                        <span class="nav-label">Fleet</span>
+                        <span class="nav-tooltip">Fleet</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Assets</div>
+                    <a href="#" class="nav-item" data-tooltip="Models">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                <path d="M2 17l10 5 10-5"></path>
+                                <path d="M2 12l10 5 10-5"></path>
+                            </svg>
+                        </span>
+                        <span class="nav-label">Models</span>
+                        <span class="nav-tooltip">Models</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tooltip="Data">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                            </svg>
+                        </span>
+                        <span class="nav-label">Data</span>
+                        <span class="nav-tooltip">Data</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tooltip="Agents">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 8V4H8"></path>
+                                <rect width="16" height="12" x="4" y="8" rx="2"></rect>
+                                <path d="M2 14h2"></path>
+                                <path d="M20 14h2"></path>
+                                <path d="M15 13v2"></path>
+                                <path d="M9 13v2"></path>
+                            </svg>
+                        </span>
+                        <span class="nav-label">Agents</span>
+                        <span class="nav-tooltip">Agents</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Development</div>
+                    <a href="#" class="nav-item" data-tooltip="IDE">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 6 2 12 8 18"></polyline>
+                            </svg>
+                        </span>
+                        <span class="nav-label">IDE</span>
+                        <span class="nav-tooltip">IDE</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tooltip="Pipelines">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" x2="2" y1="12" y2="12"></line>
+                                <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                                <line x1="6" x2="6" y1="16" y2="16"></line>
+                                <line x1="10" x2="10" y1="16" y2="16"></line>
+                                <line x1="14" x2="14" y1="16" y2="16"></line>
+                                <line x1="18" x2="18" y1="16" y2="16"></line>
+                            </svg>
+                        </span>
+                        <span class="nav-label">Pipelines</span>
+                        <span class="nav-tooltip">Pipelines</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Governance</div>
+                    <a href="#" class="nav-item" data-tooltip="Security">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                <path d="m9 12 2 2 4-4"></path>
+                            </svg>
+                        </span>
+                        <span class="nav-label">Security</span>
+                        <span class="nav-tooltip">Security</span>
+                    </a>
+                    <a href="#" class="nav-item" data-tooltip="Governance">
+                        <span class="nav-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 3v18h18"></path>
+                                <path d="m19 9-5 5-4-4-3 3"></path>
+                            </svg>
+                        </span>
+                        <span class="nav-label">Governance</span>
+                        <span class="nav-tooltip">Governance</span>
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="quick-actions">
+                    <button class="quick-action-btn" aria-label="Settings">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                    <button class="quick-action-btn" aria-label="Help">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <path d="M12 17h.01"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ============================================
+             MAIN CONTENT
+             ============================================ -->
+        <main class="main-content">
+            <div class="content-header">
+                <h1>Command Center</h1>
+                <p>Overview of your platform resources, metrics, and recent activity</p>
+            </div>
+            <div class="content-body">
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <span class="card-title">Active Models</span>
+                            <span class="card-action">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="1"></circle>
+                                    <circle cx="19" cy="12" r="1"></circle>
+                                    <circle cx="5" cy="12" r="1"></circle>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="metric-value">247</div>
+                        <div class="metric-label">Deployed across 12 regions</div>
+                        <div class="metric-change positive">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                <polyline points="17 6 23 6 23 12"></polyline>
+                            </svg>
+                            +12% from last week
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <span class="card-title">Fleet Status</span>
+                            <span class="card-action">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="1"></circle>
+                                    <circle cx="19" cy="12" r="1"></circle>
+                                    <circle cx="5" cy="12" r="1"></circle>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="metric-value">1,892</div>
+                        <div class="metric-label">Nodes in active rotation</div>
+                        <div class="metric-change positive">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                <polyline points="17 6 23 6 23 12"></polyline>
+                            </svg>
+                            99.97% uptime
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <span class="card-title">Inference Requests</span>
+                            <span class="card-action">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="1"></circle>
+                                    <circle cx="19" cy="12" r="1"></circle>
+                                    <circle cx="5" cy="12" r="1"></circle>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="metric-value">2.4M</div>
+                        <div class="metric-label">Requests in last 24h</div>
+                        <div class="metric-change positive">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                                <polyline points="17 6 23 6 23 12"></polyline>
+                            </svg>
+                            +28% from yesterday
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <span class="card-title">Avg Latency</span>
+                            <span class="card-action">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="1"></circle>
+                                    <circle cx="19" cy="12" r="1"></circle>
+                                    <circle cx="5" cy="12" r="1"></circle>
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="metric-value">42ms</div>
+                        <div class="metric-label">p95: 89ms | p99: 156ms</div>
+                        <div class="metric-change negative">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+                                <polyline points="17 18 23 18 23 12"></polyline>
+                            </svg>
+                            -5ms improvement
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card" style="grid-column: span 2;">
+                        <div class="card-header">
+                            <span class="card-title">Recent Activity</span>
+                            <span class="card-action">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="1"></circle>
+                                    <circle cx="19" cy="12" r="1"></circle>
+                                    <circle cx="5" cy="12" r="1"></circle>
+                                </svg>
+                            </span>
+                        </div>
+                        <ul class="activity-list">
+                            <li class="activity-item">
+                                <div class="activity-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                        <path d="M2 17l10 5 10-5"></path>
+                                        <path d="M2 12l10 5 10-5"></path>
+                                    </svg>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Model "Llama-3-70B-v2" deployed to production</div>
+                                    <div class="activity-meta">Platform Team • 5 minutes ago</div>
+                                </div>
+                                <span class="status-badge success">Success</span>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 22h20"></path>
+                                        <path d="M4 22V6l8-4 8 4v16"></path>
+                                        <path d="M12 6v16"></path>
+                                    </svg>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Fleet autoscaled: +24 nodes in us-east-1</div>
+                                    <div class="activity-meta">Auto-scaler • 12 minutes ago</div>
+                                </div>
+                                <span class="status-badge success">Success</span>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="22" x2="2" y1="12" y2="12"></line>
+                                        <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                                    </svg>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Pipeline "nightly-training" completed</div>
+                                    <div class="activity-meta">ML Engineering • 1 hour ago</div>
+                                </div>
+                                <span class="status-badge warning">Warning</span>
+                            </li>
+                            <li class="activity-item">
+                                <div class="activity-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                    </svg>
+                                </div>
+                                <div class="activity-content">
+                                    <div class="activity-title">Security scan completed: 3 low severity issues found</div>
+                                    <div class="activity-meta">Security Bot • 2 hours ago</div>
+                                </div>
+                                <span class="status-badge warning">Review</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ============================================
+         COMMAND PALETTE OVERLAY
+         ============================================ -->
+    <div class="command-palette-overlay" id="commandPalette">
+        <div class="command-palette">
+            <div class="command-input-wrapper">
+                <svg class="command-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.3-4.3"></path>
+                </svg>
+                <input type="text" class="command-input" id="commandInput" placeholder="Type a command or search..." autocomplete="off">
+                <span class="command-shortcut-hint">ESC to close</span>
+            </div>
+            <div class="command-results" id="commandResults">
+                <div class="command-section" id="recentSection">
+                    <div class="command-section-title">Recent</div>
+                    <ul class="command-list" id="recentList">
+                        <li class="command-item selected" data-command="Go to Models">
+                            <span class="command-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                    <path d="M2 17l10 5 10-5"></path>
+                                    <path d="M2 12l10 5 10-5"></path>
+                                </svg>
+                            </span>
+                            <span class="command-text">Go to Models</span>
+                            <span class="command-shortcut">G M</span>
+                        </li>
+                        <li class="command-item" data-command="View Pipeline Status">
+                            <span class="command-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="22" x2="2" y1="12" y2="12"></line>
+                                    <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                                </svg>
+                            </span>
+                            <span class="command-text">View Pipeline Status</span>
+                        </li>
+                        <li class="command-item" data-command="Open Fleet Monitor">
+                            <span class="command-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 22h20"></path>
+                                    <path d="M4 22V6l8-4 8 4v16"></path>
+                                    <path d="M12 6v16"></path>
+                                </svg>
+                            </span>
+                            <span class="command-text">Open Fleet Monitor</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="command-section" id="navSection">
+                    <div class="command-section-title">Navigation</div>
+                    <ul class="command-list" id="navList">
+                        <li class="command-item" data-command="Go to Command Center">
+                            <span class="command-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="7" height="7" x="3" y="3" rx="1"></rect>
+                                    <rect width="7" height="7" x="14" y="3" rx="1"></rect>
+                                    <rect width="7" height="7" x="14" y="14" rx="1"></rect>
+                                    <rect width="7" height="7" x="3" y="14" rx="1"></rect>
+                                </svg>
+                            </span>
+                            <span class="command-text">Go to Command Center</span>
+                            <span class="command-shortcut">G H</span>
+                        </li>
+                        <li class="command-item" data-command="Go to Topology">
+                            <span class="command-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="18" cy="5" r="3"></circle>
+                                    <circle cx="6" cy="12" r="3"></circle>
+                                    <circle cx="18" cy="19" r="3"></circle>
+                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                </svg>
+                            </span>
+                            <span class="command-text">Go to Topology</span>
+                            <span class="command-shortcut">G T</span>
+                        </li>
+                        <li class="command-item" data-command="Go to Data">
+                            <span class="command-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                                </svg>
+                            </span>
+                            <span class="command-text">Go to Data</span>
+                            <span class="command-shortcut">G D</span>
+                        </li>
+                        <li class="command-item" data-command="Go to IDE">
+                            <span class="command-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="16 18 22 12 16 6"></polyline>
+                                    <polyline points="8 6 2 12 8 18"></polyline>
+                                </svg>
+                            </span>
+                            <span class="command-text">Go to IDE</span>
+                            <span class="command-shortcut">G I</span>
+                        </li>
+                        <li class="command-item" data-command="Go to Security">
+                            <span class="command-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                            </span>
+                            <span class="command-text">Go to Security</span>
+                            <span class="command-shortcut">G S</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="command-section" id="actionsSection">
+                    <div class="command-section-title">Actions</div>
+                    <ul class="command-list" id="actionsList">
+                        <li class="command-item" data-command="Create New Model">
+                            <span class="command-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M5 12h14"></path>
+                                    <path d="M12 5v14"></path>
+                                </svg>
+                            </span>
+                            <span class="command-text">Create New Model</span>
+                        </li>
+                        <li class="command-item" data-command="Deploy Model">
+                            <span class="command-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m22 2-7 20-4-9-9-4Z"></path>
+                                    <path d="M22 2 11 13"></path>
+                                </svg>
+                            </span>
+                            <span class="command-text">Deploy Model</span>
+                        </li>
+                        <li class="command-item" data-command="Run Diagnostics">
+                            <span class="command-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                                    <path d="M12 9v4"></path>
+                                    <path d="M12 17h.01"></path>
+                                </svg>
+                            </span>
+                            <span class="command-text">Run Diagnostics</span>
+                        </li>
+                        <li class="command-item" data-command="View System Logs">
+                            <span class="command-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                            </span>
+                            <span class="command-text">View System Logs</span>
+                            <span class="command-shortcut">⌘L</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="command-footer">
+                <div class="command-footer-hints">
+                    <span class="command-footer-hint">
+                        <kbd>↑↓</kbd> Navigate
+                    </span>
+                    <span class="command-footer-hint">
+                        <kbd>↵</kbd> Select
+                    </span>
+                </div>
+                <span>ORDL Command Palette</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
+         JAVASCRIPT
+         ============================================ -->
+    <script>
+        // ============================================
+        // STATE MANAGEMENT
+        // ============================================
+        const state = {
+            sidebarExpanded: false,
+            commandPaletteOpen: false,
+            selectedCommandIndex: 0,
+            commands: [],
+            filteredCommands: []
+        };
+
+        // ============================================
+        // DOM ELEMENTS
+        // ============================================
+        const appShell = document.getElementById('appShell');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const searchTrigger = document.getElementById('searchTrigger');
+        const commandPalette = document.getElementById('commandPalette');
+        const commandInput = document.getElementById('commandInput');
+        const commandResults = document.getElementById('commandResults');
+        const navItems = document.querySelectorAll('.nav-item');
+
+        // ============================================
+        // SIDEBAR TOGGLE
+        // ============================================
+        function toggleSidebar() {
+            state.sidebarExpanded = !state.sidebarExpanded;
+            appShell.classList.toggle('expanded', state.sidebarExpanded);
+            
+            // Update toggle icon
+            const icon = sidebarToggle.querySelector('svg');
+            if (state.sidebarExpanded) {
+                icon.innerHTML = `
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                    <line x1="15" x2="15" y1="3" y2="21"></line>
+                `;
+            } else {
+                icon.innerHTML = `
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                    <line x1="9" x2="9" y1="3" y2="21"></line>
+                `;
+            }
+        }
+
+        sidebarToggle.addEventListener('click', toggleSidebar);
+
+        // ============================================
+        // NAVIGATION ACTIVE STATE
+        // ============================================
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                navItems.forEach(nav => nav.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        // ============================================
+        // COMMAND PALETTE
+        // ============================================
+        function openCommandPalette() {
+            state.commandPaletteOpen = true;
+            commandPalette.classList.add('active');
+            commandInput.value = '';
+            commandInput.focus();
+            state.selectedCommandIndex = 0;
+            updateCommandSelection();
+            collectCommands();
+        }
+
+        function closeCommandPalette() {
+            state.commandPaletteOpen = false;
+            commandPalette.classList.remove('active');
+            commandInput.blur();
+        }
+
+        function toggleCommandPalette() {
+            if (state.commandPaletteOpen) {
+                closeCommandPalette();
+            } else {
+                openCommandPalette();
+            }
+        }
+
+        searchTrigger.addEventListener('click', openCommandPalette);
+        commandPalette.addEventListener('click', (e) => {
+            if (e.target === commandPalette) {
+                closeCommandPalette();
+            }
+        });
+
+        // ============================================
+        // COMMAND COLLECTION & FILTERING
+        // ============================================
+        function collectCommands() {
+            state.commands = [];
+            document.querySelectorAll('.command-item').forEach((item, index) => {
+                state.commands.push({
+                    element: item,
+                    text: item.dataset.command.toLowerCase(),
+                    index: index
+                });
+            });
+            state.filteredCommands = [...state.commands];
+        }
+
+        function filterCommands(query) {
+            const lowerQuery = query.toLowerCase().trim();
+            
+            if (!lowerQuery) {
+                // Show all sections when no query
+                document.querySelectorAll('.command-section').forEach(section => {
+                    section.style.display = 'block';
+                });
+                document.querySelectorAll('.command-item').forEach(item => {
+                    item.style.display = 'flex';
+                    item.classList.remove('selected');
+                });
+                state.filteredCommands = [...state.commands];
+                state.selectedCommandIndex = 0;
+                updateCommandSelection();
+                return;
+            }
+
+            // Filter and highlight matches
+            state.filteredCommands = [];
+            state.commands.forEach(cmd => {
+                const matches = fuzzyMatch(cmd.text, lowerQuery);
+                if (matches) {
+                    state.filteredCommands.push(cmd);
+                    cmd.element.style.display = 'flex';
+                    // Highlight matching text
+                    const textEl = cmd.element.querySelector('.command-text');
+                    textEl.innerHTML = highlightMatches(cmd.element.dataset.command, lowerQuery);
+                } else {
+                    cmd.element.style.display = 'none';
+                }
+            });
+
+            // Hide empty sections
+            document.querySelectorAll('.command-section').forEach(section => {
+                const visibleItems = section.querySelectorAll('.command-item[style*="flex"]').length;
+                section.style.display = visibleItems > 0 ? 'block' : 'none';
+            });
+
+            state.selectedCommandIndex = 0;
+            updateCommandSelection();
+        }
+
+        function fuzzyMatch(text, query) {
+            let textIdx = 0;
+            let queryIdx = 0;
+            while (textIdx < text.length && queryIdx < query.length) {
+                if (text[textIdx] === query[queryIdx]) {
+                    queryIdx++;
+                }
+                textIdx++;
+            }
+            return queryIdx === query.length;
+        }
+
+        function highlightMatches(text, query) {
+            const lowerText = text.toLowerCase();
+            let result = '';
+            let textIdx = 0;
+            let queryIdx = 0;
+            
+            while (textIdx < text.length) {
+                if (queryIdx < query.length && lowerText[textIdx] === query[queryIdx]) {
+                    result += `<span class="command-match">${text[textIdx]}</span>`;
+                    queryIdx++;
+                } else {
+                    result += text[textIdx];
+                }
+                textIdx++;
+            }
+            
+            return result;
+        }
+
+        function updateCommandSelection() {
+            document.querySelectorAll('.command-item').forEach((item, index) => {
+                item.classList.remove('selected');
+            });
+            
+            if (state.filteredCommands.length > 0 && state.selectedCommandIndex >= 0) {
+                const selected = state.filteredCommands[state.selectedCommandIndex];
+                if (selected) {
+                    selected.element.classList.add('selected');
+                    selected.element.scrollIntoView({ block: 'nearest' });
+                }
+            }
+        }
+
+        function executeCommand() {
+            if (state.filteredCommands.length > 0) {
+                const selected = state.filteredCommands[state.selectedCommandIndex];
+                if (selected) {
+                    const command = selected.element.dataset.command;
+                    console.log('Executing:', command);
+                    // Add to recent commands logic here
+                    closeCommandPalette();
+                    
+                    // Show visual feedback
+                    showToast(`Executed: ${command}`);
+                }
+            }
+        }
+
+        commandInput.addEventListener('input', (e) => {
+            filterCommands(e.target.value);
+        });
+
+        // Click on command items
+        document.querySelectorAll('.command-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const command = item.dataset.command;
+                console.log('Clicked:', command);
+                closeCommandPalette();
+                showToast(`Executed: ${command}`);
+            });
+        });
+
+        // ============================================
+        // KEYBOARD NAVIGATION
+        // ============================================
+        document.addEventListener('keydown', (e) => {
+            // Command palette toggle (Cmd/Ctrl + K)
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                toggleCommandPalette();
+                return;
+            }
+
+            // Close on Escape
+            if (e.key === 'Escape' && state.commandPaletteOpen) {
+                e.preventDefault();
+                closeCommandPalette();
+                return;
+            }
+
+            if (!state.commandPaletteOpen) return;
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    state.selectedCommandIndex = (state.selectedCommandIndex + 1) % state.filteredCommands.length;
+                    updateCommandSelection();
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    state.selectedCommandIndex = (state.selectedCommandIndex - 1 + state.filteredCommands.length) % state.filteredCommands.length;
+                    updateCommandSelection();
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    executeCommand();
+                    break;
+            }
+        });
+
+        // ============================================
+        // SIDEBAR NAVIGATION SHORTCUTS
+        // ============================================
+        document.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'b' && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                toggleSidebar();
+            }
+        });
+
+        // ============================================
+        // TOAST NOTIFICATION
+        // ============================================
+        function showToast(message) {
+            const existing = document.querySelector('.toast-notification');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                padding: 12px 20px;
+                background: var(--bg-secondary);
+                border: 1px solid var(--border-default);
+                border-radius: 8px;
+                font-size: 13px;
+                color: var(--text-primary);
+                box-shadow: var(--shadow-lg);
+                z-index: var(--z-toast);
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Add toast animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // ============================================
+        // TOOLTIP POSITIONING
+        // ============================================
+        function updateTooltipPositions() {
+            const sidebarRect = document.querySelector('.sidebar').getBoundingClientRect();
+            document.querySelectorAll('.nav-tooltip').forEach(tooltip => {
+                const parent = tooltip.closest('.nav-item');
+                if (parent) {
+                    const rect = parent.getBoundingClientRect();
+                    tooltip.style.top = `${rect.top + rect.height / 2}px`;
+                    tooltip.style.left = `${sidebarRect.right + 8}px`;
+                    tooltip.style.transform = 'translateY(-50%)';
+                }
+            });
+        }
+
+        // Update tooltip positions on scroll and resize
+        document.querySelector('.sidebar-nav').addEventListener('scroll', updateTooltipPositions);
+        window.addEventListener('resize', updateTooltipPositions);
+        
+        // Initial positioning
+        setTimeout(updateTooltipPositions, 100);
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('ORDL Ultimate Platform initialized');
+            collectCommands();
+        });
+    </script>
+</body>
+</html>

@@ -42,6 +42,14 @@ class Settings(BaseSettings):
     storage_bucket: str = "ordl-artifacts"
     storage_local_root: str = "./state/artifacts"
 
+    worker_monitor_daemon_enabled: bool = False
+    worker_monitor_loop_seconds: int = 30
+    worker_monitor_default_enabled: bool = True
+    worker_monitor_default_stale_after_seconds: int = 90
+    worker_monitor_default_queue_throttle_seconds: int = 120
+    worker_monitor_default_probe_action_enabled: bool = True
+    worker_monitor_default_reconnect_action_enabled: bool = True
+
     @model_validator(mode="after")
     def validate_security_posture(self) -> "Settings":
         if self.environment.lower() not in {"production", "prod"}:

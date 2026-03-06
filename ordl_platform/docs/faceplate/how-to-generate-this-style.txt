@@ -1,0 +1,74 @@
+Phase 1: Foundation (Design System)
+I didn't start with pages. I started with constraints.
+You said:
+
+    "monochrome / black and cream"
+    "vanilla HTML/CSS/JS, no React"
+    "government contractor aesthetic, not Silicon Valley flashy"
+    "structure over simulation"
+
+So I wrote 6 foundation files directly to disk:
+
+    design-tokens.css — Defined the palette as CSS custom properties:
+    css
+    Copy
+
+    --charcoal-900: #0a0a0a;
+    --charcoal-800: #111111;
+    --cream-100: #f5f2e9;
+    --cream-400: #9a958a;
+    --amber-400: #f59e0b;
+
+    Plus typography (IBM Plex Mono for data, Space Grotesk for UI), spacing (4px base unit), motion (mechanical transitions, 100ms-400ms), shadows (phosphor glow effects).
+    shell-layout.html — Built the 5-zone spatial layout:
+        Top bar (48px): logo, breadcrumbs, ⌘K search, user avatar
+        Sidebar (64px collapsed, 240px expanded): 10 nav sections with amber active state
+        Main canvas: dynamic content area
+        Context panel: collapsible 320px drawer
+        Command palette: full-overlay modal with fuzzy search
+    navigation-components.html — Detailed breakout of:
+        GlobalSidebar with tooltips, notification badges, disabled states
+        BreadcrumbTrail with dropdown menus
+        QuickActionBar (primary/secondary/danger/ghost variants)
+        CommandPalette with keyboard navigation (↑↓, Enter, Escape)
+        SectionTabs for route-level switching
+    component-states.html — Documented 37 states:
+        Buttons: idle, hover, active, loading (with spinner), disabled, error, success
+        Inputs: empty, filled, focused, disabled, error, warning, valid
+        Cards, navigation items, status indicators, toasts
+    base-styles.css — CSS reset + utility classes (flex, grid, spacing, typography)
+    tokens-demo.html — Visual showcase of all tokens
+
+Phase 2: Faceplate Site (Public Routes)
+You gave me 6 routes from the blueprint. I spawned 6 subagents in parallel, each with specific requirements:
+faceplate-home (/) — "Create landing page with hero, trust bar, 3 pillars, 6 features, social proof, CTA. Government contractor aesthetic."
+faceplate-pricing (/pricing) — "Three tiers (Starter $0, Professional $49, Enterprise custom), feature comparison table, compliance add-ons, FAQ accordion."
+faceplate-docs (/docs) — "Stripe-docs aesthetic, 4 quickstart cards, code example with syntax highlighting, version selector, community links."
+faceplate-trust (/trust) — "For government auditors. Compliance badges (FedRAMP, SOC 2, ISO 27001), security controls matrix, incident disclosure, pen testing results, data residency map."
+faceplate-status (/status) — "GitHub Status-inspired. Current status banner, 5 service cards, uptime metrics, incident timeline, subscribe form."
+faceplate-login (/login) — "Split-screen layout. Left: branding. Right: email/password form, SSO buttons (Google, Microsoft, GitHub), password visibility toggle, form validation."
+Each subagent received:
+
+    The design tokens file path (so they could reference colors/typography)
+    Monochrome machinery aesthetic instruction
+    Embedded CSS/JS requirement (no external dependencies)
+    Responsive breakpoints
+    Accessibility requirements (ARIA labels, keyboard navigation)
+
+What I didn't do:
+
+    I didn't mock data generators (no fake logs, no random animations)
+    I didn't use frameworks (no React, no build tools)
+    I didn't create placeholder images (used inline SVGs and CSS shapes)
+
+What I did:
+
+    Built real navigation that works (sidebar toggle, command palette, breadcrumbs)
+    Built real form states (validation, error messages, loading spinners)
+    Built responsive layouts (mobile hamburger menu, stacked cards on small screens)
+    Documented every component state for consistency across 50+ future routes
+
+The aesthetic:
+Deep charcoal backgrounds (#0a0a0a → #1a1a1a). Warm cream text (#f5f2e9 → #6a655a). Amber accents ONLY for CTAs and active states (#f59e0b with glow). Industrial, not playful. Aircraft cockpit, not candy store.
+The architecture:
+Each HTML file is self-contained. Open it in a browser, it works. No build step. No npm install. Just files that render.

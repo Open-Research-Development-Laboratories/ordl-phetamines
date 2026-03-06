@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation & API Reference | ORDL Platform</title>
+    <style>
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --bg-hover: #30363d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent-primary: #58a6ff;
+            --accent-secondary: #79c0ff;
+            --accent-glow: rgba(88, 166, 255, 0.15);
+            --border-primary: #30363d;
+            --border-secondary: #21262d;
+            --success: #3fb950;
+            --warning: #d29922;
+            --cream: #faf6f1;
+            --cream-soft: #f5f0e8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .docs-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-primary);
+            padding: 24px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 24px;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--bg-primary);
+        }
+
+        .sidebar-nav {
+            padding: 20px;
+        }
+
+        .nav-section {
+            margin-bottom: 24px;
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.15s ease;
+        }
+
+        .nav-link:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-link.active {
+            background: var(--accent-glow);
+            color: var(--accent-primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 48px 48px 80px;
+        }
+
+        /* Header */
+        .docs-header {
+            margin-bottom: 48px;
+        }
+
+        .docs-header h1 {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--cream);
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .docs-header p {
+            font-size: 18px;
+            color: var(--text-muted);
+            max-width: 600px;
+        }
+
+        /* Search Bar */
+        .search-container {
+            margin-bottom: 48px;
+        }
+
+        .search-wrapper {
+            position: relative;
+            max-width: 720px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 20px 16px 52px;
+            font-size: 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            color: var(--text-primary);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            color: var(--text-muted);
+        }
+
+        .search-shortcut {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 4px 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        /* Quick Start Cards */
+        .quickstart-section {
+            margin-bottom: 56px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: block;
+        }
+
+        .card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 1px var(--accent-primary), 0 8px 24px rgba(0, 0, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--cream);
+            margin-bottom: 6px;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .card-arrow {
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--accent-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Popular Topics */
+        .topics-section {
+            margin-bottom: 56px;
+        }
+
+        .topics-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .topic-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.15s ease;
+        }
+
+        .topic-tag:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .topic-icon {
+            font-size: 16px;
+        }
+
+        /* Code Preview */
+        .code-section {
+            margin-bottom: 56px;
+        }
+
+        .code-window {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .code-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .code-dot.red { background: #ff5f56; }
+        .code-dot.yellow { background: #ffbd2e; }
+        .code-dot.green { background: #27ca40; }
+
+        .code-title {
+            margin-left: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        .code-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+        }
+
+        .code-action-btn {
+            padding: 4px 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .code-action-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .code-content {
+            padding: 20px 24px;
+            overflow-x: auto;
+        }
+
+        .code-content pre {
+            margin: 0;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* Syntax Highlighting */
+        .code-keyword { color: #ff7b72; }
+        .code-function { color: #d2a8ff; }
+        .code-string { color: #a5d6ff; }
+        .code-comment { color: #8b949e; }
+        .code-number { color: #79c0ff; }
+        .code-class { color: #ffa657; }
+        .code-variable { color: #e6edf3; }
+
+        /* Version Selector */
+        .version-section {
+            margin-bottom: 40px;
+        }
+
+        .version-selector {
+            position: relative;
+            display: inline-block;
+        }
+
+        .version-dropdown {
+            appearance: none;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            padding: 10px 40px 10px 16px;
+            font-size: 14px;
+            color: var(--text-primary);
+            cursor: pointer;
+            outline: none;
+            min-width: 180px;
+        }
+
+        .version-dropdown:hover,
+        .version-dropdown:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .version-selector::after {
+            content: '▼';
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .version-badge {
+            display: inline-block;
+            margin-left: 12px;
+            padding: 4px 10px;
+            background: var(--success);
+            color: var(--bg-primary);
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 20px;
+        }
+
+        /* Community Links */
+        .community-section {
+            padding-top: 40px;
+            border-top: 1px solid var(--border-primary);
+        }
+
+        .community-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .community-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .community-link:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent-primary);
+            color: var(--cream);
+        }
+
+        .community-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            font-size: 18px;
+        }
+
+        .community-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 24px;
+            }
+
+            .docs-header h1 {
+                font-size: 32px;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Mobile Menu Toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 200;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+
+        @media (max-width: 1024px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+        }
+
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+
+        /* Search Results Dropdown */
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            margin-top: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 50;
+        }
+
+        .search-results.active {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-secondary);
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover {
+            background: var(--bg-hover);
+        }
+
+        .search-result-title {
+            font-size: 14px;
+            color: var(--cream);
+            margin-bottom: 4px;
+        }
+
+        .search-result-path {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .search-no-results {
+            padding: 40px 20px;
+            text-align: center;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
+    
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <div class="docs-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/" class="logo">
+                    <div class="logo-icon">O</div>
+                    <span>ORDL Platform</span>
+                </a>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Getting Started</div>
+                    <a href="#quickstart" class="nav-link active">Quickstart</a>
+                    <a href="#installation" class="nav-link">Installation</a>
+                    <a href="#configuration" class="nav-link">Configuration</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Core Concepts</div>
+                    <a href="#agents" class="nav-link">Agents</a>
+                    <a href="#fleets" class="nav-link">Fleet Management</a>
+                    <a href="#models" class="nav-link">Model Deployment</a>
+                    <a href="#security" class="nav-link">Security</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">API Reference</div>
+                    <a href="#rest-api" class="nav-link">REST API</a>
+                    <a href="#graphql" class="nav-link">GraphQL</a>
+                    <a href="#webhooks" class="nav-link">Webhooks</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">SDKs</div>
+                    <a href="#python-sdk" class="nav-link">Python</a>
+                    <a href="#go-sdk" class="nav-link">Go</a>
+                    <a href="#rust-sdk" class="nav-link">Rust</a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="docs-header">
+                <h1>Documentation & API Reference</h1>
+                <p>Everything you need to build, deploy, and scale with the ORDL Platform.</p>
+            </header>
+
+            <!-- Search Bar -->
+            <section class="search-container">
+                <div class="search-wrapper">
+                    <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        placeholder="Search documentation..."
+                        id="searchInput"
+                        autocomplete="off"
+                    >
+                    <span class="search-shortcut">⌘K</span>
+                    <div class="search-results" id="searchResults"></div>
+                </div>
+            </section>
+
+            <!-- Quick Start Cards -->
+            <section class="quickstart-section">
+                <h2 class="section-title">Quick Start</h2>
+                <div class="cards-grid">
+                    <a href="#quickstart-guide" class="card">
+                        <div class="card-icon">⚡</div>
+                        <h3 class="card-title">Quickstart Guide</h3>
+                        <p class="card-description">Get up and running in 5 minutes with our step-by-step setup guide.</p>
+                        <div class="card-arrow">Get Started →</div>
+                    </a>
+                    <a href="#api-reference" class="card">
+                        <div class="card-icon">🔌</div>
+                        <h3 class="card-title">API Reference</h3>
+                        <p class="card-description">Complete REST and GraphQL API documentation with examples.</p>
+                        <div class="card-arrow">Explore APIs →</div>
+                    </a>
+                    <a href="#sdk-docs" class="card">
+                        <div class="card-icon">📦</div>
+                        <h3 class="card-title">SDK Documentation</h3>
+                        <p class="card-description">Official SDKs for Python, Go, and Rust with full type support.</p>
+                        <div class="card-arrow">View SDKs →</div>
+                    </a>
+                    <a href="#architecture" class="card">
+                        <div class="card-icon">🏗️</div>
+                        <h3 class="card-title">Architecture Overview</h3>
+                        <p class="card-description">Deep dive into system design, components, and best practices.</p>
+                        <div class="card-arrow">Learn More →</div>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Popular Topics -->
+            <section class="topics-section">
+                <h2 class="section-title">Popular Topics</h2>
+                <div class="topics-list">
+                    <a href="#authentication" class="topic-tag">
+                        <span class="topic-icon">🔐</span>
+                        Authentication
+                    </a>
+                    <a href="#fleet-management" class="topic-tag">
+                        <span class="topic-icon">🚀</span>
+                        Fleet Management
+                    </a>
+                    <a href="#model-deployment" class="topic-tag">
+                        <span class="topic-icon">🤖</span>
+                        Model Deployment
+                    </a>
+                    <a href="#security-hardening" class="topic-tag">
+                        <span class="topic-icon">🛡️</span>
+                        Security Hardening
+                    </a>
+                </div>
+            </section>
+
+            <!-- Code Example Preview -->
+            <section class="code-section">
+                <h2 class="section-title">Agent Dispatch Example</h2>
+                <div class="code-window">
+                    <div class="code-header">
+                        <div class="code-dot red"></div>
+                        <div class="code-dot yellow"></div>
+                        <div class="code-dot green"></div>
+                        <span class="code-title">dispatch_agent.py</span>
+                        <div class="code-actions">
+                            <button class="code-action-btn" onclick="copyCode()">Copy</button>
+                        </div>
+                    </div>
+                    <div class="code-content">
+                        <pre><code><span class="code-keyword">import</span> <span class="code-variable">ordl</span>
+
+<span class="code-comment"># Initialize the ORDL client with your API key</span>
+<span class="code-variable">client</span> <span class="code-keyword">=</span> <span class="code-class">ordl</span>.<span class="code-function">Client</span>(<span class="code-string">"your_api_key_here"</span>)
+
+<span class="code-comment"># Create a new agent with specific capabilities</span>
+<span class="code-variable">agent</span> <span class="code-keyword">=</span> <span class="code-variable">client</span>.<span class="code-function">agents</span>.<span class="code-function">create</span>(
+    <span class="code-variable">name</span><span class="code-keyword">=</span><span class="code-string">"data-processor"</span>,
+    <span class="code-variable">model</span><span class="code-keyword">=</span><span class="code-string">"gpt-4-turbo"</span>,
+    <span class="code-variable">capabilities</span><span class="code-keyword">=</span>[<span class="code-string">"text-analysis"</span>, <span class="code-string">"data-extraction"</span>],
+    <span class="code-variable">fleet</span><span class="code-keyword">=</span><span class="code-string">"production-us-east"</span>
+)
+
+<span class="code-comment"># Dispatch the agent with a task</span>
+<span class="code-variable">task</span> <span class="code-keyword">=</span> <span class="code-variable">agent</span>.<span class="code-function">dispatch</span>(
+    <span class="code-variable">instruction</span><span class="code-keyword">=</span><span class="code-string">"Analyze customer feedback and extract key themes"</span>,
+    <span class="code-variable">input_data</span><span class="code-keyword">=</span><span class="code-variable">feedback_dataset</span>,
+    <span class="code-variable">priority</span><span class="code-keyword">=</span><span class="code-string">"high"</span>,
+    <span class="code-variable">timeout</span><span class="code-keyword">=</span><span class="code-number">300</span>
+)
+
+<span class="code-comment"># Monitor task progress</span>
+<span class="code-keyword">while</span> <span class="code-keyword">not</span> <span class="code-variable">task</span>.<span class="code-variable">complete</span>:
+    <span class="code-function">print</span>(<span class="code-string">f"Progress: {task.progress}%"</span>)
+    <span class="code-variable">task</span>.<span class="code-function">refresh</span>()
+
+<span class="code-function">print</span>(<span class="code-string">f"Results: {task.results}"</span>)</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Version Selector -->
+            <section class="version-section">
+                <h2 class="section-title">Documentation Version</h2>
+                <div class="version-selector-wrapper">
+                    <div class="version-selector">
+                        <select class="version-dropdown" id="versionSelect">
+                            <option value="v3.0">v3.0 (Latest)</option>
+                            <option value="v2.4">v2.4</option>
+                            <option value="v2.3">v2.3</option>
+                            <option value="v2.2">v2.2</option>
+                            <option value="v2.1">v2.1</option>
+                            <option value="v2.0">v2.0</option>
+                        </select>
+                    </div>
+                    <span class="version-badge">Stable</span>
+                </div>
+            </section>
+
+            <!-- Community Links -->
+            <section class="community-section">
+                <h2 class="section-title">Community & Support</h2>
+                <div class="community-grid">
+                    <a href="https://github.com/ordl" class="community-link" target="_blank" rel="noopener">
+                        <div class="community-icon">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        </div>
+                        <span class="community-text">GitHub Repository</span>
+                    </a>
+                    <a href="https://discord.gg/ordl" class="community-link" target="_blank" rel="noopener">
+                        <div class="community-icon">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                        </div>
+                        <span class="community-text">Discord Community</span>
+                    </a>
+                    <a href="mailto:support@ordl.io" class="community-link">
+                        <div class="community-icon">✉️</div>
+                        <span class="community-text">Email Support</span>
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        
+        const searchIndex = [
+            { title: 'Quickstart Guide', path: '/docs/quickstart', category: 'Getting Started' },
+            { title: 'API Authentication', path: '/docs/auth', category: 'API Reference' },
+            { title: 'REST API Reference', path: '/docs/api/rest', category: 'API Reference' },
+            { title: 'GraphQL Schema', path: '/docs/api/graphql', category: 'API Reference' },
+            { title: 'Python SDK', path: '/docs/sdks/python', category: 'SDKs' },
+            { title: 'Go SDK', path: '/docs/sdks/go', category: 'SDKs' },
+            { title: 'Rust SDK', path: '/docs/sdks/rust', category: 'SDKs' },
+            { title: 'Fleet Management', path: '/docs/fleets', category: 'Core Concepts' },
+            { title: 'Model Deployment', path: '/docs/models', category: 'Core Concepts' },
+            { title: 'Security Hardening', path: '/docs/security', category: 'Core Concepts' },
+            { title: 'Agent Configuration', path: '/docs/agents/config', category: 'Core Concepts' },
+            { title: 'Webhook Events', path: '/docs/webhooks', category: 'API Reference' },
+            { title: 'Error Handling', path: '/docs/errors', category: 'API Reference' },
+            { title: 'Rate Limits', path: '/docs/rate-limits', category: 'API Reference' },
+            { title: 'Architecture Overview', path: '/docs/architecture', category: 'Core Concepts' }
+        ];
+
+        function performSearch(query) {
+            if (!query.trim()) {
+                searchResults.classList.remove('active');
+                return;
+            }
+
+            const filtered = searchIndex.filter(item => 
+                item.title.toLowerCase().includes(query.toLowerCase()) ||
+                item.category.toLowerCase().includes(query.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                searchResults.innerHTML = '<div class="search-no-results">No results found</div>';
+            } else {
+                searchResults.innerHTML = filtered.map(item => `
+                    <div class="search-result-item" onclick="navigateTo('${item.path}')">
+                        <div class="search-result-title">${item.title}</div>
+                        <div class="search-result-path">${item.category} → ${item.title}</div>
+                    </div>
+                `).join('');
+            }
+            searchResults.classList.add('active');
+        }
+
+        searchInput.addEventListener('input', (e) => performSearch(e.target.value));
+        
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                searchResults.classList.remove('active');
+                searchInput.blur();
+            }
+        });
+
+        // Close search results when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-wrapper')) {
+                searchResults.classList.remove('active');
+            }
+        });
+
+        // Keyboard shortcut for search
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+
+        function navigateTo(path) {
+            console.log('Navigating to:', path);
+            searchResults.classList.remove('active');
+            searchInput.value = '';
+            // In a real app: window.location.href = path;
+        }
+
+        // Version selector
+        const versionSelect = document.getElementById('versionSelect');
+        versionSelect.addEventListener('change', (e) => {
+            const version = e.target.value;
+            console.log('Switching to version:', version);
+            // In a real app: window.location.href = `/docs/${version}/`;
+        });
+
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        // Copy code functionality
+        function copyCode() {
+            const code = `import ordl
+
+# Initialize the ORDL client with your API key
+client = ordl.Client("your_api_key_here")
+
+# Create a new agent with specific capabilities
+agent = client.agents.create(
+    name="data-processor",
+    model="gpt-4-turbo",
+    capabilities=["text-analysis", "data-extraction"],
+    fleet="production-us-east"
+)
+
+# Dispatch the agent with a task
+task = agent.dispatch(
+    instruction="Analyze customer feedback and extract key themes",
+    input_data=feedback_dataset,
+    priority="high",
+    timeout=300
+)
+
+# Monitor task progress
+while not task.complete:
+    print(f"Progress: {task.progress}%")
+    task.refresh()
+
+print(f"Results: {task.results}")`;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.querySelector('.code-action-btn');
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

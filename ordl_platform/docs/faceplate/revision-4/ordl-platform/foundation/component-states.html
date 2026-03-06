@@ -1,0 +1,1520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORDL Ultimate Platform — Component States Reference</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0b;
+            --bg-secondary: #141416;
+            --bg-tertiary: #1c1c1f;
+            --bg-elevated: #232326;
+            --bg-hover: #2a2a2e;
+            --bg-selected: #313135;
+            
+            --text-primary: #f5f5f7;
+            --text-secondary: #a0a0a8;
+            --text-tertiary: #6e6e78;
+            --text-muted: #48484f;
+            
+            --accent: #e8e8ed;
+            --accent-hover: #ffffff;
+            --accent-muted: #63636e;
+            
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+            
+            --border: #2c2c30;
+            --border-subtle: #1f1f23;
+            --border-focus: #4a4a52;
+            
+            --glow-success: rgba(34, 197, 94, 0.3);
+            --glow-warning: rgba(245, 158, 11, 0.3);
+            --glow-error: rgba(239, 68, 68, 0.3);
+            
+            --radius-sm: 4px;
+            --radius-md: 6px;
+            --radius-lg: 8px;
+            
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-xxl: 48px;
+            
+            --font-mono: 'SF Mono', 'Fira Code', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Industrial accent lines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 40px;
+            width: 1px;
+            height: 100vh;
+            background: linear-gradient(
+                to bottom,
+                transparent 0%,
+                var(--accent-muted) 20%,
+                var(--accent-muted) 80%,
+                transparent 100%
+            );
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--spacing-xl);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Header */
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: var(--spacing-lg);
+            margin-bottom: var(--spacing-xxl);
+            position: relative;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 120px;
+            height: 1px;
+            background: var(--accent);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .header h1::before {
+            content: '◆';
+            color: var(--accent-muted);
+            font-size: 14px;
+        }
+
+        .header-meta {
+            margin-top: var(--spacing-sm);
+            color: var(--text-tertiary);
+            font-size: 13px;
+            display: flex;
+            gap: var(--spacing-lg);
+        }
+
+        .header-meta span {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .header-meta span::before {
+            content: '›';
+            color: var(--accent-muted);
+        }
+
+        /* Navigation */
+        .nav-toc {
+            position: fixed;
+            right: var(--spacing-xl);
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            z-index: 100;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .nav-toc h4 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-tertiary);
+            margin-bottom: var(--spacing-sm);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .nav-toc ul {
+            list-style: none;
+        }
+
+        .nav-toc li {
+            margin: var(--spacing-xs) 0;
+        }
+
+        .nav-toc a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 12px;
+            display: block;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            transition: all 0.15s ease;
+        }
+
+        .nav-toc a:hover {
+            color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+
+        .nav-toc a::before {
+            content: '•';
+            margin-right: var(--spacing-xs);
+            color: var(--accent-muted);
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: var(--spacing-xxl);
+            scroll-margin-top: var(--spacing-xl);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .section-number {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+        }
+
+        .section h2 {
+            font-size: 20px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+
+        /* State Grid */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .state-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            transition: border-color 0.15s ease;
+        }
+
+        .state-card:hover {
+            border-color: var(--border-focus);
+        }
+
+        .state-preview {
+            padding: var(--spacing-lg);
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .state-info {
+            padding: var(--spacing-md);
+        }
+
+        .state-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-xs);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .state-name::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--accent-muted);
+            border-radius: 50%;
+        }
+
+        .state-class {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-tertiary);
+            background: var(--bg-primary);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            margin-bottom: var(--spacing-sm);
+            display: inline-block;
+        }
+
+        .state-usage {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: var(--spacing-sm);
+            line-height: 1.5;
+        }
+
+        .state-a11y {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            padding-top: var(--spacing-sm);
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .state-a11y::before {
+            content: 'A11Y: ';
+            color: var(--accent-muted);
+            font-weight: 500;
+        }
+
+        /* Button States */
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s ease;
+            font-family: var(--font-sans);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .btn-primary {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary.idle:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-primary.active {
+            transform: translateY(1px);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary.loading {
+            opacity: 0.8;
+            cursor: wait;
+        }
+
+        .btn-primary.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: var(--text-secondary);
+        }
+
+        .btn-primary.error {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-primary.success {
+            background: var(--success);
+            color: white;
+        }
+
+        .spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Input States */
+        .input-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: all 0.15s ease;
+            font-family: var(--font-sans);
+        }
+
+        .input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .input.filled {
+            border-color: var(--border-focus);
+        }
+
+        .input.focused {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(232, 232, 237, 0.1);
+        }
+
+        .input.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--bg-tertiary);
+        }
+
+        .input.error {
+            border-color: var(--error);
+            box-shadow: 0 0 0 3px var(--glow-error);
+        }
+
+        .input.warning {
+            border-color: var(--warning);
+            box-shadow: 0 0 0 3px var(--glow-warning);
+        }
+
+        .input.valid {
+            border-color: var(--success);
+            box-shadow: 0 0 0 3px var(--glow-success);
+        }
+
+        .input-hint {
+            font-size: 11px;
+            margin-top: var(--spacing-xs);
+            color: var(--text-tertiary);
+        }
+
+        .input-hint.error {
+            color: var(--error);
+        }
+
+        .input-hint.warning {
+            color: var(--warning);
+        }
+
+        .input-hint.valid {
+            color: var(--success);
+        }
+
+        /* Card States */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            width: 100%;
+            max-width: 200px;
+            transition: all 0.15s ease;
+        }
+
+        .card.hover:hover {
+            border-color: var(--border-focus);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .card.selected {
+            border-color: var(--accent);
+            background: var(--bg-selected);
+        }
+
+        .card.loading {
+            opacity: 0.7;
+            position: relative;
+        }
+
+        .card.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .card.error {
+            border-color: var(--error);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .card.empty {
+            border-style: dashed;
+            background: transparent;
+        }
+
+        .card.stale {
+            border-color: var(--warning);
+            position: relative;
+        }
+
+        .card.stale::before {
+            content: '⚠';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 16px;
+            height: 16px;
+            background: var(--warning);
+            color: var(--bg-primary);
+            border-radius: 50%;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .card-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Navigation Item States */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            width: 100%;
+            max-width: 180px;
+        }
+
+        .nav-item::before {
+            content: '▸';
+            font-size: 10px;
+            color: var(--accent-muted);
+        }
+
+        .nav-item.hover:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--bg-selected);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .nav-item.active::before {
+            color: var(--accent);
+        }
+
+        .nav-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .nav-item.notification {
+            position: relative;
+        }
+
+        .nav-item.notification::after {
+            content: '';
+            position: absolute;
+            right: 12px;
+            width: 8px;
+            height: 8px;
+            background: var(--error);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 13px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-dot.healthy {
+            background: var(--success);
+            box-shadow: 0 0 8px var(--glow-success);
+        }
+
+        .status-dot.degraded {
+            background: var(--warning);
+            box-shadow: 0 0 8px var(--glow-warning);
+        }
+
+        .status-dot.failed {
+            background: var(--error);
+            box-shadow: 0 0 8px var(--glow-error);
+        }
+
+        .status-dot.unknown {
+            background: var(--text-muted);
+        }
+
+        .status-dot.loading {
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            background: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        /* Toast/Notification States */
+        .toast {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            max-width: 280px;
+            position: relative;
+        }
+
+        .toast-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .toast-message {
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .toast.info {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid var(--info);
+        }
+
+        .toast.info .toast-icon {
+            color: var(--info);
+        }
+
+        .toast.success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid var(--success);
+        }
+
+        .toast.success .toast-icon {
+            color: var(--success);
+        }
+
+        .toast.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+        }
+
+        .toast.warning .toast-icon {
+            color: var(--warning);
+        }
+
+        .toast.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--error);
+        }
+
+        .toast.persistent {
+            border-left-width: 4px;
+        }
+
+        .toast.dismissible {
+            padding-right: 36px;
+        }
+
+        .toast-dismiss {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.15s ease;
+        }
+
+        .toast-dismiss:hover {
+            opacity: 1;
+        }
+
+        /* Legend */
+        .legend {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-lg);
+            margin-top: var(--spacing-xxl);
+        }
+
+        .legend h3 {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: var(--spacing-md);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .legend h3::before {
+            content: '§';
+            color: var(--accent-muted);
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-sm);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: var(--radius-sm);
+        }
+
+        .legend-color.success { background: var(--success); }
+        .legend-color.warning { background: var(--warning); }
+        .legend-color.error { background: var(--error); }
+        .legend-color.info { background: var(--info); }
+        .legend-color.accent { background: var(--accent); }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .nav-toc {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: var(--spacing-md);
+            }
+
+            .state-grid {
+                grid-template-columns: 1fr;
+            }
+
+            body::before {
+                left: 20px;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+
+            body::before {
+                display: none;
+            }
+
+            .nav-toc {
+                display: none;
+            }
+
+            .state-card {
+                break-inside: avoid;
+                border: 1px solid #ccc;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>ORDL Ultimate Platform</h1>
+            <div class="header-meta">
+                <span>Component States Reference</span>
+                <span>v1.0.0</span>
+                <span>50+ Routes</span>
+            </div>
+        </header>
+
+        <!-- Table of Contents -->
+        <nav class="nav-toc">
+            <h4>Navigation</h4>
+            <ul>
+                <li><a href="#buttons">Button States</a></li>
+                <li><a href="#inputs">Input States</a></li>
+                <li><a href="#cards">Card States</a></li>
+                <li><a href="#navigation">Navigation States</a></li>
+                <li><a href="#status">Status Indicators</a></li>
+                <li><a href="#toasts">Toast States</a></li>
+            </ul>
+        </nav>
+
+        <!-- 1. Button States -->
+        <section class="section" id="buttons">
+            <div class="section-header">
+                <span class="section-number">01</span>
+                <h2>Button States</h2>
+            </div>
+            <div class="state-grid">
+                <!-- Idle -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <button class="btn btn-primary idle">Click Me</button>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Idle</div>
+                        <code class="state-class">.btn .btn-primary</code>
+                        <p class="state-usage">Default resting state. Button is ready for interaction.</p>
+                        <p class="state-a11y">Ensure sufficient color contrast (4.5:1 minimum). Include aria-label if icon-only.</p>
+                    </div>
+                </div>
+
+                <!-- Hover -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <button class="btn btn-primary idle" style="background: var(--accent-hover);">Click Me</button>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Hover</div>
+                        <code class="state-class">:hover</code>
+                        <p class="state-usage">Cursor is over the button. Visual feedback indicates interactivity.</p>
+                        <p class="state-a11y">Consider :focus-visible for keyboard navigation parity. Avoid relying solely on color.</p>
+                    </div>
+                </div>
+
+                <!-- Active -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <button class="btn btn-primary active">Click Me</button>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Active (Pressed)</div>
+                        <code class="state-class">:active</code>
+                        <p class="state-usage">Button is being pressed/held down. Provides tactile feedback.</p>
+                        <p class="state-a11y">Ensure :active state is visually distinct. Screen readers announce button activation.</p>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <button class="btn btn-primary loading">
+                            <span class="spinner"></span>
+                            Loading...
+                        </button>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Loading</div>
+                        <code class="state-class">.loading</code>
+                        <p class="state-usage">Action is in progress. Prevents duplicate submissions.</p>
+                        <p class="state-a11y">Use aria-busy="true" and aria-live="polite" to announce loading state.</p>
+                    </div>
+                </div>
+
+                <!-- Disabled -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <button class="btn btn-primary disabled" disabled>Disabled</button>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Disabled</div>
+                        <code class="state-class">:disabled / [disabled]</code>
+                        <p class="state-usage">Button cannot be interacted with. Use when prerequisites are unmet.</p>
+                        <p class="state-a11y">Use disabled attribute, not just class. Explain why disabled in nearby text.</p>
+                    </div>
+                </div>
+
+                <!-- Error -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <button class="btn btn-primary error">Try Again</button>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Error</div>
+                        <code class="state-class">.error</code>
+                        <p class="state-usage">Action failed. Offer retry or alternative action.</p>
+                        <p class="state-a11y">Announce error with aria-live. Provide context for screen readers.</p>
+                    </div>
+                </div>
+
+                <!-- Success -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <button class="btn btn-primary success">✓ Saved</button>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Success</div>
+                        <code class="state-class">.success</code>
+                        <p class="state-usage">Action completed successfully. Brief confirmation state.</p>
+                        <p class="state-a11y">Announce success with aria-live="polite". Auto-reset to idle after delay.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Input States -->
+        <section class="section" id="inputs">
+            <div class="section-header">
+                <span class="section-number">02</span>
+                <h2>Input States</h2>
+            </div>
+            <div class="state-grid">
+                <!-- Empty -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="input-wrapper">
+                            <input type="text" class="input" placeholder="Enter value...">
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Empty</div>
+                        <code class="state-class">.input</code>
+                        <p class="state-usage">No value entered. Placeholder provides guidance.</p>
+                        <p class="state-a11y">Placeholder is not a label. Always use &lt;label&gt; element.</p>
+                    </div>
+                </div>
+
+                <!-- Filled -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="input-wrapper">
+                            <input type="text" class="input filled" value="user@example.com">
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Filled</div>
+                        <code class="state-class">.filled</code>
+                        <p class="state-usage">Contains user input. Border indicates touched state.</p>
+                        <p class="state-a11y">Maintain focus indicator. Ensure value is readable.</p>
+                    </div>
+                </div>
+
+                <!-- Focused -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="input-wrapper">
+                            <input type="text" class="input focused" value="user@example.com">
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Focused</div>
+                        <code class="state-class">:focus / .focused</code>
+                        <p class="state-usage">Input has keyboard focus. Ready for typing.</p>
+                        <p class="state-a11y">Use :focus-visible for keyboard-only. Visible focus ring required.</p>
+                    </div>
+                </div>
+
+                <!-- Disabled -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="input-wrapper">
+                            <input type="text" class="input disabled" value="Read only" disabled>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Disabled</div>
+                        <code class="state-class">:disabled</code>
+                        <p class="state-usage">Input cannot be edited. Use for computed fields.</p>
+                        <p class="state-a11y">Remove from tab order. Consider readonly for copyable content.</p>
+                    </div>
+                </div>
+
+                <!-- Error -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="input-wrapper">
+                            <input type="text" class="input error" value="invalid-email">
+                            <div class="input-hint error">Please enter a valid email</div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Error</div>
+                        <code class="state-class">.error</code>
+                        <p class="state-usage">Invalid input. Show clear error message below.</p>
+                        <p class="state-a11y">Link input to error via aria-describedby. Use aria-invalid="true".</p>
+                    </div>
+                </div>
+
+                <!-- Warning -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="input-wrapper">
+                            <input type="text" class="input warning" value="weakpass">
+                            <div class="input-hint warning">Password is weak</div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Warning</div>
+                        <code class="state-class">.warning</code>
+                        <p class="state-usage">Input accepted but has concerns. Non-blocking.</p>
+                        <p class="state-a11y">Distinguish from errors. Provide guidance to improve.</p>
+                    </div>
+                </div>
+
+                <!-- Valid/Success -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="input-wrapper">
+                            <input type="text" class="input valid" value="user@example.com">
+                            <div class="input-hint valid">✓ Valid email address</div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Valid/Success</div>
+                        <code class="state-class">.valid</code>
+                        <p class="state-usage">Input passes validation. Positive reinforcement.</p>
+                        <p class="state-a11y">Optional confirmation. Don't overuse—can be verbose.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Card States -->
+        <section class="section" id="cards">
+            <div class="section-header">
+                <span class="section-number">03</span>
+                <h2>Card States</h2>
+            </div>
+            <div class="state-grid">
+                <!-- Default -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="card">
+                            <div class="card-title">Card Title</div>
+                            <div class="card-text">Default card content</div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Default</div>
+                        <code class="state-class">.card</code>
+                        <p class="state-usage">Standard resting state for card component.</p>
+                        <p class="state-a11y">Use semantic HTML. Cards should be navigable by keyboard.</p>
+                    </div>
+                </div>
+
+                <!-- Hover -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="card hover" style="border-color: var(--border-focus); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                            <div class="card-title">Card Title</div>
+                            <div class="card-text">Hover to interact</div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Hover</div>
+                        <code class="state-class">.card:hover</code>
+                        <p class="state-usage">Cursor over clickable card. Indicates interactivity.</p>
+                        <p class="state-a11y">Ensure hover effects have focus equivalents.</p>
+                    </div>
+                </div>
+
+                <!-- Selected -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="card selected">
+                            <div class="card-title">✓ Selected</div>
+                            <div class="card-text">This card is active</div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Selected</div>
+                        <code class="state-class">.selected</code>
+                        <p class="state-usage">Card is currently selected or active.</p>
+                        <p class="state-a11y">Use aria-selected="true". Visual and programmatic state must match.</p>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="card loading">
+                            <div class="card-title">Loading...</div>
+                            <div class="card-text">Please wait</div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Loading</div>
+                        <code class="state-class">.loading</code>
+                        <p class="state-usage">Card content is being fetched or processed.</p>
+                        <p class="state-a11y">Use aria-busy="true". Announce loading state to screen readers.</p>
+                    </div>
+                </div>
+
+                <!-- Error -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="card error">
+                            <div class="card-title">⚠ Load Failed</div>
+                            <div class="card-text">Unable to fetch data</div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Error</div>
+                        <code class="state-class">.error</code>
+                        <p class="state-usage">Card failed to load or has an error state.</p>
+                        <p class="state-a11y">Provide retry mechanism. Announce error to assistive tech.</p>
+                    </div>
+                </div>
+
+                <!-- Empty -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="card empty">
+                            <div class="card-title">No Items</div>
+                            <div class="card-text">Add your first item</div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Empty</div>
+                        <code class="state-class">.empty</code>
+                        <p class="state-usage">No content to display. Encourage user action.</p>
+                        <p class="state-a11y">Empty state should be informative. Avoid blank spaces.</p>
+                    </div>
+                </div>
+
+                <!-- Stale Data Warning -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="card stale" style="border-color: var(--warning);">
+                            <div class="card-title">Dashboard</div>
+                            <div class="card-text">Last updated: 2h ago</div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Stale Data Warning</div>
+                        <code class="state-class">.stale</code>
+                        <p class="state-usage">Data may be outdated. Indicate refresh needed.</p>
+                        <p class="state-a11y">Warn users about data age. Provide refresh action.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Navigation Item States -->
+        <section class="section" id="navigation">
+            <div class="section-header">
+                <span class="section-number">04</span>
+                <h2>Navigation Item States</h2>
+            </div>
+            <div class="state-grid">
+                <!-- Default -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="nav-item">
+                            Dashboard
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Default</div>
+                        <code class="state-class">.nav-item</code>
+                        <p class="state-usage">Resting state for navigation items.</p>
+                        <p class="state-a11y">Must be keyboard navigable. Use semantic nav element.</p>
+                    </div>
+                </div>
+
+                <!-- Hover -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="nav-item hover" style="background: var(--bg-hover); color: var(--text-primary);">
+                            Dashboard
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Hover</div>
+                        <code class="state-class">.nav-item:hover</code>
+                        <p class="state-usage">Mouse over navigation item.</p>
+                        <p class="state-a11y">Hover must have equivalent focus state.</p>
+                    </div>
+                </div>
+
+                <!-- Active/Current -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="nav-item active" style="background: var(--bg-selected); color: var(--text-primary); font-weight: 500;">
+                            <span style="color: var(--accent);">▸</span> Dashboard
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Active/Current</div>
+                        <code class="state-class">.active</code>
+                        <p class="state-usage">Current page/section indicator.</p>
+                        <p class="state-a11y">Use aria-current="page". Critical for orientation.</p>
+                    </div>
+                </div>
+
+                <!-- Disabled -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="nav-item disabled" style="opacity: 0.4;">
+                            Settings
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Disabled</div>
+                        <code class="state-class">.disabled</code>
+                        <p class="state-usage">Unavailable navigation option.</p>
+                        <p class="state-a11y">Remove from tab order. Explain why unavailable.</p>
+                    </div>
+                </div>
+
+                <!-- Has Notification -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="nav-item notification" style="position: relative;">
+                            Notifications
+                            <span style="position: absolute; right: 12px; width: 8px; height: 8px; background: var(--error); border-radius: 50%;"></span>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Has Notification</div>
+                        <code class="state-class">.notification</code>
+                        <p class="state-usage">Unread items or alerts present.</p>
+                        <p class="state-a11y">Use aria-label to indicate count. "Notifications, 3 unread"</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. Status Indicators -->
+        <section class="section" id="status">
+            <div class="section-header">
+                <span class="section-number">05</span>
+                <h2>Status Indicators</h2>
+            </div>
+            <div class="state-grid">
+                <!-- Healthy -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="status-indicator">
+                            <span class="status-dot healthy"></span>
+                            <span>System Operational</span>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Healthy</div>
+                        <code class="state-class">.status-dot.healthy</code>
+                        <p class="state-usage">All systems functioning normally.</p>
+                        <p class="state-a11y">Don't rely on color alone. Include status text.</p>
+                    </div>
+                </div>
+
+                <!-- Degraded -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="status-indicator">
+                            <span class="status-dot degraded"></span>
+                            <span>Performance Degraded</span>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Degraded</div>
+                        <code class="state-class">.status-dot.degraded</code>
+                        <p class="state-usage">Partial functionality. Attention needed.</p>
+                        <p class="state-a11y">Explain degradation details. Provide ETA if possible.</p>
+                    </div>
+                </div>
+
+                <!-- Failed -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="status-indicator">
+                            <span class="status-dot failed"></span>
+                            <span>Service Unavailable</span>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Failed</div>
+                        <code class="state-class">.status-dot.failed</code>
+                        <p class="state-usage">Critical failure. Immediate action required.</p>
+                        <p class="state-a11y">High priority announcement. Provide contact/support info.</p>
+                    </div>
+                </div>
+
+                <!-- Unknown -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="status-indicator">
+                            <span class="status-dot unknown"></span>
+                            <span>Status Unknown</span>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Unknown</div>
+                        <code class="state-class">.status-dot.unknown</code>
+                        <p class="state-usage">Cannot determine status. Check pending.</p>
+                        <p class="state-a11y">Indicate uncertainty. Don't assume negative state.</p>
+                    </div>
+                </div>
+
+                <!-- Loading/Pending -->
+                <div class="state-card">
+                    <div class="state-preview">
+                        <div class="status-indicator">
+                            <span class="status-dot loading"></span>
+                            <span>Checking Status...</span>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Loading/Pending</div>
+                        <code class="state-class">.status-dot.loading</code>
+                        <p class="state-usage">Status check in progress.</p>
+                        <p class="state-a11y">Announce progress. Don't let spinner spin indefinitely.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Toast/Notification States -->
+        <section class="section" id="toasts">
+            <div class="section-header">
+                <span class="section-number">06</span>
+                <h2>Toast/Notification States</h2>
+            </div>
+            <div class="state-grid">
+                <!-- Info -->
+                <div class="state-card">
+                    <div class="state-preview" style="background: var(--bg-tertiary);">
+                        <div class="toast info">
+                            <div class="toast-icon">ℹ</div>
+                            <div class="toast-content">
+                                <div class="toast-title">Information</div>
+                                <div class="toast-message">Something happened</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Info</div>
+                        <code class="state-class">.toast.info</code>
+                        <p class="state-usage">General information. Non-urgent updates.</p>
+                        <p class="state-a11y">Use role="status". Don't auto-dismiss critical info.</p>
+                    </div>
+                </div>
+
+                <!-- Success -->
+                <div class="state-card">
+                    <div class="state-preview" style="background: var(--bg-tertiary);">
+                        <div class="toast success">
+                            <div class="toast-icon">✓</div>
+                            <div class="toast-content">
+                                <div class="toast-title">Success</div>
+                                <div class="toast-message">Action completed</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Success</div>
+                        <code class="state-class">.toast.success</code>
+                        <p class="state-usage">Action completed successfully.</p>
+                        <p class="state-a11y">role="status" aria-live="polite". Auto-dismiss OK.</p>
+                    </div>
+                </div>
+
+                <!-- Warning -->
+                <div class="state-card">
+                    <div class="state-preview" style="background: var(--bg-tertiary);">
+                        <div class="toast warning">
+                            <div class="toast-icon">⚠</div>
+                            <div class="toast-content">
+                                <div class="toast-title">Warning</div>
+                                <div class="toast-message">Attention needed</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Warning</div>
+                        <code class="state-class">.toast.warning</code>
+                        <p class="state-usage">Potential issue. User should review.</p>
+                        <p class="state-a11y">role="alert". Don't auto-dismiss warnings.</p>
+                    </div>
+                </div>
+
+                <!-- Error -->
+                <div class="state-card">
+                    <div class="state-preview" style="background: var(--bg-tertiary);">
+                        <div class="toast error">
+                            <div class="toast-icon">✕</div>
+                            <div class="toast-content">
+                                <div class="toast-title">Error</div>
+                                <div class="toast-message">Something went wrong</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Error</div>
+                        <code class="state-class">.toast.error</code>
+                        <p class="state-usage">Action failed. Requires user action.</p>
+                        <p class="state-a11y">role="alert" aria-live="assertive". Persistent until dismissed.</p>
+                    </div>
+                </div>
+
+                <!-- Persistent -->
+                <div class="state-card">
+                    <div class="state-preview" style="background: var(--bg-tertiary);">
+                        <div class="toast info persistent" style="border-left-width: 4px;">
+                            <div class="toast-icon">ℹ</div>
+                            <div class="toast-content">
+                                <div class="toast-title">Persistent</div>
+                                <div class="toast-message">Stays until dismissed</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Persistent</div>
+                        <code class="state-class">.toast.persistent</code>
+                        <p class="state-usage">Important message requiring acknowledgment.</p>
+                        <p class="state-a11y">Must have dismiss button. Keyboard accessible close.</p>
+                    </div>
+                </div>
+
+                <!-- Dismissible -->
+                <div class="state-card">
+                    <div class="state-preview" style="background: var(--bg-tertiary);">
+                        <div class="toast success dismissible" style="padding-right: 36px; position: relative;">
+                            <div class="toast-icon">✓</div>
+                            <div class="toast-content">
+                                <div class="toast-title">Dismissible</div>
+                                <div class="toast-message">Click X to close</div>
+                            </div>
+                            <div class="toast-dismiss">✕</div>
+                        </div>
+                    </div>
+                    <div class="state-info">
+                        <div class="state-name">Dismissible</div>
+                        <code class="state-class">.toast.dismissible</code>
+                        <p class="state-usage">User can manually close the notification.</p>
+                        <p class="state-a11y">Close button needs aria-label. ESC key should work.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Legend -->
+        <div class="legend">
+            <h3>Color Reference</h3>
+            <div class="legend-grid">
+                <div class="legend-item">
+                    <div class="legend-color success"></div>
+                    <span>Success — #22c55e</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color warning"></div>
+                    <span>Warning — #f59e0b</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color error"></div>
+                    <span>Error — #ef4444</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color info"></div>
+                    <span>Info — #3b82f6</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color accent"></div>
+                    <span>Accent — #e8e8ed</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer style="margin-top: var(--spacing-xxl); padding-top: var(--spacing-lg); border-top: 1px solid var(--border); color: var(--text-tertiary); font-size: 12px; text-align: center;">
+            <p>ORDL Ultimate Platform — Component States Reference v1.0.0</p>
+            <p style="margin-top: var(--spacing-xs);">For implementation questions, consult this reference before creating new components.</p>
+        </footer>
+    </div>
+</body>
+</html>

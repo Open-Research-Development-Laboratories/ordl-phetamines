@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import asyncio
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from app.common import utc_now_iso
 from app.config import get_settings
+from app.connectivity_monitor import run_monitor_daemon
 from app.db import get_engine, init_engine
 from app.models import Base
 from app.routers import (
@@ -29,11 +33,31 @@ from app.routers import (
 settings = get_settings()
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    daemon_stop: asyncio.Event | None = None
+    daemon_task: asyncio.Task | None = None
+    if settings.worker_monitor_daemon_enabled:
+        daemon_stop = asyncio.Event()
+        daemon_task = asyncio.create_task(run_monitor_daemon(daemon_stop, settings=settings))
+    try:
+        yield
+    finally:
+        if daemon_stop is not None:
+            daemon_stop.set()
+        if daemon_task is not None:
+            try:
+                await asyncio.wait_for(daemon_task, timeout=5)
+            except asyncio.TimeoutError:
+                daemon_task.cancel()
+                await asyncio.gather(daemon_task, return_exceptions=True)
+
+
 def create_app() -> FastAPI:
     init_engine(settings.database_url)
     Base.metadata.create_all(bind=get_engine())
 
-    app = FastAPI(title=settings.app_name)
+    app = FastAPI(title=settings.app_name, lifespan=lifespan)
 
     @app.get('/health')
     def health() -> dict:

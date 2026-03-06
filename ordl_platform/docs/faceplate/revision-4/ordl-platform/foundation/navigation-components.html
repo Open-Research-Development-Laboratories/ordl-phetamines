@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Components — ORDL Platform</title>
+    <link rel="stylesheet" href="design-tokens.css">
+    <style>
+        /* ============================================================
+           NAVIGATION COMPONENTS — Detailed Reference
+           ORDL Ultimate Platform
+           ============================================================ */
+
+        /* --- GlobalSidebar Component --- */
+        .sidebar {
+            width: 64px;
+            height: 100vh;
+            background: var(--charcoal-900, #0d0d0d);
+            border-right: 1px solid var(--border-subtle, #2a2a2a);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.2s ease;
+            overflow: hidden;
+        }
+
+        .sidebar.expanded {
+            width: 240px;
+        }
+
+        .sidebar-header {
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .sidebar-toggle {
+            width: 32px;
+            height: 32px;
+            background: none;
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            color: var(--cream-300);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--charcoal-700);
+            border-color: var(--cream-500);
+        }
+
+        /* Section Groups */
+        .sidebar-section {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .sidebar-section-title {
+            padding: 4px 16px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--cream-700);
+            font-weight: 600;
+            display: none;
+        }
+
+        .sidebar.expanded .sidebar-section-title {
+            display: block;
+        }
+
+        /* Nav Items */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            height: 40px;
+            padding: 0 20px;
+            color: var(--cream-400);
+            text-decoration: none;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .nav-item:hover {
+            background: var(--charcoal-800);
+            color: var(--cream-200);
+        }
+
+        .nav-item.active {
+            background: var(--charcoal-800);
+            color: var(--amber-400);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--amber-400);
+            box-shadow: 0 0 8px var(--amber-400);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-label {
+            margin-left: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .sidebar.expanded .nav-label {
+            opacity: 1;
+        }
+
+        .nav-shortcut {
+            margin-left: auto;
+            font-size: 10px;
+            color: var(--cream-700);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .sidebar.expanded .nav-shortcut {
+            opacity: 0;
+        }
+
+        .nav-item:hover .nav-shortcut {
+            opacity: 1;
+        }
+
+        /* Notification Badge */
+        .nav-badge {
+            position: absolute;
+            top: 8px;
+            right: 16px;
+            width: 8px;
+            height: 8px;
+            background: var(--red-400);
+            border-radius: 50%;
+            box-shadow: 0 0 6px var(--red-400);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.9); }
+        }
+
+        /* Tooltip (for collapsed state) */
+        .nav-item[data-tooltip]::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 56px;
+            background: var(--charcoal-800);
+            border: 1px solid var(--border-subtle);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--cream-200);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+            z-index: 100;
+        }
+
+        .nav-item[data-tooltip]:hover::after {
+            opacity: 1;
+        }
+
+        /* Disabled State */
+        .nav-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .nav-item.disabled .nav-label::after {
+            content: ' (locked)';
+            font-size: 10px;
+            color: var(--cream-700);
+        }
+
+        /* --- BreadcrumbTrail Component --- */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 16px;
+            font-size: 13px;
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--cream-500);
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+
+        .breadcrumb-item:hover {
+            color: var(--cream-200);
+        }
+
+        .breadcrumb-item.current {
+            color: var(--cream-200);
+            font-weight: 500;
+            pointer-events: none;
+        }
+
+        .breadcrumb-separator {
+            color: var(--cream-700);
+            font-size: 11px;
+        }
+
+        /* Dropdown Menu */
+        .breadcrumb-dropdown {
+            position: relative;
+        }
+
+        .breadcrumb-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 8px;
+            background: var(--charcoal-800);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            min-width: 160px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-8px);
+            transition: all 0.15s ease;
+            z-index: 100;
+        }
+
+        .breadcrumb-dropdown:hover .breadcrumb-dropdown-menu {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .breadcrumb-dropdown-item {
+            display: block;
+            padding: 8px 16px;
+            color: var(--cream-400);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.15s ease;
+        }
+
+        .breadcrumb-dropdown-item:hover {
+            background: var(--charcoal-700);
+            color: var(--cream-200);
+        }
+
+        .breadcrumb-dropdown-item:first-child {
+            border-radius: 6px 6px 0 0;
+        }
+
+        .breadcrumb-dropdown-item:last-child {
+            border-radius: 0 0 6px 6px;
+        }
+
+        /* --- QuickActionBar Component --- */
+        .quick-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+        }
+
+        .quick-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
+
+        .quick-action-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .quick-action-btn:disabled::after {
+            content: attr(data-reason);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 8px;
+            background: var(--charcoal-800);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--cream-500);
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+        }
+
+        .quick-action-btn:disabled:hover::after {
+            opacity: 1;
+        }
+
+        .quick-action-btn.primary {
+            background: var(--amber-500);
+            color: var(--charcoal-900);
+            border-color: var(--amber-500);
+        }
+
+        .quick-action-btn.primary:hover:not(:disabled) {
+            background: var(--amber-400);
+            box-shadow: 0 0 12px var(--amber-400);
+        }
+
+        .quick-action-btn.secondary {
+            background: transparent;
+            color: var(--cream-300);
+            border-color: var(--border-subtle);
+        }
+
+        .quick-action-btn.secondary:hover:not(:disabled) {
+            background: var(--charcoal-800);
+            border-color: var(--cream-500);
+        }
+
+        .quick-action-btn.danger {
+            background: transparent;
+            color: var(--red-400);
+            border-color: var(--red-500);
+        }
+
+        .quick-action-btn.danger:hover:not(:disabled) {
+            background: var(--red-900);
+            box-shadow: 0 0 12px var(--red-400);
+        }
+
+        .quick-action-btn.ghost {
+            background: transparent;
+            color: var(--cream-500);
+            border-color: transparent;
+        }
+
+        .quick-action-btn.ghost:hover:not(:disabled) {
+            background: var(--charcoal-800);
+            color: var(--cream-300);
+        }
+
+        /* --- Command Palette Component --- */
+        .command-palette-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 120px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 1000;
+        }
+
+        .command-palette-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .command-palette {
+            width: 560px;
+            max-width: 90vw;
+            background: var(--charcoal-800);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .command-palette-input-wrapper {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .command-palette-search-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--cream-600);
+            margin-right: 12px;
+        }
+
+        .command-palette-input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--cream-100);
+            font-size: 16px;
+            outline: none;
+        }
+
+        .command-palette-input::placeholder {
+            color: var(--cream-700);
+        }
+
+        .command-palette-shortcut {
+            padding: 4px 8px;
+            background: var(--charcoal-700);
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--cream-600);
+        }
+
+        .command-palette-results {
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .command-palette-section {
+            padding: 8px 0;
+        }
+
+        .command-palette-section-title {
+            padding: 4px 16px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--cream-700);
+            font-weight: 600;
+        }
+
+        .command-palette-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .command-palette-item:hover,
+        .command-palette-item.selected {
+            background: var(--charcoal-700);
+        }
+
+        .command-palette-item-icon {
+            width: 18px;
+            height: 18px;
+            color: var(--cream-500);
+            margin-right: 12px;
+        }
+
+        .command-palette-item-content {
+            flex: 1;
+        }
+
+        .command-palette-item-title {
+            font-size: 14px;
+            color: var(--cream-200);
+        }
+
+        .command-palette-item-subtitle {
+            font-size: 12px;
+            color: var(--cream-600);
+            margin-top: 2px;
+        }
+
+        .command-palette-item-shortcut {
+            font-size: 12px;
+            color: var(--cream-700);
+            padding: 2px 6px;
+            background: var(--charcoal-900);
+            border-radius: 4px;
+        }
+
+        .command-palette-empty {
+            padding: 32px;
+            text-align: center;
+            color: var(--cream-600);
+        }
+
+        .command-palette-empty-icon {
+            width: 48px;
+            height: 48px;
+            color: var(--cream-800);
+            margin-bottom: 12px;
+        }
+
+        /* --- SectionTabs Component --- */
+        .section-tabs {
+            display: flex;
+            gap: 2px;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .section-tab {
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--cream-600);
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .section-tab:hover {
+            color: var(--cream-300);
+        }
+
+        .section-tab.active {
+            color: var(--amber-400);
+            border-bottom-color: var(--amber-400);
+        }
+
+        /* --- Demo Layout --- */
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--charcoal-900, #0d0d0d);
+            color: var(--cream-100, #faf8f5);
+            margin: 0;
+            padding: 24px;
+        }
+
+        .demo-section {
+            margin-bottom: 48px;
+            padding: 24px;
+            background: var(--charcoal-800, #1a1a1a);
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle, #2a2a2a);
+        }
+
+        .demo-section h2 {
+            margin: 0 0 24px 0;
+            font-size: 18px;
+            color: var(--cream-200);
+        }
+
+        .demo-row {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="margin-bottom: 32px;">Navigation Components — ORDL Platform</h1>
+
+    <!-- GlobalSidebar Demo -->
+    <div class="demo-section">
+        <h2>GlobalSidebar Component</h2>
+        <div style="display: flex; gap: 24px; height: 400px;">
+            <!-- Collapsed State -->
+            <div class="sidebar" style="flex-shrink: 0;">
+                <div class="sidebar-header">
+                    <button class="sidebar-toggle">☰</button>
+                </div>
+                <div class="sidebar-section">
+                    <a class="nav-item active" data-tooltip="Command Center">
+                        <span class="nav-icon">⌘</span>
+                    </a>
+                    <a class="nav-item" data-tooltip="Topology">
+                        <span class="nav-icon">◈</span>
+                    </a>
+                    <a class="nav-item" data-tooltip="Fleet">
+                        <span class="nav-icon">◉</span>
+                        <span class="nav-badge"></span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Expanded State -->
+            <div class="sidebar expanded" style="flex-shrink: 0;">
+                <div class="sidebar-header">
+                    <button class="sidebar-toggle">☰</button>
+                </div>
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Core</div>
+                    <a class="nav-item active">
+                        <span class="nav-icon">⌘</span>
+                        <span class="nav-label">Command Center</span>
+                        <span class="nav-shortcut">⌘1</span>
+                    </a>
+                    <a class="nav-item">
+                        <span class="nav-icon">◈</span>
+                        <span class="nav-label">Topology</span>
+                        <span class="nav-shortcut">⌘2</span>
+                    </a>
+                    <a class="nav-item">
+                        <span class="nav-icon">◉</span>
+                        <span class="nav-label">Fleet</span>
+                        <span class="nav-badge"></span>
+                    </a>
+                </div>
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Development</div>
+                    <a class="nav-item disabled">
+                        <span class="nav-icon">✎</span>
+                        <span class="nav-label">IDE</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BreadcrumbTrail Demo -->
+    <div class="demo-section">
+        <h2>BreadcrumbTrail Component</h2>
+        <div class="demo-row">
+            <nav class="breadcrumb">
+                <a class="breadcrumb-item" href="#">Acme Corp</a>
+                <span class="breadcrumb-separator">›</span>
+                <div class="breadcrumb-dropdown">
+                    <a class="breadcrumb-item" href="#">Engineering</a>
+                    <div class="breadcrumb-dropdown-menu">
+                        <a class="breadcrumb-dropdown-item" href="#">Engineering</a>
+                        <a class="breadcrumb-dropdown-item" href="#">Product</a>
+                        <a class="breadcrumb-dropdown-item" href="#">Design</a>
+                    </div>
+                </div>
+                <span class="breadcrumb-separator">›</span>
+                <a class="breadcrumb-item" href="#">Platform Team</a>
+                <span class="breadcrumb-separator">›</span>
+                <span class="breadcrumb-item current">Fleet Management</span>
+            </nav>
+        </div>
+    </div>
+
+    <!-- QuickActionBar Demo -->
+    <div class="demo-section">
+        <h2>QuickActionBar Component</h2>
+        <div class="quick-actions">
+            <button class="quick-action-btn primary">Deploy</button>
+            <button class="quick-action-btn secondary">Rollback</button>
+            <button class="quick-action-btn ghost">Refresh</button>
+            <button class="quick-action-btn danger">Emergency Stop</button>
+            <button class="quick-action-btn secondary" disabled data-reason="Insufficient clearance">Edit Policy</button>
+        </div>
+    </div>
+
+    <!-- Command Palette Demo -->
+    <div class="demo-section">
+        <h2>Command Palette Component</h2>
+        <button onclick="document.querySelector('.command-palette-overlay').classList.toggle('active')" style="padding: 8px 16px; background: var(--amber-500); color: var(--charcoal-900); border: none; border-radius: 4px; cursor: pointer;">
+            Toggle Command Palette (⌘K)
+        </button>
+    </div>
+
+    <!-- SectionTabs Demo -->
+    <div class="demo-section">
+        <h2>SectionTabs Component</h2>
+        <div class="section-tabs">
+            <button class="section-tab active">Overview</button>
+            <button class="section-tab">Topology</button>
+            <button class="section-tab">Logs</button>
+            <button class="section-tab">Settings</button>
+        </div>
+    </div>
+
+    <!-- Command Palette Overlay -->
+    <div class="command-palette-overlay">
+        <div class="command-palette">
+            <div class="command-palette-input-wrapper">
+                <svg class="command-palette-search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input type="text" class="command-palette-input" placeholder="Type a command or search..." autofocus>
+                <span class="command-palette-shortcut">⌘K</span>
+            </div>
+            <div class="command-palette-results">
+                <div class="command-palette-section">
+                    <div class="command-palette-section-title">Recent</div>
+                    <div class="command-palette-item selected">
+                        <span class="command-palette-item-icon">⌘</span>
+                        <div class="command-palette-item-content">
+                            <div class="command-palette-item-title">Command Center</div>
+                            <div class="command-palette-item-subtitle">Fleet overview and operations</div>
+                        </div>
+                        <span class="command-palette-item-shortcut">⌘1</span>
+                    </div>
+                </div>
+                <div class="command-palette-section">
+                    <div class="command-palette-section-title">Navigation</div>
+                    <div class="command-palette-item">
+                        <span class="command-palette-item-icon">◈</span>
+                        <div class="command-palette-item-content">
+                            <div class="command-palette-item-title">Topology</div>
+                            <div class="command-palette-item-subtitle">Network visualization</div>
+                        </div>
+                        <span class="command-palette-item-shortcut">⌘2</span>
+                    </div>
+                    <div class="command-palette-item">
+                        <span class="command-palette-item-icon">◉</span>
+                        <div class="command-palette-item-content">
+                            <div class="command-palette-item-title">Fleet</div>
+                            <div class="command-palette-item-subtitle">Node management</div>
+                        </div>
+                        <span class="command-palette-item-shortcut">⌘3</span>
+                    </div>
+                </div>
+                <div class="command-palette-section">
+                    <div class="command-palette-section-title">Actions</div>
+                    <div class="command-palette-item">
+                        <span class="command-palette-item-icon">⏻</span>
+                        <div class="command-palette-item-content">
+                            <div class="command-palette-item-title">Emergency Stop</div>
+                            <div class="command-palette-item-subtitle">Halt all active deployments</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle sidebar expansion
+        document.querySelectorAll('.sidebar-toggle').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.closest('.sidebar').classList.toggle('expanded');
+            });
+        });
+
+        // Close command palette on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelector('.command-palette-overlay').classList.remove('active');
+            }
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                document.querySelector('.command-palette-overlay').classList.toggle('active');
+            }
+        });
+    </script>
+</body>
+</html>

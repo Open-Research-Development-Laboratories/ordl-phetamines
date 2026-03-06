@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - ORDL Platform</title>
+    <style>
+        :root {
+            --color-bg: #0a0a0a;
+            --color-surface: #141414;
+            --color-surface-elevated: #1a1a1a;
+            --color-border: #2a2a2a;
+            --color-border-subtle: #1f1f1f;
+            --color-text-primary: #fafafa;
+            --color-text-secondary: #a3a3a3;
+            --color-text-muted: #737373;
+            --color-amber: #f59e0b;
+            --color-amber-hover: #d97706;
+            --color-amber-light: rgba(245, 158, 11, 0.1);
+            --color-success: #22c55e;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 30px rgba(0,0,0,0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--color-border-subtle);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--color-text-primary);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--color-text-primary);
+        }
+
+        .nav-links a.active {
+            color: var(--color-amber);
+        }
+
+        .nav-cta {
+            background: var(--color-amber);
+            color: #000;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .nav-cta:hover {
+            background: var(--color-amber-hover);
+        }
+
+        /* Main Content */
+        main {
+            padding-top: 80px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Header Section */
+        .header-section {
+            text-align: center;
+            padding: 4rem 0 3rem;
+        }
+
+        .header-section h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-section p {
+            font-size: 1.125rem;
+            color: var(--color-text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Pricing Cards */
+        .pricing-section {
+            padding: 2rem 0 4rem;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .pricing-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            position: relative;
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--color-border);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .pricing-card.recommended {
+            background: var(--color-surface-elevated);
+            border-color: var(--color-amber);
+            box-shadow: 0 0 0 1px var(--color-amber), var(--shadow-lg);
+        }
+
+        .pricing-card.recommended::before {
+            content: "Most Popular";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--color-amber);
+            color: #000;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .tier-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .tier-description {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 1.5rem;
+            min-height: 2.5rem;
+        }
+
+        .tier-price {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.25rem;
+        }
+
+        .tier-price .currency {
+            font-size: 1.5rem;
+            vertical-align: super;
+        }
+
+        .tier-price .period {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--color-text-muted);
+        }
+
+        .tier-price-custom {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-amber);
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin: 1.5rem 0;
+            padding: 1.5rem 0;
+            border-top: 1px solid var(--color-border-subtle);
+        }
+
+        .pricing-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+
+        .pricing-features li::before {
+            content: "";
+            width: 18px;
+            height: 18px;
+            background: var(--color-success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+            background-size: 12px;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .pricing-cta {
+            display: block;
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .pricing-cta-primary {
+            background: var(--color-amber);
+            color: #000;
+        }
+
+        .pricing-cta-primary:hover {
+            background: var(--color-amber-hover);
+        }
+
+        .pricing-cta-secondary {
+            background: transparent;
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border);
+        }
+
+        .pricing-cta-secondary:hover {
+            background: var(--color-surface-elevated);
+            border-color: var(--color-text-secondary);
+        }
+
+        /* Comparison Table */
+        .comparison-section {
+            padding: 4rem 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-header p {
+            color: var(--color-text-secondary);
+        }
+
+        .comparison-table-wrapper {
+            overflow-x: auto;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border-subtle);
+        }
+
+        .comparison-table th {
+            background: var(--color-surface);
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--color-text-primary);
+        }
+
+        .comparison-table th:not(:first-child) {
+            text-align: center;
+            min-width: 140px;
+        }
+
+        .comparison-table td {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+
+        .comparison-table td:not(:first-child) {
+            text-align: center;
+        }
+
+        .comparison-table tr:hover td {
+            background: var(--color-surface-elevated);
+        }
+
+        .comparison-table .check {
+            color: var(--color-success);
+            font-size: 1.25rem;
+        }
+
+        .comparison-table .cross {
+            color: var(--color-text-muted);
+        }
+
+        .comparison-table .highlight-col {
+            background: var(--color-amber-light);
+        }
+
+        .comparison-table tr:hover .highlight-col {
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+        /* Mobile Cards for Comparison */
+        .comparison-cards {
+            display: none;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .comparison-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .comparison-card-header {
+            padding: 1rem 1.25rem;
+            background: var(--color-surface-elevated);
+            border-bottom: 1px solid var(--color-border-subtle);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .comparison-card-header .badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 100px;
+            background: var(--color-amber);
+            color: #000;
+        }
+
+        .comparison-card-body {
+            padding: 0.5rem 0;
+        }
+
+        .comparison-card-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid var(--color-border-subtle);
+        }
+
+        .comparison-card-row:last-child {
+            border-bottom: none;
+        }
+
+        .comparison-card-row .feature-name {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+
+        .comparison-card-row .feature-value {
+            font-size: 0.875rem;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Usage Dimensions */
+        .usage-section {
+            padding: 4rem 0;
+            background: var(--color-surface);
+            margin: 0 -2rem;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+
+        .usage-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .usage-card {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+        }
+
+        .usage-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .usage-card p {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+
+        .usage-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-amber);
+            margin-top: 1rem;
+        }
+
+        /* Compliance Add-ons */
+        .compliance-section {
+            padding: 4rem 0;
+        }
+
+        .compliance-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .compliance-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .compliance-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--color-amber-light);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .compliance-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--color-amber);
+        }
+
+        .compliance-content h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .compliance-content p {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .compliance-price {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--color-amber);
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            padding: 4rem 0;
+            background: var(--color-surface);
+            margin: 0 -2rem;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+
+        .faq-list {
+            max-width: 800px;
+            margin: 2rem auto 0;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--color-border-subtle);
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 1.25rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: none;
+            border: none;
+            color: var(--color-text-primary);
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: left;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .faq-question:hover {
+            color: var(--color-amber);
+        }
+
+        .faq-question svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.2s;
+            flex-shrink: 0;
+            margin-left: 1rem;
+        }
+
+        .faq-item.active .faq-question svg {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            padding-bottom: 1.25rem;
+        }
+
+        .faq-answer p {
+            color: var(--color-text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.7;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 5rem 0;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .cta-section p {
+            color: var(--color-text-secondary);
+            margin-bottom: 2rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            padding: 0.875rem 2rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .cta-btn-primary {
+            background: var(--color-amber);
+            color: #000;
+        }
+
+        .cta-btn-primary:hover {
+            background: var(--color-amber-hover);
+        }
+
+        .cta-btn-secondary {
+            background: transparent;
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border);
+        }
+
+        .cta-btn-secondary:hover {
+            background: var(--color-surface);
+            border-color: var(--color-text-secondary);
+        }
+
+        /* Footer */
+        footer {
+            padding: 2rem 0;
+            border-top: 1px solid var(--color-border-subtle);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--color-text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .pricing-grid {
+                grid-template-columns: 1fr;
+                max-width: 480px;
+                margin: 0 auto;
+            }
+
+            .pricing-card.recommended {
+                order: -1;
+            }
+
+            .usage-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .compliance-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .comparison-table-wrapper {
+                display: none;
+            }
+
+            .comparison-cards {
+                display: flex;
+            }
+
+            .header-section {
+                padding: 3rem 0 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            .nav-container {
+                padding: 1rem;
+            }
+
+            .usage-section,
+            .faq-section {
+                margin: 0 -1rem;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .pricing-card {
+                padding: 1.5rem;
+            }
+
+            .cta-section h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <a href="/" class="logo">ORDL</a>
+            <ul class="nav-links">
+                <li><a href="/features">Features</a></li>
+                <li><a href="/pricing" class="active">Pricing</a></li>
+                <li><a href="/docs">Docs</a></li>
+                <li><a href="/enterprise">Enterprise</a></li>
+            </ul>
+            <a href="/signup" class="nav-cta">Get Started</a>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Header Section -->
+        <section class="header-section">
+            <div class="container">
+                <h1>Transparent Pricing for Enterprise AI Operations</h1>
+                <p>Simple, predictable pricing that scales with your team. Start free and upgrade as you grow.</p>
+            </div>
+        </section>
+
+        <!-- Pricing Tiers -->
+        <section class="pricing-section">
+            <div class="container">
+                <div class="pricing-grid">
+                    <!-- Starter -->
+                    <div class="pricing-card">
+                        <h3 class="tier-name">Starter</h3>
+                        <p class="tier-description">Individual developers and small teams getting started with AI operations.</p>
+                        <div class="tier-price">
+                            <span class="currency">$</span>0<span class="period">/seat/month</span>
+                        </div>
+                        <ul class="pricing-features">
+                            <li>Up to 5 nodes</li>
+                            <li>Basic monitoring</li>
+                            <li>Community support</li>
+                            <li>1GB storage per seat</li>
+                            <li>Standard API access</li>
+                            <li>Basic analytics</li>
+                        </ul>
+                        <a href="/signup" class="pricing-cta pricing-cta-secondary">Start Free</a>
+                    </div>
+
+                    <!-- Professional -->
+                    <div class="pricing-card recommended">
+                        <h3 class="tier-name">Professional</h3>
+                        <p class="tier-description">Growing teams that need priority support and unlimited scale.</p>
+                        <div class="tier-price">
+                            <span class="currency">$</span>49<span class="period">/seat/month</span>
+                        </div>
+                        <ul class="pricing-features">
+                            <li>Unlimited nodes</li>
+                            <li>Advanced monitoring & alerts</li>
+                            <li>Priority email & chat support</li>
+                            <li>100GB storage per seat</li>
+                            <li>Full API access with higher limits</li>
+                            <li>Advanced analytics & reporting</li>
+                            <li>Team collaboration features</li>
+                            <li>Custom integrations</li>
+                        </ul>
+                        <a href="/signup?plan=pro" class="pricing-cta pricing-cta-primary">Start 14-Day Trial</a>
+                    </div>
+
+                    <!-- Enterprise -->
+                    <div class="pricing-card">
+                        <h3 class="tier-name">Enterprise</h3>
+                        <p class="tier-description">Government contracts and organizations with advanced compliance needs.</p>
+                        <div class="tier-price tier-price-custom">Custom</div>
+                        <ul class="pricing-features">
+                            <li>Unlimited everything</li>
+                            <li>Dedicated infrastructure</li>
+                            <li>24/7 phone & email support</li>
+                            <li>Unlimited storage</li>
+                            <li>Dedicated API infrastructure</li>
+                            <li>Custom analytics & SLAs</li>
+                            <li>SSO & advanced security</li>
+                            <li>FedRAMP & SOC 2 support</li>
+                            <li>Dedicated account manager</li>
+                        </ul>
+                        <a href="/contact-sales" class="pricing-cta pricing-cta-secondary">Contact Sales</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seat Tier Comparison -->
+        <section class="comparison-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Compare Plans</h2>
+                    <p>Detailed breakdown of features across all tiers</p>
+                </div>
+
+                <!-- Desktop Table -->
+                <div class="comparison-table-wrapper">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Starter</th>
+                                <th class="highlight-col">Professional</th>
+                                <th>Enterprise</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Price per seat</td>
+                                <td>Free</td>
+                                <td class="highlight-col">$49/month</td>
+                                <td>Custom</td>
+                            </tr>
+                            <tr>
+                                <td>Node limit</td>
+                                <td>5 nodes</td>
+                                <td class="highlight-col">Unlimited</td>
+                                <td>Unlimited</td>
+                            </tr>
+                            <tr>
+                                <td>Storage per seat</td>
+                                <td>1GB</td>
+                                <td class="highlight-col">100GB</td>
+                                <td>Unlimited</td>
+                            </tr>
+                            <tr>
+                                <td>API rate limits</td>
+                                <td>1,000 req/day</td>
+                                <td class="highlight-col">100,000 req/day</td>
+                                <td>Unlimited</td>
+                            </tr>
+                            <tr>
+                                <td>Monitoring</td>
+                                <td><span class="check">✓</span> Basic</td>
+                                <td class="highlight-col"><span class="check">✓</span> Advanced</td>
+                                <td><span class="check">✓</span> Custom</td>
+                            </tr>
+                            <tr>
+                                <td>Alerting</td>
+                                <td><span class="cross">—</span></td>
+                                <td class="highlight-col"><span class="check">✓</span></td>
+                                <td><span class="check">✓</span></td>
+                            </tr>
+                            <tr>
+                                <td>Team collaboration</td>
+                                <td><span class="cross">—</span></td>
+                                <td class="highlight-col"><span class="check">✓</span></td>
+                                <td><span class="check">✓</span></td>
+                            </tr>
+                            <tr>
+                                <td>Custom integrations</td>
+                                <td><span class="cross">—</span></td>
+                                <td class="highlight-col"><span class="check">✓</span></td>
+                                <td><span class="check">✓</span></td>
+                            </tr>
+                            <tr>
+                                <td>SSO / SAML</td>
+                                <td><span class="cross">—</span></td>
+                                <td class="highlight-col"><span class="cross">—</span></td>
+                                <td><span class="check">✓</span></td>
+                            </tr>
+                            <tr>
+                                <td>Audit logs</td>
+                                <td>7 days</td>
+                                <td class="highlight-col">90 days</td>
+                                <td>Unlimited</td>
+                            </tr>
+                            <tr>
+                                <td>Support</td>
+                                <td>Community</td>
+                                <td class="highlight-col">Priority</td>
+                                <td>24/7 Dedicated</td>
+                            </tr>
+                            <tr>
+                                <td>SLA guarantee</td>
+                                <td><span class="cross">—</span></td>
+                                <td class="highlight-col">99.9%</td>
+                                <td>99.99%</td>
+                            </tr>
+                            <tr>
+                                <td>FedRAMP support</td>
+                                <td><span class="cross">—</span></td>
+                                <td class="highlight-col"><span class="cross">—</span></td>
+                                <td><span class="check">✓</span></td>
+                            </tr>
+                            <tr>
+                                <td>Dedicated infrastructure</td>
+                                <td><span class="cross">—</span></td>
+                                <td class="highlight-col"><span class="cross">—</span></td>
+                                <td><span class="check">✓</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile Cards -->
+                <div class="comparison-cards">
+                    <!-- Starter Card -->
+                    <div class="comparison-card">
+                        <div class="comparison-card-header">
+                            <span>Starter</span>
+                            <span style="color: var(--color-text-muted); font-weight: 500;">Free</span>
+                        </div>
+                        <div class="comparison-card-body">
+                            <div class="comparison-card-row">
+                                <span class="feature-name">Nodes</span>
+                                <span class="feature-value">5 max</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">Storage</span>
+                                <span class="feature-value">1GB/seat</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">API requests</span>
+                                <span class="feature-value">1K/day</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">Monitoring</span>
+                                <span class="feature-value"><span class="check">✓</span> Basic</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">Support</span>
+                                <span class="feature-value">Community</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Professional Card -->
+                    <div class="comparison-card" style="border-color: var(--color-amber);">
+                        <div class="comparison-card-header">
+                            <span>Professional</span>
+                            <span class="badge">Popular</span>
+                        </div>
+                        <div class="comparison-card-body">
+                            <div class="comparison-card-row">
+                                <span class="feature-name">Nodes</span>
+                                <span class="feature-value">Unlimited</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">Storage</span>
+                                <span class="feature-value">100GB/seat</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">API requests</span>
+                                <span class="feature-value">100K/day</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">Monitoring</span>
+                                <span class="feature-value"><span class="check">✓</span> Advanced</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">Support</span>
+                                <span class="feature-value">Priority</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">SLA</span>
+                                <span class="feature-value">99.9%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enterprise Card -->
+                    <div class="comparison-card">
+                        <div class="comparison-card-header">
+                            <span>Enterprise</span>
+                            <span style="color: var(--color-amber); font-weight: 500;">Custom</span>
+                        </div>
+                        <div class="comparison-card-body">
+                            <div class="comparison-card-row">
+                                <span class="feature-name">Nodes</span>
+                                <span class="feature-value">Unlimited</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">Storage</span>
+                                <span class="feature-value">Unlimited</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">API requests</span>
+                                <span class="feature-value">Unlimited</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">Monitoring</span>
+                                <span class="feature-value"><span class="check">✓</span> Custom</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">Support</span>
+                                <span class="feature-value">24/7 Dedicated</span>
+                            </div>
+                            <div class="comparison-card-row">
+                                <span class="feature-name">SLA</span>
+                                <span class="feature-value">99.99%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Usage Dimensions -->
+        <section class="usage-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Usage-Based Pricing</h2>
+                    <p>Transparent breakdown of how your bill is calculated</p>
+                </div>
+                <div class="usage-grid">
+                    <div class="usage-card">
+                        <h3>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            Per-Seat License
+                        </h3>
+                        <p>Base pricing per team member with full platform access. Includes core features, API access, and support based on your tier.</p>
+                        <div class="usage-price">$0 - $49 / seat / month</div>
+                    </div>
+                    <div class="usage-card">
+                        <h3>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                                <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                <line x1="6" y1="18" x2="6.01" y2="18"></line>
+                            </svg>
+                            Compute Usage
+                        </h3>
+                        <p>Pay for the compute resources your AI operations consume. Billed per hour of active node runtime with automatic scaling.</p>
+                        <div class="usage-price">$0.05 - $0.20 / hour / node</div>
+                    </div>
+                    <div class="usage-card">
+                        <h3>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+                            </svg>
+                            Storage
+                        </h3>
+                        <p>Data storage for models, logs, and artifacts. Includes automatic backups and geo-redundant replication for Enterprise.</p>
+                        <div class="usage-price">$0.10 / GB / month</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Compliance Add-ons -->
+        <section class="compliance-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Compliance Add-ons</h2>
+                    <p>Enterprise-grade compliance certifications for regulated industries</p>
+                </div>
+                <div class="compliance-grid">
+                    <div class="compliance-card">
+                        <div class="compliance-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                <path d="m9 12 2 2 4-4"></path>
+                            </svg>
+                        </div>
+                        <div class="compliance-content">
+                            <h3>FedRAMP Authorization</h3>
+                            <p>Federal Risk and Authorization Management Program compliance for government agencies and contractors. Includes continuous monitoring and annual assessments.</p>
+                            <div class="compliance-price">+$500/seat/month</div>
+                        </div>
+                    </div>
+                    <div class="compliance-card">
+                        <div class="compliance-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                        </div>
+                        <div class="compliance-content">
+                            <h3>SOC 2 Type II Audit</h3>
+                            <p>Service Organization Control 2 Type II certification with third-party audit support, evidence collection, and continuous compliance monitoring.</p>
+                            <div class="compliance-price">+$200/seat/month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Frequently Asked Questions</h2>
+                    <p>Common questions about pricing and billing</p>
+                </div>
+                <div class="faq-list">
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            How is the per-seat license calculated?
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Seats are counted as unique users who access the platform within a billing cycle. You can add or remove seats at any time, and we'll prorate the charges. Deactivated users don't count toward your seat total.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            What happens when I exceed my API rate limits?
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer">
+                            <p>On the Starter plan, you'll receive a 429 status code when limits are reached. Professional and Enterprise plans include burst capacity and can purchase additional API packs. We never throttle without warning.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Can I switch between plans?
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Yes, you can upgrade or downgrade at any time. Upgrades take effect immediately with prorated billing. Downgrades take effect at the start of your next billing cycle. No penalties or lock-in periods.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Do you offer annual billing discounts?
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Yes, annual billing includes a 17% discount (2 months free). Contact our sales team for Enterprise annual contracts with additional volume discounts.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            What payment methods do you accept?
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer">
+                            <p>We accept all major credit cards (Visa, Mastercard, Amex), ACH transfers for US customers, and wire transfers for Enterprise plans. We also support purchase orders for annual Enterprise contracts.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">
+                            Is there a free trial for Professional?
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer">
+                            <p>Yes, all new Professional plans include a 14-day free trial with full feature access. No credit card required to start. You can upgrade, downgrade, or cancel anytime during the trial.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="container">
+                <h2>Ready to get started?</h2>
+                <p>Join thousands of teams using ORDL to power their AI operations. Start free or talk to our sales team.</p>
+                <div class="cta-buttons">
+                    <a href="/signup" class="cta-btn cta-btn-primary">Start Free</a>
+                    <a href="/contact-sales" class="cta-btn cta-btn-secondary">Contact Sales</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 ORDL Platform. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // FAQ Accordion
+        document.querySelectorAll('.faq-question').forEach(button => {
+            button.addEventListener('click', () => {
+                const faqItem = button.parentElement;
+                const isActive = faqItem.classList.contains('active');
+                
+                // Close all other items
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Toggle current item
+                if (!isActive) {
+                    faqItem.classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add shadow to nav on scroll
+        const nav = document.querySelector('nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 10) {
+                nav.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
+            } else {
+                nav.style.boxShadow = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

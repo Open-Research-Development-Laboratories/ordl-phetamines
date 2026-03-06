@@ -202,6 +202,25 @@ class WorkerDiscoveryScan(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+class WorkerConnectivityMonitor(Base):
+    __tablename__ = "worker_connectivity_monitors"
+    __table_args__ = (UniqueConstraint("project_id", name="uq_worker_monitor_project"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    enabled: Mapped[int] = mapped_column(Integer, default=1)
+    loop_interval_seconds: Mapped[int] = mapped_column(Integer, default=30)
+    stale_after_seconds: Mapped[int] = mapped_column(Integer, default=90)
+    queue_throttle_seconds: Mapped[int] = mapped_column(Integer, default=120)
+    probe_action_enabled: Mapped[int] = mapped_column(Integer, default=1)
+    reconnect_action_enabled: Mapped[int] = mapped_column(Integer, default=1)
+    last_run_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_result_json: Mapped[str] = mapped_column(Text, default="{}")
+    created_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
 class WorkerGroup(Base):
     __tablename__ = "worker_groups"
     __table_args__ = (UniqueConstraint("project_id", "name", name="uq_worker_group_project_name"),)

@@ -13,10 +13,12 @@ from sqlalchemy.orm import Session
 from app.audit import append_audit_event, build_actor_snapshot
 from app.authz import evaluate_authorization
 from app.common import ensure_project_scope, json_list
+from app.connectivity_monitor import ensure_monitor_config, run_monitor_once
 from app.config import get_settings
 from app.db import get_db
 from app.models import (
     WorkerAction,
+    WorkerConnectivityMonitor,
     WorkerDiscoveryScan,
     WorkerInstance,
     WorkerUpdateBundle,
@@ -27,6 +29,9 @@ from app.policy import hash_request, validate_policy_token
 from app.schemas import (
     WorkerActionRequest,
     WorkerConnectivityOut,
+    WorkerMonitorConfigOut,
+    WorkerMonitorConfigUpsert,
+    WorkerMonitorRunRequest,
     WorkerDiscoveryScanCreate,
     WorkerDiscoveryScanOut,
     WorkerHeartbeatRequest,
@@ -193,6 +198,22 @@ def _connectivity_out(row: WorkerInstance, stale_after_seconds: int) -> WorkerCo
         gateway_rtt_ms=row.gateway_rtt_ms,
         reconnect_required=_reconnect_required(row, stale_after_seconds=stale_after_seconds),
         reconnect_targets=reconnect_targets,
+    )
+
+
+def _monitor_out(row: WorkerConnectivityMonitor) -> WorkerMonitorConfigOut:
+    return WorkerMonitorConfigOut(
+        id=row.id,
+        project_id=row.project_id,
+        enabled=bool(row.enabled),
+        loop_interval_seconds=row.loop_interval_seconds,
+        stale_after_seconds=row.stale_after_seconds,
+        queue_throttle_seconds=row.queue_throttle_seconds,
+        probe_action_enabled=bool(row.probe_action_enabled),
+        reconnect_action_enabled=bool(row.reconnect_action_enabled),
+        last_run_at=_iso_or_none(row.last_run_at),
+        last_result=_json_obj(row.last_result_json),
+        created_by_user_id=row.created_by_user_id,
     )
 
 
@@ -449,6 +470,70 @@ def list_worker_connectivity(
     _authorize_worker_read(principal)
     rows = db.scalars(select(WorkerInstance).where(WorkerInstance.project_id == project_id)).all()
     return [_connectivity_out(row, stale_after_seconds=stale_after_seconds) for row in rows]
+
+
+@router.post('/monitor/config', response_model=WorkerMonitorConfigOut)
+def upsert_worker_monitor_config(
+    payload: WorkerMonitorConfigUpsert,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> WorkerMonitorConfigOut:
+    ensure_project_scope(db, principal, payload.project_id)
+    _authorize_worker_action(principal)
+    row = ensure_monitor_config(
+        db,
+        project_id=payload.project_id,
+        actor_user_id=principal.user_id,
+        settings=get_settings(),
+    )
+    row.enabled = 1 if payload.enabled else 0
+    row.loop_interval_seconds = payload.loop_interval_seconds
+    row.stale_after_seconds = payload.stale_after_seconds
+    row.queue_throttle_seconds = payload.queue_throttle_seconds
+    row.probe_action_enabled = 1 if payload.probe_action_enabled else 0
+    row.reconnect_action_enabled = 1 if payload.reconnect_action_enabled else 0
+    row.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    return _monitor_out(row)
+
+
+@router.get('/monitor/config', response_model=WorkerMonitorConfigOut)
+def get_worker_monitor_config(
+    project_id: str,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> WorkerMonitorConfigOut:
+    ensure_project_scope(db, principal, project_id)
+    _authorize_worker_read(principal)
+    row = ensure_monitor_config(
+        db,
+        project_id=project_id,
+        actor_user_id=principal.user_id,
+        settings=get_settings(),
+    )
+    db.commit()
+    return _monitor_out(row)
+
+
+@router.post('/monitor/run-once')
+def run_worker_monitor_once(
+    payload: WorkerMonitorRunRequest,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    ensure_project_scope(db, principal, payload.project_id)
+    _authorize_worker_action(principal)
+    result = run_monitor_once(
+        db,
+        project_id=payload.project_id,
+        actor_user_id=principal.user_id,
+        tenant_id=principal.tenant_id,
+        force=payload.force,
+        source='api',
+        settings=get_settings(),
+    )
+    db.commit()
+    return result
 
 
 @router.post('/update-bundles', response_model=WorkerUpdateBundleOut)

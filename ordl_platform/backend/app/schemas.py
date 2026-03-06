@@ -297,6 +297,35 @@ class WorkerConnectivityOut(BaseModel):
     reconnect_targets: list[str]
 
 
+class WorkerMonitorConfigUpsert(BaseModel):
+    project_id: str
+    enabled: bool = True
+    loop_interval_seconds: int = Field(default=30, ge=5, le=3600)
+    stale_after_seconds: int = Field(default=90, ge=10, le=86400)
+    queue_throttle_seconds: int = Field(default=120, ge=0, le=86400)
+    probe_action_enabled: bool = True
+    reconnect_action_enabled: bool = True
+
+
+class WorkerMonitorConfigOut(BaseModel):
+    id: str
+    project_id: str
+    enabled: bool
+    loop_interval_seconds: int
+    stale_after_seconds: int
+    queue_throttle_seconds: int
+    probe_action_enabled: bool
+    reconnect_action_enabled: bool
+    last_run_at: str | None
+    last_result: dict[str, Any]
+    created_by_user_id: str
+
+
+class WorkerMonitorRunRequest(BaseModel):
+    project_id: str
+    force: bool = False
+
+
 class WorkerUpdateCampaignCreate(BaseModel):
     project_id: str
     name: str

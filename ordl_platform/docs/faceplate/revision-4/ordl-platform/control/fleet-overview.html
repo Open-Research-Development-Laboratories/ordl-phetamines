@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORDL Control Platform - Fleet Overview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e14;
+            --bg-secondary: #111822;
+            --bg-tertiary: #1a2332;
+            --bg-hover: #243042;
+            --border-color: #2d3a4a;
+            --border-hover: #3d5065;
+            --text-primary: #e8ecf1;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --color-healthy: #22c55e;
+            --color-degraded: #f59e0b;
+            --color-offline: #ef4444;
+            --color-info: #3b82f6;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .stat-value.total { color: var(--text-primary); }
+        .stat-value.healthy { color: var(--color-healthy); }
+        .stat-value.degraded { color: var(--color-degraded); }
+        .stat-value.offline { color: var(--color-offline); }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-hover);
+        }
+
+        .btn-primary {
+            background: var(--color-info);
+            border-color: var(--color-info);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        .btn-icon {
+            padding: 0.625rem;
+        }
+
+        /* View Toggle */
+        .view-toggle {
+            display: flex;
+            gap: 0.25rem;
+            padding: 0.25rem;
+            background: var(--bg-tertiary);
+            border-radius: 0.5rem;
+            margin-top: 1.5rem;
+            width: fit-content;
+        }
+
+        .view-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 0.375rem;
+            transition: all 0.15s ease;
+        }
+
+        .view-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .view-btn.active {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 2rem;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+            max-width: 320px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.625rem 0.75rem 0.625rem 2.5rem;
+            font-size: 0.875rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            color: var(--text-primary);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--color-info);
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .filter-dropdown {
+            position: relative;
+        }
+
+        .filter-select {
+            padding: 0.625rem 2rem 0.625rem 0.75rem;
+            font-size: 0.875rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            appearance: none;
+            min-width: 140px;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--color-info);
+        }
+
+        .status-tabs {
+            display: flex;
+            gap: 0.25rem;
+            background: var(--bg-secondary);
+            padding: 0.25rem;
+            border-radius: 0.375rem;
+        }
+
+        .status-tab {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 0.25rem;
+            transition: all 0.15s ease;
+        }
+
+        .status-tab:hover {
+            color: var(--text-primary);
+        }
+
+        .status-tab.active {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .sort-dropdown {
+            margin-left: auto;
+        }
+
+        /* Bulk Actions Bar */
+        .bulk-actions-bar {
+            display: none;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 2rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .bulk-actions-bar.visible {
+            display: flex;
+        }
+
+        .selected-count {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .selected-count strong {
+            color: var(--text-primary);
+        }
+
+        .bulk-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.5rem 0.875rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .bulk-action-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-hover);
+        }
+
+        .bulk-action-btn.danger:hover {
+            border-color: var(--color-offline);
+            color: var(--color-offline);
+        }
+
+        /* Main Content */
+        .main-content {
+            padding: 1.5rem 2rem;
+        }
+
+        /* Grid View */
+        .grid-view {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1rem;
+        }
+
+        @media (min-width: 640px) {
+            .grid-view {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .grid-view {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .grid-view {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .node-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+
+        .node-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--border-hover);
+        }
+
+        .node-card.selected {
+            border-color: var(--color-degraded);
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+        }
+
+        .node-card.error {
+            border-color: var(--color-offline);
+        }
+
+        .node-card.error::before {
+            content: "⚠";
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            color: var(--color-offline);
+            font-size: 1rem;
+        }
+
+        /* Quick Actions on Hover */
+        .quick-actions {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            display: none;
+            gap: 0.25rem;
+        }
+
+        .node-card:hover .quick-actions {
+            display: flex;
+        }
+
+        .quick-action {
+            padding: 0.375rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.25rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.15s ease;
+        }
+
+        .quick-action:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-indicator.healthy {
+            background: var(--color-healthy);
+            box-shadow: 0 0 8px var(--color-healthy);
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.degraded {
+            background: var(--color-degraded);
+            box-shadow: 0 0 8px var(--color-degraded);
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.offline {
+            background: var(--color-offline);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .node-id {
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            border-radius: 0.25rem;
+            margin-left: auto;
+        }
+
+        .role-badge.coordinator {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+        }
+
+        .role-badge.worker {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+        }
+
+        .role-badge.gateway {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+        }
+
+        .role-badge.relay {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+
+        .card-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .metric-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .metric-value {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            font-family: 'SF Mono', monospace;
+        }
+
+        .load-bar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .load-bar {
+            height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .load-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .load-bar-fill.cpu {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+
+        .load-bar-fill.memory {
+            background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+        }
+
+        .load-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+        }
+
+        /* List View */
+        .list-view {
+            display: none;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .list-view.active {
+            display: block;
+        }
+
+        .list-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .list-table th,
+        .list-table td {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        .list-table th {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .list-table tbody tr {
+            border-top: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .list-table tbody tr:hover {
+            background: var(--bg-hover);
+        }
+
+        .list-table tbody tr.selected {
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .list-table td {
+            color: var(--text-primary);
+        }
+
+        /* Topology View */
+        .topology-view {
+            display: none;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            height: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .topology-view.active {
+            display: block;
+        }
+
+        .topology-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .topology-placeholder svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        .empty-state.visible {
+            display: flex;
+        }
+
+        .empty-state-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--bg-secondary);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .empty-state-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Icons */
+        .icon {
+            width: 1em;
+            height: 1em;
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-top">
+            <h1 class="header-title">Fleet Overview</h1>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <span class="stat-value total">50</span>
+                    <span class="stat-label">Total</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value healthy">47</span>
+                    <span class="stat-label">Healthy</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value degraded">2</span>
+                    <span class="stat-label">Degraded</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value offline">1</span>
+                    <span class="stat-label">Offline</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-primary">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Add Node
+                </button>
+                <button class="btn">
+                    Bulk Actions
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+            </div>
+        </div>
+        <div class="view-toggle">
+            <button class="view-btn active" data-view="grid">
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                Grid
+            </button>
+            <button class="view-btn" data-view="list">
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                List
+            </button>
+            <button class="view-btn" data-view="topology">
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                Topology
+            </button>
+        </div>
+    </header>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="search-box">
+            <svg class="search-icon icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input type="text" id="searchInput" placeholder="Search by node ID...">
+        </div>
+        <div class="filter-dropdown">
+            <select class="filter-select" id="roleFilter">
+                <option value="">All Roles</option>
+                <option value="coordinator">Coordinator</option>
+                <option value="worker">Worker</option>
+                <option value="gateway">Gateway</option>
+                <option value="relay">Relay</option>
+            </select>
+        </div>
+        <div class="status-tabs">
+            <button class="status-tab active" data-status="all">All</button>
+            <button class="status-tab" data-status="healthy">Healthy</button>
+            <button class="status-tab" data-status="degraded">Degraded</button>
+            <button class="status-tab" data-status="offline">Offline</button>
+        </div>
+        <div class="sort-dropdown">
+            <select class="filter-select" id="sortBy">
+                <option value="uptime">Sort by Uptime</option>
+                <option value="load">Sort by Load</option>
+                <option value="lastSeen">Sort by Last Seen</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Bulk Actions Bar -->
+    <div class="bulk-actions-bar" id="bulkActionsBar">
+        <span class="selected-count"><strong id="selectedCount">0</strong> nodes selected</span>
+        <button class="bulk-action-btn" onclick="bulkAction('restart')">
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            Restart
+        </button>
+        <button class="bulk-action-btn danger" onclick="bulkAction('isolate')">
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            Isolate
+        </button>
+        <button class="bulk-action-btn" onclick="bulkAction('update')">
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            Update
+        </button>
+        <button class="bulk-action-btn" onclick="bulkAction('export')">
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            Export
+        </button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Grid View -->
+        <div class="grid-view" id="gridView">
+            <!-- Node cards will be generated by JavaScript -->
+        </div>
+
+        <!-- List View -->
+        <div class="list-view" id="listView">
+            <table class="list-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>Node ID</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Uptime</th>
+                        <th>CPU</th>
+                        <th>Memory</th>
+                        <th>Last Heartbeat</th>
+                    </tr>
+                </thead>
+                <tbody id="listViewBody">
+                    <!-- List rows will be generated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Topology View -->
+        <div class="topology-view" id="topologyView">
+            <div class="topology-placeholder">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                <p>Topology visualization</p>
+                <p style="font-size: 0.875rem; margin-top: 0.5rem;">Network map showing node relationships</p>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState">
+            <div class="empty-state-icon">🔍</div>
+            <h3 class="empty-state-title">No nodes match your filters</h3>
+            <p class="empty-state-desc">Try adjusting your search or filter criteria</p>
+            <button class="btn" onclick="clearFilters()">Clear Filters</button>
+        </div>
+    </main>
+
+    <script>
+        // Sample node data
+        const nodes = [
+            { id: 'alpha-01', role: 'coordinator', status: 'healthy', uptime: '45d 12h', cpu: 34, memory: 42, lastHeartbeat: '2s ago' },
+            { id: 'alpha-02', role: 'coordinator', status: 'healthy', uptime: '45d 10h', cpu: 28, memory: 38, lastHeartbeat: '3s ago' },
+            { id: 'beta-01', role: 'worker', status: 'healthy', uptime: '32d 8h', cpu: 56, memory: 62, lastHeartbeat: '1s ago' },
+            { id: 'beta-02', role: 'worker', status: 'healthy', uptime: '32d 8h', cpu: 48, memory: 55, lastHeartbeat: '2s ago' },
+            { id: 'beta-03', role: 'worker', status: 'healthy', uptime: '31d 22h', cpu: 62, memory: 71, lastHeartbeat: '4s ago' },
+            { id: 'beta-04', role: 'worker', status: 'degraded', uptime: '31d 15h', cpu: 89, memory: 85, lastHeartbeat: '15s ago' },
+            { id: 'gamma-01', role: 'gateway', status: 'healthy', uptime: '28d 4h', cpu: 23, memory: 31, lastHeartbeat: '1s ago' },
+            { id: 'gamma-02', role: 'gateway', status: 'healthy', uptime: '28d 3h', cpu: 25, memory: 33, lastHeartbeat: '2s ago' },
+            { id: 'gamma-03', role: 'gateway', status: 'offline', uptime: '-', cpu: 0, memory: 0, lastHeartbeat: '2h ago' },
+            { id: 'delta-01', role: 'relay', status: 'healthy', uptime: '25d 18h', cpu: 12, memory: 22, lastHeartbeat: '3s ago' },
+            { id: 'delta-02', role: 'relay', status: 'healthy', uptime: '25d 17h', cpu: 15, memory: 25, lastHeartbeat: '4s ago' },
+            { id: 'delta-03', role: 'relay', status: 'healthy', uptime: '25d 16h', cpu: 11, memory: 20, lastHeartbeat: '2s ago' },
+            { id: 'epsilon-01', role: 'worker', status: 'healthy', uptime: '21d 6h', cpu: 45, memory: 52, lastHeartbeat: '1s ago' },
+            { id: 'epsilon-02', role: 'worker', status: 'healthy', uptime: '21d 5h', cpu: 42, memory: 48, lastHeartbeat: '3s ago' },
+            { id: 'epsilon-03', role: 'worker', status: 'healthy', uptime: '21d 4h', cpu: 51, memory: 58, lastHeartbeat: '5s ago' },
+            { id: 'epsilon-04', role: 'worker', status: 'degraded', uptime: '20d 22h', cpu: 92, memory: 88, lastHeartbeat: '45s ago' },
+            { id: 'zeta-01', role: 'gateway', status: 'healthy', uptime: '18d 12h', cpu: 31, memory: 39, lastHeartbeat: '2s ago' },
+            { id: 'zeta-02', role: 'gateway', status: 'healthy', uptime: '18d 10h', cpu: 29, memory: 36, lastHeartbeat: '4s ago' },
+            { id: 'eta-01', role: 'worker', status: 'healthy', uptime: '15d 8h', cpu: 38, memory: 45, lastHeartbeat: '1s ago' },
+            { id: 'eta-02', role: 'worker', status: 'healthy', uptime: '15d 7h', cpu: 41, memory: 49, lastHeartbeat: '3s ago' },
+            { id: 'eta-03', role: 'worker', status: 'healthy', uptime: '15d 6h', cpu: 44, memory: 51, lastHeartbeat: '6s ago' },
+            { id: 'eta-04', role: 'worker', status: 'healthy', uptime: '15d 5h', cpu: 37, memory: 43, lastHeartbeat: '2s ago' },
+            { id: 'theta-01', role: 'relay', status: 'healthy', uptime: '12d 14h', cpu: 18, memory: 28, lastHeartbeat: '3s ago' },
+            { id: 'theta-02', role: 'relay', status: 'healthy', uptime: '12d 12h', cpu: 16, memory: 26, lastHeartbeat: '5s ago' },
+            { id: 'theta-03', role: 'relay', status: 'healthy', uptime: '12d 10h', cpu: 19, memory: 29, lastHeartbeat: '1s ago' },
+            { id: 'iota-01', role: 'worker', status: 'healthy', uptime: '10d 4h', cpu: 52, memory: 59, lastHeartbeat: '2s ago' },
+            { id: 'iota-02', role: 'worker', status: 'healthy', uptime: '10d 3h', cpu: 49, memory: 56, lastHeartbeat: '4s ago' },
+            { id: 'iota-03', role: 'worker', status: 'healthy', uptime: '10d 2h', cpu: 55, memory: 61, lastHeartbeat: '3s ago' },
+            { id: 'kappa-01', role: 'gateway', status: 'healthy', uptime: '8d 18h', cpu: 33, memory: 41, lastHeartbeat: '1s ago' },
+            { id: 'kappa-02', role: 'gateway', status: 'healthy', uptime: '8d 16h', cpu: 35, memory: 43, lastHeartbeat: '2s ago' },
+            { id: 'lambda-01', role: 'worker', status: 'healthy', uptime: '7d 8h', cpu: 47, memory: 54, lastHeartbeat: '3s ago' },
+            { id: 'lambda-02', role: 'worker', status: 'healthy', uptime: '7d 7h', cpu: 43, memory: 50, lastHeartbeat: '5s ago' },
+            { id: 'lambda-03', role: 'worker', status: 'healthy', uptime: '7d 6h', cpu: 46, memory: 53, lastHeartbeat: '2s ago' },
+            { id: 'lambda-04', role: 'worker', status: 'healthy', uptime: '7d 5h', cpu: 48, memory: 55, lastHeartbeat: '4s ago' },
+            { id: 'mu-01', role: 'relay', status: 'healthy', uptime: '5d 22h', cpu: 14, memory: 24, lastHeartbeat: '1s ago' },
+            { id: 'mu-02', role: 'relay', status: 'healthy', uptime: '5d 20h', cpu: 17, memory: 27, lastHeartbeat: '3s ago' },
+            { id: 'nu-01', role: 'coordinator', status: 'healthy', uptime: '4d 14h', cpu: 26, memory: 34, lastHeartbeat: '2s ago' },
+            { id: 'nu-02', role: 'coordinator', status: 'healthy', uptime: '4d 12h', cpu: 24, memory: 32, lastHeartbeat: '4s ago' },
+            { id: 'xi-01', role: 'worker', status: 'healthy', uptime: '3d 8h', cpu: 40, memory: 47, lastHeartbeat: '1s ago' },
+            { id: 'xi-02', role: 'worker', status: 'healthy', uptime: '3d 6h', cpu: 42, memory: 49, lastHeartbeat: '3s ago' },
+            { id: 'xi-03', role: 'worker', status: 'healthy', uptime: '3d 4h', cpu: 39, memory: 46, lastHeartbeat: '6s ago' },
+            { id: 'omicron-01', role: 'gateway', status: 'healthy', uptime: '2d 16h', cpu: 30, memory: 38, lastHeartbeat: '2s ago' },
+            { id: 'omicron-02', role: 'gateway', status: 'healthy', uptime: '2d 14h', cpu: 32, memory: 40, lastHeartbeat: '5s ago' },
+            { id: 'pi-01', role: 'relay', status: 'healthy', uptime: '1d 8h', cpu: 13, memory: 23, lastHeartbeat: '1s ago' },
+            { id: 'pi-02', role: 'relay', status: 'healthy', uptime: '1d 6h', cpu: 15, memory: 25, lastHeartbeat: '3s ago' },
+            { id: 'pi-03', role: 'relay', status: 'healthy', uptime: '1d 4h', cpu: 12, memory: 22, lastHeartbeat: '2s ago' },
+            { id: 'rho-01', role: 'worker', status: 'healthy', uptime: '18h 32m', cpu: 53, memory: 60, lastHeartbeat: '4s ago' },
+            { id: 'rho-02', role: 'worker', status: 'healthy', uptime: '18h 15m', cpu: 50, memory: 57, lastHeartbeat: '6s ago' },
+            { id: 'sigma-01', role: 'worker', status: 'healthy', uptime: '6h 45m', cpu: 44, memory: 52, lastHeartbeat: '2s ago' },
+            { id: 'sigma-02', role: 'worker', status: 'healthy', uptime: '6h 22m', cpu: 46, memory: 54, lastHeartbeat: '3s ago' },
+            { id: 'sigma-03', role: 'worker', status: 'healthy', uptime: '6h 8m', cpu: 41, memory: 48, lastHeartbeat: '5s ago' },
+            { id: 'tau-01', role: 'gateway', status: 'healthy', uptime: '2h 15m', cpu: 27, memory: 35, lastHeartbeat: '1s ago' },
+            { id: 'tau-02', role: 'gateway', status: 'healthy', uptime: '1h 48m', cpu: 29, memory: 37, lastHeartbeat: '4s ago' }
+        ];
+
+        let selectedNodes = new Set();
+        let currentView = 'grid';
+        let currentFilters = { search: '', role: '', status: 'all' };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderGridView();
+            renderListView();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // View toggle
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchView(btn.dataset.view));
+            });
+
+            // Search
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                currentFilters.search = e.target.value.toLowerCase();
+                applyFilters();
+            });
+
+            // Role filter
+            document.getElementById('roleFilter').addEventListener('change', (e) => {
+                currentFilters.role = e.target.value;
+                applyFilters();
+            });
+
+            // Status tabs
+            document.querySelectorAll('.status-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentFilters.status = tab.dataset.status;
+                    applyFilters();
+                });
+            });
+
+            // Select all checkbox
+            document.getElementById('selectAll').addEventListener('change', (e) => {
+                const visibleNodes = getFilteredNodes();
+                if (e.target.checked) {
+                    visibleNodes.forEach(n => selectedNodes.add(n.id));
+                } else {
+                    visibleNodes.forEach(n => selectedNodes.delete(n.id));
+                }
+                updateSelection();
+            });
+        }
+
+        function switchView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-view="${view}"]`).classList.add('active');
+
+            document.getElementById('gridView').style.display = view === 'grid' ? 'grid' : 'none';
+            document.getElementById('listView').classList.toggle('active', view === 'list');
+            document.getElementById('topologyView').classList.toggle('active', view === 'topology');
+        }
+
+        function getFilteredNodes() {
+            return nodes.filter(node => {
+                const matchesSearch = node.id.toLowerCase().includes(currentFilters.search);
+                const matchesRole = !currentFilters.role || node.role === currentFilters.role;
+                const matchesStatus = currentFilters.status === 'all' || node.status === currentFilters.status;
+                return matchesSearch && matchesRole && matchesStatus;
+            });
+        }
+
+        function applyFilters() {
+            const filtered = getFilteredNodes();
+            const emptyState = document.getElementById('emptyState');
+            const gridView = document.getElementById('gridView');
+            const listView = document.getElementById('listView');
+            const topologyView = document.getElementById('topologyView');
+
+            if (filtered.length === 0) {
+                emptyState.classList.add('visible');
+                gridView.style.display = 'none';
+                listView.style.display = 'none';
+                topologyView.style.display = 'none';
+            } else {
+                emptyState.classList.remove('visible');
+                renderGridView(filtered);
+                renderListView(filtered);
+                if (currentView === 'grid') gridView.style.display = 'grid';
+                if (currentView === 'list') listView.style.display = 'block';
+                if (currentView === 'topology') topologyView.style.display = 'block';
+            }
+        }
+
+        function renderGridView(data = nodes) {
+            const container = document.getElementById('gridView');
+            container.innerHTML = data.map(node => `
+                <div class="node-card ${selectedNodes.has(node.id) ? 'selected' : ''} ${node.status === 'offline' ? 'error' : ''}" data-id="${node.id}" onclick="toggleNodeSelection('${node.id}')">
+                    ${node.status !== 'offline' ? `
+                    <div class="quick-actions" onclick="event.stopPropagation()">
+                        <button class="quick-action" onclick="quickAction('inspect', '${node.id}')" title="Inspect">🔍</button>
+                        <button class="quick-action" onclick="quickAction('restart', '${node.id}')" title="Restart">🔄</button>
+                        <button class="quick-action" onclick="quickAction('isolate', '${node.id}')" title="Isolate">🔒</button>
+                    </div>
+                    ` : ''}
+                    <div class="card-header">
+                        <div class="status-indicator ${node.status}"></div>
+                        <span class="node-id">${node.id}</span>
+                        <span class="role-badge ${node.role}">${node.role}</span>
+                    </div>
+                    <div class="card-metrics">
+                        <div class="metric-row">
+                            <span class="metric-label">Uptime</span>
+                            <span class="metric-value">${node.uptime}</span>
+                        </div>
+                        <div class="load-bar-container">
+                            <div class="load-bar">
+                                <div class="load-bar-fill cpu" style="width: ${node.cpu}%"></div>
+                            </div>
+                            <div class="load-bar">
+                                <div class="load-bar-fill memory" style="width: ${node.memory}%"></div>
+                            </div>
+                            <div class="load-labels">
+                                <span>CPU ${node.cpu}%</span>
+                                <span>MEM ${node.memory}%</span>
+                            </div>
+                        </div>
+                        <div class="metric-row">
+                            <span class="metric-label">Last heartbeat</span>
+                            <span class="metric-value">${node.lastHeartbeat}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderListView(data = nodes) {
+            const tbody = document.getElementById('listViewBody');
+            tbody.innerHTML = data.map(node => `
+                <tr class="${selectedNodes.has(node.id) ? 'selected' : ''}" onclick="toggleNodeSelection('${node.id}')">
+                    <td><input type="checkbox" ${selectedNodes.has(node.id) ? 'checked' : ''} onclick="event.stopPropagation(); toggleNodeSelection('${node.id}')"></td>
+                    <td><span style="font-family: monospace; font-weight: 600;">${node.id}</span></td>
+                    <td><span class="role-badge ${node.role}">${node.role}</span></td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="status-indicator ${node.status}" style="width: 8px; height: 8px;"></div>
+                            <span style="text-transform: capitalize;">${node.status}</span>
+                        </div>
+                    </td>
+                    <td>${node.uptime}</td>
+                    <td>${node.cpu}%</td>
+                    <td>${node.memory}%</td>
+                    <td>${node.lastHeartbeat}</td>
+                </tr>
+            `).join('');
+        }
+
+        function toggleNodeSelection(nodeId) {
+            if (selectedNodes.has(nodeId)) {
+                selectedNodes.delete(nodeId);
+            } else {
+                selectedNodes.add(nodeId);
+            }
+            updateSelection();
+        }
+
+        function updateSelection() {
+            const bulkBar = document.getElementById('bulkActionsBar');
+            const countSpan = document.getElementById('selectedCount');
+            
+            if (selectedNodes.size > 0) {
+                bulkBar.classList.add('visible');
+                countSpan.innerHTML = `<strong>${selectedNodes.size}</strong> node${selectedNodes.size !== 1 ? 's' : ''} selected`;
+            } else {
+                bulkBar.classList.remove('visible');
+            }
+
+            // Update card selections
+            document.querySelectorAll('.node-card').forEach(card => {
+                card.classList.toggle('selected', selectedNodes.has(card.dataset.id));
+            });
+
+            // Update list selections
+            document.querySelectorAll('.list-table tbody tr').forEach(row => {
+                const checkbox = row.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    const nodeId = checkbox.getAttribute('onclick').match(/'([^']+)'/)[1];
+                    row.classList.toggle('selected', selectedNodes.has(nodeId));
+                    checkbox.checked = selectedNodes.has(nodeId);
+                }
+            });
+
+            // Update select all checkbox
+            const visibleNodes = getFilteredNodes();
+            const selectAll = document.getElementById('selectAll');
+            if (visibleNodes.length > 0) {
+                const allSelected = visibleNodes.every(n => selectedNodes.has(n.id));
+                selectAll.checked = allSelected;
+                selectAll.indeterminate = !allSelected && visibleNodes.some(n => selectedNodes.has(n.id));
+            } else {
+                selectAll.checked = false;
+                selectAll.indeterminate = false;
+            }
+        }
+
+        function quickAction(action, nodeId) {
+            console.log(`Quick action: ${action} on ${nodeId}`);
+            // In real implementation, this would trigger API calls
+        }
+
+        function bulkAction(action) {
+            const nodeIds = Array.from(selectedNodes);
+            console.log(`Bulk action: ${action} on ${nodeIds.join(', ')}`);
+            // In real implementation, this would trigger API calls
+        }
+
+        function clearFilters() {
+            currentFilters = { search: '', role: '', status: 'all' };
+            document.getElementById('searchInput').value = '';
+            document.getElementById('roleFilter').value = '';
+            document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector('[data-status="all"]').classList.add('active');
+            applyFilters();
+        }
+    </script>
+</body>
+</html>
