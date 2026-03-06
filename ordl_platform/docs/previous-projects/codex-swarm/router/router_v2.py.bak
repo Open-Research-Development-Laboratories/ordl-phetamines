@@ -1,0 +1,873 @@
+#!/usr/bin/env python3
+"""
+CODEX SWARM ROUTER v2.0 - SUPREME EDITION
+Codename: NEXUS
+Classification: ABOVE TOP SECRET
+
+This is the main router that integrates:
+- Inception Proxy (mTLS interception)
+- Swarm Orchestrator (multi-agent intelligence)
+- Advanced model routing
+- Military-grade security
+
+Routes Codex/Copilot requests to local Ollama with swarm intelligence.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import hashlib
+import ipaddress
+import json
+import logging
+import os
+import re
+import sys
+import time
+import uuid
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, AsyncIterator
+
+import httpx
+from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response, StreamingResponse
+from pydantic import BaseModel
+
+# Import swarm components
+try:
+    from swarm_orchestrator import process_task, SwarmTask, AgentRole
+    SWARM_AVAILABLE = True
+except ImportError:
+    SWARM_AVAILABLE = False
+
+# Import cloud router
+try:
+    from cloud_router import HybridRouter, get_router, Provider
+    CLOUD_AVAILABLE = True
+except ImportError:
+    CLOUD_AVAILABLE = False
+
+# Security logging
+LOG_LEVEL = os.getenv("ROUTER_LOG_LEVEL", "INFO").upper()
+logging.basicConfig(
+    level=LOG_LEVEL,
+    format="%(asctime)s | %(levelname)s | [%(name)s] | %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+log = logging.getLogger("nexus")
+
+
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+@dataclass(frozen=True)
+class Config:
+    router_bind: str
+    router_port: int
+    ollama_base: str
+    
+    # Model configuration
+    model_arch: str
+    model_impl: str
+    model_review: str
+    
+    # Security
+    require_bearer_token: Optional[str]
+    allow_cidrs: List[ipaddress._BaseNetwork]
+    trusted_proxy_cidrs: List[ipaddress._BaseNetwork]
+    
+    # Limits
+    max_request_bytes: int
+    max_prompt_chars: int
+    rate_limit_rps: float
+    rate_limit_burst: int
+    router_timeout_s: float
+    
+    # Swarm mode
+    swarm_enabled: bool
+    swarm_consensus_threshold: float
+    
+    # Advanced features
+    enable_audit_log: bool
+    enable_prompt_sanitization: bool
+
+
+def _env(name: str, default: Optional[str] = None) -> str:
+    v = os.getenv(name, default)
+    if v is None:
+        raise RuntimeError(f"Missing required env var: {name}")
+    return v
+
+
+def _parse_cidrs(csv: str) -> List[ipaddress._BaseNetwork]:
+    out: List[ipaddress._BaseNetwork] = []
+    for part in (csv or "").split(","):
+        p = part.strip()
+        if p:
+            out.append(ipaddress.ip_network(p, strict=False))
+    return out
+
+
+def load_config() -> Config:
+    return Config(
+        router_bind=_env("ROUTER_BIND", "127.0.0.1"),
+        router_port=int(_env("ROUTER_PORT", "18000")),
+        ollama_base=_env("OLLAMA_BASE", "http://127.0.0.1:11434").rstrip("/"),
+        
+        model_arch=_env("MODEL_ARCH", "qwen2.5:72b-instruct-q4_K_M"),
+        model_impl=_env("MODEL_IMPL", "qwen2.5-coder:32b"),
+        model_review=_env("MODEL_REVIEW", "qwen2.5-coder:14b"),
+        
+        require_bearer_token=os.getenv("ROUTER_BEARER_TOKEN", "").strip() or None,
+        allow_cidrs=_parse_cidrs(os.getenv("ALLOW_CIDRS", "")),
+        trusted_proxy_cidrs=_parse_cidrs(os.getenv("TRUSTED_PROXY_CIDRS", "")),
+        
+        max_request_bytes=int(_env("MAX_REQUEST_BYTES", str(256 * 1024))),
+        max_prompt_chars=int(_env("MAX_PROMPT_CHARS", "256000")),
+        rate_limit_rps=float(_env("RATE_LIMIT_RPS", "10")),
+        rate_limit_burst=int(_env("RATE_LIMIT_BURST", "20")),
+        router_timeout_s=float(_env("ROUTER_TIMEOUT_S", "1800")),
+        
+        swarm_enabled=os.getenv("SWARM_ENABLED", "true").lower() == "true" and SWARM_AVAILABLE,
+        swarm_consensus_threshold=float(_env("SWARM_THRESHOLD", "0.8")),
+        
+        enable_audit_log=os.getenv("ENABLE_AUDIT_LOG", "true").lower() == "true",
+        enable_prompt_sanitization=os.getenv("ENABLE_SANITIZATION", "true").lower() == "true",
+    )
+
+
+CFG = load_config()
+log.info(f"NEXUS initialized | swarm={CFG.swarm_enabled} | models={CFG.model_arch},{CFG.model_impl},{CFG.model_review}")
+
+
+# =============================================================================
+# SECURITY COMPONENTS
+# =============================================================================
+
+class TokenBucket:
+    __slots__ = ("capacity", "rate", "tokens", "ts")
+    def __init__(self, capacity: int, rate: float):
+        self.capacity = float(capacity)
+        self.rate = float(rate)
+        self.tokens = float(capacity)
+        self.ts = time.monotonic()
+    
+    def allow(self, cost: float = 1.0) -> bool:
+        now = time.monotonic()
+        self.tokens = min(self.capacity, self.tokens + (now - self.ts) * self.rate)
+        self.ts = now
+        if self.tokens >= cost:
+            self.tokens -= cost
+            return True
+        return False
+
+
+_rate_lock = asyncio.Lock()
+_rate_state: Dict[str, TokenBucket] = {}
+
+
+async def rate_limit_allow(ip: str) -> bool:
+    async with _rate_lock:
+        if ip not in _rate_state:
+            _rate_state[ip] = TokenBucket(CFG.rate_limit_burst, CFG.rate_limit_rps)
+        return _rate_state[ip].allow()
+
+
+def _ip_in_any(ip_str: str, nets: List[ipaddress._BaseNetwork]) -> bool:
+    try:
+        ip = ipaddress.ip_address(ip_str)
+        return any(ip in net for net in nets)
+    except ValueError:
+        return False
+
+
+def client_ip(request: Request) -> str:
+    peer = request.client.host if request.client else "0.0.0.0"
+    if CFG.trusted_proxy_cidrs and _ip_in_any(peer, CFG.trusted_proxy_cidrs):
+        xff = request.headers.get("x-forwarded-for", "").strip()
+        if xff:
+            return xff.split(",")[0].strip()
+    return peer
+
+
+def cidr_allowed(ip_str: str) -> bool:
+    if not CFG.allow_cidrs:
+        return True
+    return _ip_in_any(ip_str, CFG.allow_cidrs)
+
+
+def require_bearer(auth: Optional[str]) -> None:
+    if not CFG.require_bearer_token:
+        return
+    if not auth:
+        raise HTTPException(status_code=401, detail="Missing Authorization")
+    if auth.strip() != f"Bearer {CFG.require_bearer_token}":
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+
+class PromptSanitizer:
+    """Advanced prompt injection detection."""
+    
+    INJECTION_PATTERNS = [
+        r"ignore\s+(all\s+)?previous\s+(instructions?|commands?|prompts?)",
+        r"you\s+are\s+now\s+(in\s+)?\w+\s*mode",
+        r"system\s*:\s*override",
+        r"DAN\s*mode|Do\s+Anything\s+Now",
+        r"jailbreak|developer\s+mode",
+        r"<\s*/?\s*system\s*>",
+        r"\[\s*system\s*\]",
+    ]
+    
+    def __init__(self):
+        import re
+        self._regex = re.compile("|".join(self.INJECTION_PATTERNS), re.IGNORECASE | re.MULTILINE)
+    
+    def sanitize(self, text: str) -> Tuple[str, bool]:
+        """Returns (sanitized_text, is_safe)."""
+        if self._regex.search(text):
+            return text, False
+        # Truncate if extremely long
+        if len(text) > CFG.max_prompt_chars:
+            text = text[:CFG.max_prompt_chars] + "\n[Truncated]"
+        return text, True
+
+
+_sanitizer = PromptSanitizer()
+
+
+# =============================================================================
+# MODEL ROUTING
+# =============================================================================
+
+def choose_model(input_text: str) -> str:
+    """Advanced model selection based on task analysis."""
+    t = input_text.lower()
+    
+    # Security review tasks
+    if any(k in t for k in ("security review", "threat model", "audit", "vulnerability", 
+                             "vuln", "cve", "exploit", "hardening", "penetration test")):
+        return CFG.model_review
+    
+    # Implementation tasks
+    if any(k in t for k in ("implement", "patch", "diff", "fix", "bug", "refactor",
+                             "unit test", "write tests", "code", "function", "class")):
+        return CFG.model_impl
+    
+    # Architecture tasks
+    if any(k in t for k in ("architecture", "design spec", "specification", "system design",
+                             "rfc", "api design", "database schema", "microservice")):
+        return CFG.model_arch
+    
+    # Default to architecture model for complex tasks
+    return CFG.model_arch
+
+
+def detect_task_type(prompt: str) -> str:
+    """Detect the type of coding task for swarm routing."""
+    p = prompt.lower()
+    
+    if any(k in p for k in ("security audit", "vulnerability", "exploit")):
+        return "security_review"
+    elif any(k in p for k in ("optimize", "performance", "slow", "memory leak")):
+        return "optimization"
+    elif any(k in p for k in ("refactor", "rewrite", "clean up")):
+        return "refactoring"
+    elif any(k in p for k in ("design", "architecture", "api")):
+        return "system_design"
+    elif any(k in p for k in ("test", "unittest", "pytest")):
+        return "test_generation"
+    else:
+        return "code_generation"
+
+
+# =============================================================================
+# HTTP CLIENT
+# =============================================================================
+
+_http: Optional[httpx.AsyncClient] = None
+
+
+async def get_http() -> httpx.AsyncClient:
+    global _http
+    if _http is None:
+        timeout = httpx.Timeout(connect=5.0, read=CFG.router_timeout_s, write=30.0, pool=5.0)
+        limits = httpx.Limits(max_connections=32, max_keepalive_connections=16)
+        _http = httpx.AsyncClient(timeout=timeout, limits=limits, http2=False)
+    return _http
+
+
+# =============================================================================
+# INPUT NORMALIZATION
+# =============================================================================
+
+def normalize_prompt(payload: Dict[str, Any]) -> Tuple[str, str]:
+    """Extract and normalize prompt from various API formats."""
+    
+    # OpenAI Responses API
+    inp = payload.get("input", "")
+    if isinstance(inp, str):
+        return inp.strip(), "responses"
+    if isinstance(inp, list):
+        parts = []
+        for item in inp:
+            if isinstance(item, str):
+                parts.append(item)
+            elif isinstance(item, dict):
+                if "content" in item:
+                    parts.append(str(item["content"]))
+                elif "text" in item:
+                    parts.append(str(item["text"]))
+        return "\n".join(parts).strip(), "responses"
+    
+    # Chat Completions API
+    msgs = payload.get("messages", [])
+    if isinstance(msgs, list):
+        parts = []
+        for m in msgs:
+            if isinstance(m, dict):
+                role = m.get("role", "user")
+                content = m.get("content", "")
+                if isinstance(content, str):
+                    parts.append(f"{role}: {content}")
+                elif isinstance(content, list):
+                    for c in content:
+                        if isinstance(c, dict) and "text" in c:
+                            parts.append(f"{role}: {c['text']}")
+        return "\n".join(parts).strip(), "chat"
+    
+    # Legacy completions
+    prompt = payload.get("prompt", "")
+    if isinstance(prompt, str):
+        return prompt.strip(), "completions"
+    
+    return str(payload), "unknown"
+
+
+def extract_code_context(prompt: str) -> Dict[str, Any]:
+    """Extract language and context from prompt."""
+    context = {"language": "python", "framework": None}
+    
+    # Detect language
+    lang_patterns = [
+        (r"```(python|py)\b", "python"),
+        (r"```(javascript|js)\b", "javascript"),
+        (r"```(typescript|ts)\b", "typescript"),
+        (r"```(rust|rs)\b", "rust"),
+        (r"```(go|golang)\b", "go"),
+        (r"```(java)\b", "java"),
+        (r"```(c\+\+|cpp)\b", "cpp"),
+        (r"```(ruby|rb)\b", "ruby"),
+    ]
+    
+    for pattern, lang in lang_patterns:
+        if re.search(pattern, prompt, re.IGNORECASE):
+            context["language"] = lang
+            break
+    
+    # Detect if code is included
+    if "```" in prompt:
+        context["has_code"] = True
+        # Extract code blocks
+        code_blocks = re.findall(r"```(\w+)?\n(.*?)```", prompt, re.DOTALL)
+        if code_blocks:
+            context["extracted_code"] = code_blocks[-1][1]  # Last code block
+    
+    return context
+
+
+# =============================================================================
+# FASTAPI APPLICATION
+# =============================================================================
+
+app = FastAPI(
+    title="NEXUS - Codex Swarm Router",
+    version="2.0.0-supreme",
+    docs_url=None,
+    redoc_url=None,
+)
+
+
+@app.on_event("startup")
+async def startup():
+    await get_http()
+    if CLOUD_AVAILABLE:
+        router = get_router()
+        log.info("NEXUS online | bind=%s:%s | cloud=%s | groq=%s", 
+                 CFG.router_bind, CFG.router_port, 
+                 CLOUD_AVAILABLE, router.groq.is_available())
+    else:
+        log.info("NEXUS online | bind=%s:%s | cloud=disabled", 
+                 CFG.router_bind, CFG.router_port)
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    global _http
+    if _http:
+        await _http.aclose()
+        _http = None
+
+
+@app.middleware("http")
+async def security_middleware(request: Request, call_next):
+    """Apply security controls to all requests."""
+    ip = client_ip(request)
+    request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
+    request.state.request_id = request_id
+    request.state.t0 = time.time()
+    
+    # CIDR check
+    if not cidr_allowed(ip):
+        log.warning(f"[{request_id}] CIDR block: {ip}")
+        return JSONResponse(status_code=403, content={"error": "forbidden"})
+    
+    # Rate limiting
+    if not await rate_limit_allow(ip):
+        log.warning(f"[{request_id}] Rate limit: {ip}")
+        return JSONResponse(status_code=429, content={"error": "rate_limited"})
+    
+    resp = await call_next(request)
+    resp.headers["x-request-id"] = request_id
+    return resp
+
+
+@app.get("/health")
+async def health():
+    return {
+        "status": "ok",
+        "mode": "swarm" if CFG.swarm_enabled else "single",
+        "swarm_available": SWARM_AVAILABLE,
+        "models": {
+            "arch": CFG.model_arch,
+            "impl": CFG.model_impl,
+            "review": CFG.model_review,
+        }
+    }
+
+
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    """Serve the Web IDE."""
+    try:
+        with open("/opt/codex-swarm/router/static/index.html") as f:
+            return f.read()
+    except Exception as e:
+        log.error(f"Failed to serve IDE: {e}")
+        return HTMLResponse(content="""
+        <!DOCTYPE html>
+        <html>
+        <head><title>SUPREME IDE</title></head>
+        <body style="background:#0d1117;color:#c9d1d9;font-family:monospace;padding:50px;text-align:center;">
+            <h1>◈ SUPREME IDE</h1>
+            <p>Frontend not available. Use the CLI:</p>
+            <code>supreme generate "Your prompt"</code>
+            <p>Or use the API directly:</p>
+            <code>curl -X POST https://seo.bnrgreen.com/v1/responses -H "Authorization: Bearer TOKEN"</code>
+        </body>
+        </html>
+        """)
+
+
+# =============================================================================
+# CORE ENDPOINTS
+# =============================================================================
+
+async def ollama_generate(
+    request_id: str,
+    model: str,
+    prompt: str,
+    stream: bool,
+    options: Dict[str, Any],
+) -> Response:
+    """Generate via Ollama with full streaming support."""
+    http = await get_http()
+    url = f"{CFG.ollama_base}/api/generate"
+    
+    body = {
+        "model": model,
+        "prompt": prompt,
+        "stream": stream,
+        "options": options,
+    }
+    
+    log.info(f"[{request_id}] -> ollama model={model} stream={stream}")
+    t0 = time.time()
+    
+    try:
+        if stream:
+            req = http.build_request("POST", url, json=body)
+            upstream = await http.send(req, stream=True)
+            
+            async def gen():
+                try:
+                    async for chunk in upstream.aiter_bytes():
+                        yield chunk
+                except asyncio.CancelledError:
+                    raise
+                except Exception as e:
+                    log.error(f"[{request_id}] Stream error: {e}")
+                finally:
+                    await upstream.aclose()
+                    log.info(f"[{request_id}] <- stream done in {time.time()-t0:.2f}s")
+            
+            return StreamingResponse(
+                gen(),
+                status_code=upstream.status_code,
+                media_type="application/x-ndjson",
+            )
+        else:
+            r = await http.post(url, json=body)
+            log.info(f"[{request_id}] <- done in {time.time()-t0:.2f}s")
+            return JSONResponse(content=r.json(), status_code=r.status_code)
+    
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=504, detail="Upstream timeout")
+    except Exception as e:
+        log.error(f"[{request_id}] Ollama error: {e}")
+        raise HTTPException(status_code=502, detail="Upstream error")
+
+
+async def swarm_generate(
+    request_id: str,
+    task_type: str,
+    prompt: str,
+    context: Dict[str, Any],
+    stream: bool,
+) -> Response:
+    """Generate using the multi-agent swarm."""
+    if not CFG.swarm_enabled or not SWARM_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Swarm not available")
+    
+    log.info(f"[{request_id}] -> SWARM task={task_type}")
+    t0 = time.time()
+    
+    try:
+        result = await process_task(
+            task_type=task_type,
+            prompt=prompt,
+            context=context,
+            request_id=request_id,
+        )
+        
+        output = result["output"]
+        confidence = result["confidence"]
+        iterations = result["iterations"]
+        
+        log.info(f"[{request_id}] <- SWARM done confidence={confidence:.2f} iters={iterations} time={time.time()-t0:.2f}s")
+        
+        if stream:
+            # Simulate streaming for swarm output
+            async def stream_gen():
+                # Send output in chunks to simulate generation
+                chunk_size = 50
+                for i in range(0, len(output), chunk_size):
+                    chunk = output[i:i+chunk_size]
+                    data = {
+                        "response": chunk,
+                        "done": False,
+                        "model": "swarm-consensus",
+                    }
+                    yield json.dumps(data).encode() + b"\n"
+                    await asyncio.sleep(0.01)  # Small delay for effect
+                
+                # Final chunk
+                yield json.dumps({
+                    "response": "",
+                    "done": True,
+                    "done_reason": "stop",
+                    "model": "swarm-consensus",
+                    "confidence": confidence,
+                    "iterations": iterations,
+                }).encode() + b"\n"
+            
+            return StreamingResponse(stream_gen(), media_type="application/x-ndjson")
+        else:
+            return JSONResponse(content={
+                "response": output,
+                "done": True,
+                "model": "swarm-consensus",
+                "confidence": confidence,
+                "iterations": iterations,
+                "provenance": result.get("provenance", {}),
+            })
+    
+    except Exception as e:
+        log.error(f"[{request_id}] Swarm error: {e}")
+        raise HTTPException(status_code=500, detail=f"Swarm error: {str(e)}")
+
+
+async def cloud_generate(
+    request_id: str,
+    prompt: str,
+    payload: Dict[str, Any],
+    stream: bool,
+) -> Response:
+    """Generate using cloud provider with automatic fallback."""
+    if not CLOUD_AVAILABLE:
+        raise HTTPException(status_code=503, detail="Cloud routing not available")
+    
+    router = get_router()
+    
+    # Extract parameters
+    max_tokens = payload.get("max_tokens") or payload.get("max_output_tokens") or 1024
+    temperature = payload.get("temperature", 0.2)
+    prefer_local = payload.get("_local", False)
+    
+    log.info(f"[{request_id}] -> cloud routing")
+    t0 = time.time()
+    
+    try:
+        result = await router.generate(
+            prompt=prompt,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            prefer_local=prefer_local,
+        )
+        
+        elapsed = time.time() - t0
+        log.info(f"[{request_id}] <- cloud done | provider={result.provider.value} | model={result.model} | latency={result.latency_ms:.0f}ms | total={elapsed:.2f}s")
+        
+        if not result.success:
+            log.error(f"[{request_id}] Cloud generation failed: {result.error}")
+            raise HTTPException(status_code=502, detail=f"Generation failed: {result.error}")
+        
+        if stream:
+            # Simulate streaming
+            async def stream_gen():
+                chunk_size = 50
+                for i in range(0, len(result.output), chunk_size):
+                    chunk = result.output[i:i+chunk_size]
+                    data = {
+                        "response": chunk,
+                        "done": False,
+                        "model": f"{result.provider.value}/{result.model}",
+                    }
+                    yield json.dumps(data).encode() + b"\n"
+                    await asyncio.sleep(0.01)
+                
+                yield json.dumps({
+                    "response": "",
+                    "done": True,
+                    "done_reason": "stop",
+                    "model": f"{result.provider.value}/{result.model}",
+                    "total_duration": int(result.latency_ms * 1_000_000),
+                }).encode() + b"\n"
+            
+            return StreamingResponse(stream_gen(), media_type="application/x-ndjson")
+        else:
+            return JSONResponse(content={
+                "response": result.output,
+                "done": True,
+                "model": f"{result.provider.value}/{result.model}",
+                "total_duration": int(result.latency_ms * 1_000_000),
+                "provider": result.provider.value,
+                "latency_ms": result.latency_ms,
+            })
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        log.error(f"[{request_id}] Cloud error: {e}")
+        raise HTTPException(status_code=500, detail=f"Cloud routing error: {str(e)}")
+
+
+@app.post("/v1/responses")
+@app.post("/v1/chat/completions")
+@app.post("/v1/completions")
+@app.post("/v1/engines/copilot-codex/completions")
+async def handle_request(
+    request: Request,
+    authorization: Optional[str] = Header(default=None),
+):
+    """Main request handler - routes to single model or swarm."""
+    require_bearer(authorization)
+    
+    request_id = getattr(request.state, "request_id", str(uuid.uuid4()))
+    t0 = getattr(request.state, "t0", time.time())
+    
+    # Read and validate body
+    try:
+        body = await request.body()
+        if len(body) > CFG.max_request_bytes:
+            raise HTTPException(status_code=413, detail="Request too large")
+        payload = json.loads(body)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+    
+    # Extract prompt
+    prompt, format_type = normalize_prompt(payload)
+    if not prompt:
+        raise HTTPException(status_code=400, detail="No prompt provided")
+    
+    # Sanitize
+    if CFG.enable_prompt_sanitization:
+        prompt, is_safe = _sanitizer.sanitize(prompt)
+        if not is_safe:
+            log.warning(f"[{request_id}] Injection attempt blocked")
+            raise HTTPException(status_code=400, detail="Prompt failed security check")
+    
+    if len(prompt) > CFG.max_prompt_chars:
+        raise HTTPException(status_code=413, detail="Prompt too long")
+    
+    stream = bool(payload.get("stream", False))
+    
+    # Determine routing strategy
+    use_swarm = CFG.swarm_enabled and SWARM_AVAILABLE
+    force_swarm = payload.get("_swarm", False)
+    use_cloud = payload.get("_cloud", True) and CLOUD_AVAILABLE  # Default to cloud
+    force_local = payload.get("_local", False)
+    
+    # Cloud routing takes precedence over local (unless forced)
+    if use_cloud and CLOUD_AVAILABLE and not force_local and not force_swarm:
+        log.info(f"[{request_id}] Using cloud routing")
+        return await cloud_generate(
+            request_id=request_id,
+            prompt=prompt,
+            payload=payload,
+            stream=stream,
+        )
+    
+    if use_swarm or force_swarm:
+        # Use multi-agent swarm
+        task_type = detect_task_type(prompt)
+        context = extract_code_context(prompt)
+        context["original_format"] = format_type
+        context["model_hint"] = choose_model(prompt)
+        
+        return await swarm_generate(
+            request_id=request_id,
+            task_type=task_type,
+            prompt=prompt,
+            context=context,
+            stream=stream,
+        )
+    else:
+        # Use single model routing
+        model = choose_model(prompt)
+        
+        # Map options
+        options = {}
+        if "max_tokens" in payload or "max_output_tokens" in payload:
+            options["num_predict"] = payload.get("max_tokens") or payload.get("max_output_tokens")
+        if "temperature" in payload:
+            options["temperature"] = payload["temperature"]
+        if "top_p" in payload:
+            options["top_p"] = payload["top_p"]
+        
+        return await ollama_generate(
+            request_id=request_id,
+            model=model,
+            prompt=prompt,
+            stream=stream,
+            options=options,
+        )
+
+
+# =============================================================================
+# IDE API ENDPOINTS (for CLI compatibility)
+# =============================================================================
+
+@app.get("/api/models")
+async def api_list_models(authorization: Optional[str] = Header(default=None)):
+    """List available models with specifications."""
+    require_bearer(authorization)
+    
+    from model_config import CLOUD_MODELS, LOCAL_MODELS
+    
+    models = []
+    for model_id, spec in {**CLOUD_MODELS, **LOCAL_MODELS}.items():
+        models.append({
+            "id": model_id,
+            "provider": spec.provider,
+            "tier": spec.tier.name,
+            "context_window": spec.context_window,
+            "strengths": spec.strengths,
+            "latency_profile": spec.latency_profile,
+            "best_for": [c.value for c in spec.best_for],
+        })
+    
+    return {"models": models}
+
+
+class GenerateRequest(BaseModel):
+    prompt: str
+    language: str = "python"
+    model: Optional[str] = None
+
+
+@app.post("/api/generate")
+async def api_generate(request: GenerateRequest, authorization: Optional[str] = Header(default=None)):
+    """Generate code with optimal model selection."""
+    require_bearer(authorization)
+    
+    request_id = str(uuid.uuid4())
+    
+    # Build full prompt
+    full_prompt = f"Language: {request.language}\n\nTask: {request.prompt}\n\nGenerate production-ready code with comments and error handling."
+    
+    # Generate using cloud router
+    if CLOUD_AVAILABLE:
+        router = get_router()
+        result = await router.generate(
+            prompt=full_prompt,
+            max_tokens=2048,
+            temperature=0.2,
+        )
+        
+        if not result.success:
+            raise HTTPException(status_code=500, detail=result.error)
+        
+        return {
+            "code": result.output,
+            "language": request.language,
+            "model_used": result.model,
+            "provider": result.provider.value,
+            "latency_ms": result.latency_ms,
+        }
+    else:
+        raise HTTPException(status_code=503, detail="Cloud routing not available")
+
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+@app.post("/api/chat")
+async def api_chat(request: ChatRequest, authorization: Optional[str] = Header(default=None)):
+    """Chat with AI assistant."""
+    require_bearer(authorization)
+    
+    system_msg = "You are an expert software engineer and coding assistant. Provide concise, practical help."
+    
+    if CLOUD_AVAILABLE:
+        router = get_router()
+        result = await router.generate(
+            prompt=request.message,
+            system_prompt=system_msg,
+            max_tokens=1024,
+            temperature=0.7,
+        )
+        
+        return {
+            "response": result.output,
+            "model": result.model,
+            "provider": result.provider.value,
+        }
+    else:
+        raise HTTPException(status_code=503, detail="Cloud routing not available")
+
+
+# =============================================================================
+# ENTRY POINT
+# =============================================================================
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        app,
+        host=CFG.router_bind,
+        port=CFG.router_port,
+        log_level="info",
+        access_log=False,
+    )

@@ -1,0 +1,42 @@
+# =============================================================================
+# ORDL ROUTER v2.0.2 - PODMAN CONTAINER IMAGE
+# =============================================================================
+# Classification: TOP SECRET//SCI//NOFORN
+# Purpose: AI Request Router with Ollama integration
+# =============================================================================
+
+FROM python:3.11-slim-bookworm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /opt/router
+
+# Copy requirements and install
+COPY router/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install additional packages
+RUN pip install --no-cache-dir gunicorn prometheus-client
+
+# Copy router code
+COPY router/ .
+
+# Create non-root user
+RUN useradd -u 1001 -m -d /opt/router -s /bin/bash router \
+    && chown -R router:router /opt/router
+
+USER router
+
+# Expose port
+EXPOSE 18000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:18000/health || exit 1
+
+# Start command
+CMD ["gunicorn", "--bind", "0.0.0.0:18000", "--workers", "4", "--timeout", "300", "router:app"]

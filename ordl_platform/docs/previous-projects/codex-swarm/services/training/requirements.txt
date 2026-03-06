@@ -1,0 +1,52 @@
+# ORDL Command Post - AI Training Pipeline Requirements
+# Uses Unsloth for fast training and TRL for reinforcement learning
+
+# Core Training Libraries
+unsloth[cu121]>=2024.12.4
+trl>=0.12.0
+transformers>=4.46.0
+datasets>=3.0.0
+peft>=0.14.0
+accelerate>=1.0.0
+
+# Quantization & Optimization
+bitsandbytes>=0.45.0
+optimum>=1.23.0
+auto-gptq>=0.7.1
+autoawq>=0.2.7
+
+# PyTorch with CUDA support (will be auto-detected during install)
+torch>=2.5.0
+torchvision>=0.20.0
+torchaudio>=2.5.0
+
+# Data Processing
+numpy>=1.26.0
+pandas>=2.2.0
+pyarrow>=18.0.0
+huggingface-hub>=0.26.0
+tqdm>=4.66.0
+
+# Tokenization & Text Processing
+sentencepiece>=0.2.0
+protobuf>=5.28.0
+tokenizers>=0.20.0
+
+# Monitoring & Logging
+wandb>=0.18.0
+tensorboard>=2.18.0
+mlflow>=2.17.0
+
+# CPU Fallback (llama.cpp for GGUF)
+llama-cpp-python>=0.3.0
+
+# Utilities
+pydantic>=2.9.0
+python-dotenv>=1.0.0
+psutil>=6.1.0
+pyyaml>=6.0.0
+requests>=2.32.0
+aiohttp>=3.11.0
+
+# Optional: Flash Attention for faster training
+# flash-attn>=2.6.3  # Uncomment if system supports it

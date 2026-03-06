@@ -1,0 +1,100 @@
+# Unified ACP Configuration for ORDL NEXUS
+# This file configures all MCP and A2A integrations
+
+profile:
+  name: ordl-nexus-production
+  description: Complete MCP and A2A integration for ORDL NEXUS
+  version: "1.0.0"
+
+# Global defaults
+defaults:
+  timeout: 30
+  retry_count: 3
+  auto_init: true
+
+# MCP Server Configurations
+mcp_servers:
+  - name: filesystem
+    protocol: mcp
+    enabled: true
+    transport: stdio
+    command: npx
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-filesystem"
+      - "/opt/codex-swarm"
+    timeout: 30
+    
+  - name: fetch
+    protocol: mcp
+    enabled: true
+    transport: stdio
+    command: npx
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-fetch"
+    timeout: 30
+    
+  - name: sqlite
+    protocol: mcp
+    enabled: false
+    transport: stdio
+    command: npx
+    args:
+      - "-y"
+      - "@pollinations/mcp-server-sqlite"
+      - "/opt/codex-swarm/mcp_servers/data.db"
+    timeout: 30
+    
+  - name: puppeteer
+    protocol: mcp
+    enabled: true
+    transport: stdio
+    command: npx
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-puppeteer"
+    timeout: 60
+    
+  - name: memory
+    protocol: mcp
+    enabled: true
+    transport: stdio
+    command: npx
+    args:
+      - "-y"
+      - "@modelcontextprotocol/server-memory"
+    timeout: 30
+
+# A2A Agent Configurations  
+a2a_agents:
+  - name: calculator
+    protocol: a2a
+    enabled: true
+    url: http://localhost:8001
+    streaming_enabled: true
+    timeout: 30
+    
+  - name: echo
+    protocol: a2a
+    enabled: true
+    url: http://localhost:8002
+    streaming_enabled: true
+    timeout: 30
+
+# Integration settings
+integration:
+  # Auto-discover capabilities on startup
+  auto_discover: true
+  
+  # Health check interval (seconds)
+  health_check_interval: 60
+  
+  # Log all protocol communications
+  debug_logging: false
+  
+  # Circuit breaker settings
+  circuit_breaker:
+    enabled: true
+    failure_threshold: 5
+    recovery_timeout: 60

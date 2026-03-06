@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="classification" content="TOP SECRET//NOFORN//ORCON">
+    <title>NEXUS COMMAND | ARES Neural Operations Center</title>
+    
+    <script src="/lib/tailwindcss@3.4.1.js"></script>
+    <script src="/lib/three@0.160.0.min.js"></script>
+    <script src="/lib/alpine@3.14.3.js" defer></script>
+    <link rel="stylesheet" href="/font-fix.css">
+    <link rel="stylesheet" href="/lib/fontawesome@6.5.1.all.min.css">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        nexus: { 950: '#05080a', 900: '#0a0f14', 800: '#111820', accent: '#00e5c9', danger: '#ef4444' }
+                    },
+                    fontFamily: {
+                        mono: ['JetBrains Mono', 'monospace'],
+                        display: ['Orbitron', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #05080a;
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .tech-grid {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 229, 201, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 201, 0.04) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .scan-lines {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.4;
+        }
+        
+        .scan-bar::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: linear-gradient(90deg, transparent, #00e5c9, #00d4ff, transparent);
+            box-shadow: 0 0 15px #00e5c9;
+            animation: scanMove 4s linear infinite;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        
+        @keyframes scanMove {
+            0% { transform: translateY(-10vh); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(110vh); opacity: 0; }
+        }
+        
+        .glass-panel {
+            background: rgba(10, 15, 20, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(0, 229, 201, 0.2);
+            box-shadow: 0 0 40px rgba(0, 229, 201, 0.05);
+        }
+        
+        .neon-text {
+            text-shadow: 0 0 5px rgba(0, 229, 201, 0.8), 0 0 10px rgba(0, 229, 201, 0.5);
+        }
+        
+        .classification-banner {
+            background: linear-gradient(90deg, #7f1d1d, #dc2626, #b91c1c, #dc2626, #7f1d1d);
+            background-size: 200% 100%;
+            animation: bannerSlide 8s linear infinite;
+        }
+        
+        @keyframes bannerSlide {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(0, 229, 201, 0.15), rgba(0, 212, 255, 0.15));
+            border: 1px solid rgba(0, 229, 201, 0.4);
+            color: #00e5c9;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, rgba(0, 229, 201, 0.25), rgba(0, 212, 255, 0.25));
+            border-color: #00e5c9;
+            box-shadow: 0 0 30px rgba(0, 229, 201, 0.3);
+        }
+        
+        .terminal-container {
+            background: #020408;
+            border: 1px solid #1a2a3a;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(5, 8, 10, 0.8); }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, rgba(0, 229, 201, 0.5), rgba(0, 212, 255, 0.5));
+            border-radius: 3px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #1f2937;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: 1px solid #374151;
+        }
+        .toggle-switch.active {
+            background: #00e5c9;
+            border-color: #00e5c9;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 2px;
+            width: 18px; height: 18px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        .toggle-switch.active::after {
+            transform: translateX(20px);
+        }
+        
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .status-dot.active {
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulse 2s infinite;
+        }
+        .status-dot.idle { background: #f59e0b; }
+        .status-dot.offline { background: #ef4444; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+        
+        .progress-bar {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 229, 201, 0.2);
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00e5c9, #00d4ff);
+            box-shadow: 0 0 10px rgba(0, 229, 201, 0.5);
+            transition: width 0.3s ease;
+        }
+        
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="scan-bar">
+    <canvas id="bg-canvas"></canvas>
+    <div class="tech-grid"></div>
+    <div class="scan-lines"></div>
+    
+    <div id="app" x-data="NexusApp()" x-init="init()" class="relative z-10 w-full h-full">
+        
+        <!-- TOP CLASSIFICATION BANNER -->
+        <div class="fixed top-0 left-0 right-0 h-7 classification-banner z-[100] flex items-center justify-center text-white font-bold text-xs tracking-[0.4em] uppercase">
+            <i class="fas fa-shield-alt mr-4"></i>
+            TOP SECRET // NOFORN // SCI // SAP // ORCON // REL TO USA
+            <i class="fas fa-shield-alt ml-4"></i>
+        </div>
+        
+        <!-- AUTH MODAL -->
+        <div x-show="!authenticated" x-cloak x-transition.opacity.duration.300ms
+             class="fixed inset-0 z-[200] flex items-center justify-center modal-backdrop"
+             style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+            <div class="glass-panel rounded-2xl p-10 max-w-md w-full">
+                <div class="text-center mb-8">
+                    <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-[#00e5c9] to-[#00d4ff] flex items-center justify-center shadow-lg shadow-[#00e5c9]/30">
+                        <i class="fas fa-atom text-4xl text-[#0a0f14]"></i>
+                    </div>
+                    <h1 class="text-4xl font-display font-black text-transparent bg-clip-text bg-gradient-to-r from-[#00e5c9] to-[#00d4ff] neon-text mb-2">NEXUS COMMAND</h1>
+                    <p class="text-[#00e5c9]/60 text-sm tracking-widest uppercase">ARES Neural Operations Center</p>
+                    <div class="mt-4 flex items-center justify-center gap-3">
+                        <span class="px-3 py-1 bg-red-900/30 border border-red-600/50 text-red-400 text-xs font-bold rounded">TS/SCI</span>
+                        <span class="px-3 py-1 bg-[#00e5c9]/10 border border-[#00e5c9]/30 text-[#00e5c9] text-xs font-bold rounded font-mono">v4.0.0</span>
+                    </div>
+                </div>
+                
+                <form @submit.prevent="doAuth()" class="space-y-5">
+                    <div>
+                        <label class="block text-[#00e5c9]/80 text-xs font-mono uppercase tracking-wider mb-2">Operator Codename</label>
+                        <div class="relative">
+                            <i class="fas fa-user-secret absolute left-4 top-1/2 -translate-y-1/2 text-[#00e5c9]/50"></i>
+                            <input type="text" x-model="authForm.codename" required
+                                   class="w-full bg-[#05080a] border border-[#00e5c9]/30 rounded-xl pl-12 pr-4 py-4 text-white font-mono placeholder-slate-600 focus:border-[#00e5c9] focus:outline-none"
+                                   placeholder="ENTER CODENAME">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-[#00e5c9]/80 text-xs font-mono uppercase tracking-wider mb-2">Access Token</label>
+                        <div class="relative">
+                            <i class="fas fa-key absolute left-4 top-1/2 -translate-y-1/2 text-[#00e5c9]/50"></i>
+                            <input type="password" x-model="authForm.token" required
+                                   class="w-full bg-[#05080a] border border-[#00e5c9]/30 rounded-xl pl-12 pr-4 py-4 text-white font-mono placeholder-slate-600 focus:border-[#00e5c9] focus:outline-none"
+                                   placeholder="••••••••••••••••">
+                        </div>
+                    </div>
+                    
+                    <div x-show="authForm.error" x-text="authForm.error" 
+                         class="text-red-400 text-sm text-center font-mono border border-red-500/30 bg-red-500/10 rounded-lg p-3"></div>
+                    
+                    <button type="submit" :disabled="authForm.loading"
+                            class="w-full bg-gradient-to-r from-[#00e5c9] to-[#00d4ff] disabled:opacity-50 text-[#0a0f14] font-bold py-4 rounded-xl transition-all flex items-center justify-center gap-3">
+                        <i x-show="authForm.loading" class="fas fa-circle-notch fa-spin"></i>
+                        <i x-show="!authForm.loading" class="fas fa-fingerprint"></i>
+                        <span x-text="authForm.loading ? 'AUTHENTICATING...' : 'INITIALIZE SESSION'"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- MAIN APPLICATION -->
+        <div x-show="authenticated" x-cloak class="h-screen pt-7 flex">
+            
+            <!-- SIDEBAR -->
+            <nav class="w-72 bg-[#05080a]/95 border-r border-[#00e5c9]/10 flex flex-col backdrop-blur-xl">
+                <div class="p-5 border-b border-[#00e5c9]/10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00e5c9] to-[#00d4ff] flex items-center justify-center shadow-lg shadow-[#00e5c9]/20">
+                            <i class="fas fa-atom text-xl text-[#0a0f14]"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-display font-bold text-[#00e5c9] neon-text">NEXUS</h2>
+                            <p class="text-[10px] text-[#00e5c9]/50 font-mono tracking-wider">COMMAND v4.0.0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto py-3 px-2 space-y-1">
+                    <template x-for="item in navItems" :key="item.id">
+                        <button @click="currentView = item.id"
+                                :class="currentView === item.id 
+                                    ? 'bg-gradient-to-r from-[#00e5c9]/20 to-transparent border-l-2 border-[#00e5c9] text-[#00e5c9]' 
+                                    : 'border-l-2 border-transparent text-slate-400 hover:bg-slate-800/30 hover:text-[#00e5c9]'"
+                                class="w-full flex items-center gap-3 px-3 py-3 rounded-r-lg transition-all group text-left">
+                            <div class="w-8 h-8 rounded-lg bg-slate-800/50 flex items-center justify-center transition-all group-hover:bg-[#00e5c9]/10"
+                                 :class="currentView === item.id ? 'text-[#00e5c9]' : 'text-slate-500 group-hover:text-[#00e5c9]'">
+                                <i :class="item.icon" class="text-sm"></i>
+                            </div>
+                            <span class="font-medium text-sm" x-text="item.label"></span>
+                            <span x-show="item.badge && item.badge !== '0'" x-text="item.badge" 
+                                  class="ml-auto text-[10px] bg-[#00e5c9]/20 text-[#00e5c9] px-2 py-0.5 rounded-full font-mono"></span>
+                        </button>
+                    </template>
+                </div>
+                
+                <!-- System Stats -->
+                <div class="p-4 border-t border-[#00e5c9]/10 space-y-3">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500 font-mono">LATENCY</span>
+                        <span class="text-[#00e5c9] font-mono" x-text="(system.latency || 0) + 'ms'"></span>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-500 font-mono">CPU</span>
+                            <span x-text="(system.cpu || 0) + '%'" class="text-[#00e5c9] font-mono"></span>
+                        </div>
+                        <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                            <div class="h-full bg-gradient-to-r from-[#00e5c9] to-[#00d4ff] transition-all duration-500"
+                                 :style="'width: ' + Math.min(system.cpu || 0, 100) + '%'"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-500 font-mono">RAM</span>
+                            <span x-text="(system.memory || 0) + '%'" class="text-purple-400 font-mono"></span>
+                        </div>
+                        <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                            <div class="h-full bg-gradient-to-r from-purple-500 to-purple-400 transition-all duration-500"
+                                 :style="'width: ' + Math.min(system.memory || 0, 100) + '%'"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-500 font-mono">STORAGE</span>
+                            <span x-text="(system.storage || 0) + '%'" class="text-amber-400 font-mono"></span>
+                        </div>
+                        <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                            <div class="h-full bg-gradient-to-r from-amber-500 to-amber-400 transition-all duration-500"
+                                 :style="'width: ' + Math.min(system.storage || 0, 100) + '%'"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Profile -->
+                <div class="p-4 border-t border-[#00e5c9]/10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#00e5c9]/20 to-[#00d4ff]/20 border border-[#00e5c9]/30 flex items-center justify-center">
+                            <i class="fas fa-user-astronaut text-[#00e5c9]"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p x-text="user.codename" class="text-sm font-bold text-slate-200 tracking-wide truncate"></p>
+                            <p x-text="user.clearance" class="text-[10px] text-red-400 font-mono font-bold"></p>
+                        </div>
+                        <button @click="logout()" class="text-slate-500 hover:text-red-400 transition-colors p-2">
+                            <i class="fas fa-power-off"></i>
+                        </button>
+                    </div>
+                </div>
+            </nav>
+            
+            <!-- MAIN CONTENT -->
+            <main class="flex-1 flex flex-col min-w-0 bg-[#05080a]">
+                
+                <!-- Header -->
+                <header class="h-14 border-b border-[#00e5c9]/10 flex items-center justify-between px-6 bg-[#05080a]/80 backdrop-blur-xl">
+                    <div class="flex items-center gap-4">
+                        <h2 x-text="currentView.toUpperCase()" class="text-lg font-display font-bold text-[#00e5c9] tracking-widest neon-text"></h2>
+                        <div class="h-4 w-px bg-[#00e5c9]/20"></div>
+                        <span x-text="currentTime" class="text-xs text-slate-500 font-mono"></span>
+                    </div>
+                    
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-3 px-4 py-1.5 rounded-full bg-slate-800/50 border border-slate-700">
+                            <div class="relative">
+                                <span class="w-2 h-2 rounded-full" :class="systemStatus === 'operational' ? 'bg-emerald-400' : 'bg-red-400'"></span>
+                                <span x-show="systemStatus === 'operational'" class="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                            </div>
+                            <span x-text="systemStatus === 'operational' ? 'ONLINE' : 'DEGRADED'" 
+                                  :class="systemStatus === 'operational' ? 'text-emerald-400' : 'text-red-400'"
+                                  class="text-xs font-mono font-bold tracking-wider"></span>
+                        </div>
+                    </div>
+                </header>
+                
+                <!-- CONTENT VIEWS -->
+                <div class="flex-1 overflow-hidden relative">
+                    
+                    <!-- DASHBOARD -->
+                    <div x-show="currentView === 'dashboard'" x-transition.opacity.duration.200ms 
+                         class="h-full overflow-auto p-6 space-y-6">
+                        
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h1 class="text-2xl font-display font-bold text-slate-200 mb-1">
+                                    Welcome back, <span x-text="user.codename" class="text-[#00e5c9] neon-text"></span>
+                                </h1>
+                                <p class="text-slate-500 text-sm flex items-center gap-2">
+                                    <i class="fas fa-shield-alt text-emerald-500"></i>
+                                    <span x-text="systemStatusText"></span> • Clearance: <span x-text="user.clearance" class="text-red-400 font-mono font-bold"></span>
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Stats Grid -->
+                        <div class="grid grid-cols-4 gap-4">
+                            <div class="glass-panel rounded-xl p-5 cursor-pointer hover:border-[#00e5c9]/40 transition-all" @click="currentView = 'agents'">
+                                <div class="flex items-center justify-between mb-3">
+                                    <p class="text-slate-400 text-xs font-mono uppercase">Active Agents</p>
+                                    <div class="w-8 h-8 rounded-lg bg-[#00e5c9]/10 flex items-center justify-center">
+                                        <i class="fas fa-robot text-[#00e5c9]"></i>
+                                    </div>
+                                </div>
+                                <p x-text="stats.agents.active" class="text-4xl font-display font-bold text-[#00e5c9] neon-text"></p>
+                                <p class="text-slate-500 text-xs mt-1">of <span x-text="stats.agents.total"></span> deployed</p>
+                            </div>
+                            
+                            <div class="glass-panel rounded-xl p-5 cursor-pointer hover:border-purple-500/40 transition-all" @click="currentView = 'playground'">
+                                <div class="flex items-center justify-between mb-3">
+                                    <p class="text-slate-400 text-xs font-mono uppercase">Conversations</p>
+                                    <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                                        <i class="fas fa-comments text-purple-400"></i>
+                                    </div>
+                                </div>
+                                <p x-text="stats.conversations" class="text-4xl font-display font-bold text-purple-400"></p>
+                                <p class="text-slate-500 text-xs mt-1">active sessions</p>
+                            </div>
+                            
+                            <div class="glass-panel rounded-xl p-5">
+                                <div class="flex items-center justify-between mb-3">
+                                    <p class="text-slate-400 text-xs font-mono uppercase">Total Requests</p>
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                                        <i class="fas fa-chart-line text-emerald-400"></i>
+                                    </div>
+                                </div>
+                                <p x-text="stats.requests.total.toLocaleString()" class="text-4xl font-display font-bold text-emerald-400"></p>
+                                <p class="text-slate-500 text-xs mt-1">+<span x-text="stats.requests.perMinute"></span>/min</p>
+                            </div>
+                            
+                            <div class="glass-panel rounded-xl p-5">
+                                <div class="flex items-center justify-between mb-3">
+                                    <p class="text-slate-400 text-xs font-mono uppercase">Router Latency</p>
+                                    <div class="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                                        <i class="fas fa-bolt text-amber-400"></i>
+                                    </div>
+                                </div>
+                                <p x-text="(system.latency || 0) + 'ms'" class="text-4xl font-display font-bold text-amber-400"></p>
+                                <p class="text-slate-500 text-xs mt-1">average response</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Terminal -->
+                        <div class="glass-panel rounded-xl p-5">
+                            <h3 class="text-sm font-bold mb-3 flex items-center gap-2 text-[#00e5c9]">
+                                <i class="fas fa-terminal"></i>
+                                Secure Terminal
+                            </h3>
+                            <div class="terminal-container rounded-lg p-4 font-mono text-sm h-48 overflow-auto" id="terminal-output">
+                                <div class="text-[#00e5c9] mb-2 text-xs">$ neofetch</div>
+                                <div class="text-slate-300 mb-4 whitespace-pre font-mono text-[10px] leading-tight">
+    ███╗   ██╗███████╗██╗  ██╗██╗   ██╗███████╗
+    ████╗  ██║██╔════╝╚██╗██╔╝██║   ██║██╔════╝
+    ██╔██╗ ██║█████╗   ╚███╔╝ ██║   ██║███████╗
+    ██║╚██╗██║██╔══╝   ██╔██╗ ██║   ██║╚════██║
+    ██║ ╚████║███████╗██╔╝ ██╗╚██████╔╝███████║
+    ╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝
+                                </div>
+                                <div class="text-slate-400 mb-3 text-xs">NEXUS COMMAND v4.0.0 [TS/SCI/NOFORN]</div>
+                                <template x-for="line in terminal.lines" :key="line.id">
+                                    <div :class="line.color" class="mb-1 text-xs" x-html="line.text"></div>
+                                </template>
+                            </div>
+                            <div class="flex gap-2 mt-3">
+                                <span class="text-[#00e5c9] font-mono text-sm">$</span>
+                                <input type="text" x-model="terminal.input" @keydown.enter="execCommand()"
+                                       class="flex-1 bg-transparent border-none text-white font-mono text-sm focus:outline-none"
+                                       placeholder="Enter command...">
+                            </div>
+                        </div>
+                        
+                        <!-- Network & Jobs -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="glass-panel rounded-xl p-5">
+                                <h3 class="text-sm font-bold mb-4 text-slate-300">Network I/O</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-500">Bytes Sent</span>
+                                        <span x-text="formatBytes(system.network?.bytes_sent || 0)" class="text-[#00e5c9] font-mono"></span>
+                                    </div>
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-500">Bytes Received</span>
+                                        <span x-text="formatBytes(system.network?.bytes_recv || 0)" class="text-purple-400 font-mono"></span>
+                                    </div>
+                                    <div class="flex justify-between text-xs">
+                                        <span class="text-slate-500">Packets</span>
+                                        <span class="text-emerald-400 font-mono">
+                                            <span x-text="(system.network?.packets_sent || 0).toLocaleString()"></span> sent
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="glass-panel rounded-xl p-5">
+                                <h3 class="text-sm font-bold mb-4 text-slate-300">Active Training</h3>
+                                <div class="space-y-2">
+                                    <template x-for="job in training.jobs.slice(0, 3)" :key="job.id">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <span :class="job.status === 'running' ? 'status-dot active' : 'status-dot idle'"></span>
+                                                <span x-text="job.name" class="text-xs text-slate-300 truncate max-w-[150px]"></span>
+                                            </div>
+                                            <span x-text="job.progress + '%'" class="text-xs font-mono text-[#00e5c9]"></span>
+                                        </div>
+                                    </template>
+                                    <div x-show="training.jobs.length === 0" class="text-xs text-slate-500 text-center py-4">No active training</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- PLAYGROUND -->
+                    <div x-show="currentView === 'playground'" x-transition.opacity.duration.200ms class="h-full flex">
+                        <!-- Config Panel -->
+                        <div class="w-80 bg-[#05080a]/80 border-r border-[#00e5c9]/10 overflow-y-auto p-5">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#00e5c9]/20 to-[#00d4ff]/20 border border-[#00e5c9]/30 flex items-center justify-center">
+                                    <i class="fas fa-sliders-h text-[#00e5c9]"></i>
+                                </div>
+                                <h3 class="text-base font-bold text-slate-200">Configuration</h3>
+                            </div>
+                            
+                            <div class="space-y-5">
+                                <!-- Model Selection -->
+                                <div>
+                                    <label class="block text-slate-400 text-xs mb-2 font-mono uppercase">Model</label>
+                                    <select x-model="playground.config.model" 
+                                            class="w-full bg-[#0a0f14] border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00e5c9] focus:outline-none">
+                                        <optgroup label="Base Models">
+                                            <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant</option>
+                                            <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</option>
+                                            <option value="moonshotai/kimi-k2-instruct">Kimi K2</option>
+                                        </optgroup>
+                                        <optgroup label="Custom Trained Models" x-show="customModels.length > 0">
+                                            <template x-for="model in customModels" :key="model.id">
+                                                <option :value="model.id" x-text="model.name"></option>
+                                            </template>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                                
+                                <!-- Temperature -->
+                                <div>
+                                    <div class="flex justify-between text-xs mb-2">
+                                        <label class="text-slate-400">Temperature</label>
+                                        <span x-text="playground.config.temperature" class="text-[#00e5c9] font-mono"></span>
+                                    </div>
+                                    <input type="range" x-model="playground.config.temperature" min="0" max="2" step="0.1"
+                                           class="w-full accent-[#00e5c9] cursor-pointer h-1 bg-slate-700 rounded-lg appearance-none">
+                                </div>
+                                
+                                <!-- Max Tokens -->
+                                <div>
+                                    <div class="flex justify-between text-xs mb-2">
+                                        <label class="text-slate-400">Max Tokens</label>
+                                        <span x-text="playground.config.maxTokens" class="text-[#00e5c9] font-mono"></span>
+                                    </div>
+                                    <input type="range" x-model="playground.config.maxTokens" min="256" max="8192" step="256"
+                                           class="w-full accent-[#00e5c9] cursor-pointer h-1 bg-slate-700 rounded-lg appearance-none">
+                                </div>
+                                
+                                <!-- Tools Section -->
+                                <div class="border-t border-slate-800 pt-4">
+                                    <label class="block text-slate-400 text-xs mb-3 font-mono uppercase">Tools</label>
+                                    <div class="space-y-2">
+                                        <button @click="playground.activeTool = playground.activeTool === 'web_search' ? null : 'web_search'"
+                                                :class="playground.activeTool === 'web_search' ? 'border-[#00e5c9] bg-[#00e5c9]/10' : 'border-slate-700 hover:border-slate-600'"
+                                                class="w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left">
+                                            <i class="fas fa-search text-[#00e5c9]"></i>
+                                            <div>
+                                                <div class="text-sm text-slate-200">Web Search</div>
+                                                <div class="text-[10px] text-slate-500">Scrape websites for data</div>
+                                            </div>
+                                        </button>
+                                        
+                                        <div x-show="playground.activeTool === 'web_search'" class="pl-4 space-y-2">
+                                            <input type="text" x-model="playground.toolUrl" 
+                                                   class="w-full bg-[#0a0f14] border border-slate-700 rounded px-3 py-2 text-xs text-white focus:border-[#00e5c9] focus:outline-none"
+                                                   placeholder="https://example.com">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Streaming Toggle -->
+                                <div class="flex items-center justify-between py-2 border-t border-slate-800">
+                                    <span class="text-slate-400 text-xs">Streaming</span>
+                                    <div class="toggle-switch" :class="playground.config.streaming ? 'active' : ''" @click="playground.config.streaming = !playground.config.streaming"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Area -->
+                        <div class="flex-1 flex flex-col min-w-0">
+                            <!-- Messages -->
+                            <div class="flex-1 overflow-y-auto p-5 space-y-4" id="chat-container">
+                                <template x-for="msg in playground.messages" :key="msg.id">
+                                    <div :class="msg.role === 'user' ? 'ml-12' : 'mr-12'">
+                                        <div :class="msg.role === 'user' ? 'bg-[#00e5c9]/10 border-[#00e5c9]/30' : 'glass-panel border-slate-700'"
+                                             class="rounded-lg p-4 border">
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <i :class="msg.role === 'user' ? 'fas fa-user text-[#00e5c9]' : 'fas fa-robot text-purple-400'"></i>
+                                                <span :class="msg.role === 'user' ? 'text-[#00e5c9]' : 'text-purple-400'" 
+                                                      class="text-[10px] font-bold uppercase font-mono" x-text="msg.role"></span>
+                                                <span x-show="msg.model" x-text="msg.model" class="text-[10px] text-slate-500 ml-2 font-mono"></span>
+                                                <span x-show="msg.tool_used" class="text-[10px] bg-[#00e5c9]/20 text-[#00e5c9] px-2 py-0.5 rounded ml-2" x-text="'Tool: ' + msg.tool_used"></span>
+                                            </div>
+                                            <div class="text-slate-200 text-sm whitespace-pre-wrap leading-relaxed" x-html="formatContent(msg.content)"></div>
+                                        </div>
+                                    </div>
+                                </template>
+                                
+                                <!-- Loading -->
+                                <div x-show="playground.loading" class="mr-12">
+                                    <div class="glass-panel border-slate-700 rounded-lg p-4">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <i class="fas fa-robot text-purple-400"></i>
+                                            <span class="text-purple-400 text-[10px] font-bold uppercase font-mono">thinking</span>
+                                        </div>
+                                        <div class="flex gap-1.5">
+                                            <span class="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></span>
+                                            <span class="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></span>
+                                            <span class="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Input -->
+                            <div class="p-4 border-t border-[#00e5c9]/10 bg-[#05080a]/50">
+                                <div class="relative">
+                                    <textarea x-model="playground.input" @keydown.enter.prevent="if (!$event.shiftKey) sendMessage()"
+                                              class="w-full bg-[#0a0f14] border border-slate-700 rounded-lg px-4 py-3 pr-12 text-white text-sm resize-none focus:border-[#00e5c9] focus:outline-none"
+                                              rows="2" placeholder="Type your message..."></textarea>
+                                    <button @click="sendMessage()" :disabled="!playground.input.trim() || playground.loading"
+                                            class="absolute right-3 bottom-3 p-2 bg-[#00e5c9] disabled:bg-slate-700 text-[#0a0f14] rounded-lg transition-all hover:scale-110">
+                                        <i x-show="!playground.loading" class="fas fa-paper-plane text-sm"></i>
+                                        <i x-show="playground.loading" class="fas fa-circle-notch fa-spin text-sm"></i>
+                                    </button>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-2 text-right font-mono">
+                                    <kbd class="px-1 py-0.5 bg-slate-800 rounded text-slate-400">Shift</kbd> + <kbd class="px-1 py-0.5 bg-slate-800 rounded text-slate-400">Enter</kbd> for new line
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- AGENT FLEET -->
+                    <div x-show="currentView === 'agents'" x-transition.opacity.duration.200ms class="h-full overflow-auto p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-2xl font-display font-bold text-[#00e5c9] neon-text">Agent Fleet</h2>
+                                <p class="text-slate-500 text-sm mt-1">Manage your AI agent swarm</p>
+                            </div>
+                            <button @click="showCreateAgent = true" class="btn-primary px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2">
+                                <i class="fas fa-plus"></i>
+                                Deploy New Agent
+                            </button>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <template x-for="agent in agents" :key="agent.id">
+                                <div class="glass-panel rounded-xl p-5 hover:border-[#00e5c9]/40 transition-all cursor-pointer" @click="viewAgentDetails(agent)">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#00e5c9] to-[#00d4ff] flex items-center justify-center shadow-lg shadow-[#00e5c9]/20">
+                                                <i class="fas fa-robot text-xl text-[#0a0f14]"></i>
+                                            </div>
+                                            <div>
+                                                <h3 x-text="agent.name" class="text-lg font-bold text-slate-200"></h3>
+                                                <p x-text="agent.persona" class="text-[#00e5c9] text-xs"></p>
+                                            </div>
+                                        </div>
+                                        <span :class="agent.status === 'active' ? 'status-dot active' : (agent.status === 'idle' ? 'status-dot idle' : 'status-dot offline')"></span>
+                                    </div>
+                                    
+                                    <p x-text="agent.description" class="text-slate-400 text-xs mb-4 line-clamp-2"></p>
+                                    
+                                    <div class="space-y-2 text-xs mb-4">
+                                        <div class="flex justify-between py-1.5 border-b border-slate-800">
+                                            <span class="text-slate-500">Model</span>
+                                            <span x-text="agent.model.split('/').pop() || agent.model" class="text-slate-300 font-mono truncate max-w-[150px]"></span>
+                                        </div>
+                                        <div class="flex justify-between py-1.5 border-b border-slate-800">
+                                            <span class="text-slate-500">Clearance</span>
+                                            <span x-text="agent.clearance" class="text-red-400 font-mono font-bold"></span>
+                                        </div>
+                                        <div class="flex justify-between py-1.5">
+                                            <span class="text-slate-500">Tasks Completed</span>
+                                            <span x-text="agent.tasks_completed || 0" class="text-emerald-400 font-mono"></span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex gap-2">
+                                        <button @click.stop="controlAgent(agent)" class="flex-1 btn-primary py-2 rounded-lg text-xs font-semibold">
+                                            <i class="fas fa-sliders-h mr-1.5"></i>Control
+                                        </button>
+                                        <button @click.stop="viewAgentLogs(agent)" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg transition-all">
+                                            <i class="fas fa-history text-xs"></i>
+                                        </button>
+                                        <button @click.stop="deleteAgent(agent.id)" class="bg-red-600/20 hover:bg-red-600/40 border border-red-500/30 text-red-400 px-3 py-2 rounded-lg transition-all">
+                                            <i class="fas fa-trash text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <!-- SWARM OPS -->
+                    <div x-show="currentView === 'swarm'" x-transition.opacity.duration.200ms class="h-full overflow-auto p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-2xl font-display font-bold text-[#00e5c9] neon-text">Swarm Operations</h2>
+                                <p class="text-slate-500 text-sm mt-1">Distribute tasks across multiple agents</p>
+                            </div>
+                            <button @click="showCreateSwarm = true" class="btn-primary px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2">
+                                <i class="fas fa-project-diagram"></i>
+                                New Operation
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <template x-for="op in swarm.operations" :key="op.id">
+                                <div class="glass-panel rounded-xl p-5">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <h3 x-text="op.name" class="text-lg font-bold text-slate-200"></h3>
+                                                <span :class="op.status === 'running' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : (op.status === 'completed' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-amber-500/20 text-amber-400 border-amber-500/30')" 
+                                                      class="px-2 py-0.5 rounded text-[10px] font-bold uppercase border" x-text="op.status"></span>
+                                            </div>
+                                            <p class="text-slate-400 text-sm" x-text="op.objective"></p>
+                                        </div>
+                                        <button @click="deleteSwarmOperation(op.id)" class="text-slate-500 hover:text-red-400 transition-colors ml-4">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <span class="text-slate-500">Progress</span>
+                                            <span x-text="op.progress + '%'" class="text-[#00e5c9] font-mono"></span>
+                                        </div>
+                                        <div class="progress-bar h-2">
+                                            <div class="progress-fill" :style="'width: ' + op.progress + '%'"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center gap-4 text-xs mb-4">
+                                        <span class="text-slate-500"><i class="fas fa-robot mr-1 text-[#00e5c9]"></i><span x-text="op.agents?.length || 0"></span> agents</span>
+                                    </div>
+                                    
+                                    <!-- Results Section -->
+                                    <div x-show="op.results?.length > 0" class="mt-4 pt-4 border-t border-slate-800">
+                                        <h4 class="text-xs font-bold text-slate-400 mb-3">Agent Results</h4>
+                                        <div class="space-y-3">
+                                            <template x-for="result in op.results" :key="result.agent_id">
+                                                <div class="bg-slate-800/30 rounded-lg p-3">
+                                                    <div class="flex items-center gap-2 mb-2">
+                                                        <span class="text-[#00e5c9] font-bold text-xs" x-text="result.agent"></span>
+                                                        <span class="text-slate-500 text-[10px]" x-text="result.persona"></span>
+                                                        <span class="text-slate-600 text-[10px] ml-auto" x-text="formatTime(result.timestamp)"></span>
+                                                    </div>
+                                                    <div class="text-xs text-slate-300 whitespace-pre-wrap" x-html="formatContent(result.output)"></div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            
+                            <div x-show="swarm.operations.length === 0" class="text-center py-12">
+                                <i class="fas fa-project-diagram text-4xl text-slate-700 mb-4"></i>
+                                <p class="text-slate-500">No swarm operations yet</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- TRAINING -->
+                    <div x-show="currentView === 'training'" x-transition.opacity.duration.200ms class="h-full overflow-auto p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-2xl font-display font-bold text-[#00e5c9] neon-text">Training Pipeline</h2>
+                                <p class="text-slate-500 text-sm mt-1">Fine-tune and train AI models</p>
+                            </div>
+                            <button @click="showCreateTraining = true" class="btn-primary px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2">
+                                <i class="fas fa-graduation-cap"></i>
+                                New Training Job
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <template x-for="job in training.jobs" :key="job.id">
+                                <div class="glass-panel rounded-xl p-5">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div>
+                                            <div class="flex items-center gap-3">
+                                                <h3 x-text="job.name" class="text-lg font-bold text-slate-200"></h3>
+                                                <span :class="job.status === 'running' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : (job.status === 'completed' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : (job.status === 'cancelled' ? 'bg-red-500/20 text-red-400 border-red-500/30' : 'bg-amber-500/20 text-amber-400 border-amber-500/30'))" 
+                                                      class="px-2 py-0.5 rounded text-[10px] font-bold uppercase border" x-text="job.status"></span>
+                                            </div>
+                                            <p class="text-slate-400 text-sm mt-1">
+                                                <span x-text="job.model" class="font-mono text-[#00e5c9]"></span> → 
+                                                <span x-text="job.output_model" class="font-mono text-purple-400"></span>
+                                            </p>
+                                        </div>
+                                        <button @click="deleteTrainingJob(job.id)" x-show="job.status === 'running' || job.status === 'queued'" class="text-slate-500 hover:text-red-400 transition-colors">
+                                            <i class="fas fa-stop-circle"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-4 gap-4 mb-4">
+                                        <div class="bg-slate-800/30 rounded-lg p-3 text-center">
+                                            <div class="text-xs text-slate-500 mb-1">Progress</div>
+                                            <div class="text-lg font-bold text-[#00e5c9] font-mono" x-text="job.progress + '%'"></div>
+                                        </div>
+                                        <div class="bg-slate-800/30 rounded-lg p-3 text-center">
+                                            <div class="text-xs text-slate-500 mb-1">Epoch</div>
+                                            <div class="text-lg font-bold text-purple-400 font-mono" x-text="job.epochs"></div>
+                                        </div>
+                                        <div class="bg-slate-800/30 rounded-lg p-3 text-center">
+                                            <div class="text-xs text-slate-500 mb-1">Loss</div>
+                                            <div class="text-lg font-bold text-emerald-400 font-mono" x-text="job.loss?.toFixed(4) || '-'"></div>
+                                        </div>
+                                        <div class="bg-slate-800/30 rounded-lg p-3 text-center">
+                                            <div class="text-xs text-slate-500 mb-1">ETA</div>
+                                            <div class="text-lg font-bold text-amber-400 font-mono" x-text="job.eta || '-'"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="progress-bar h-2">
+                                        <div class="progress-fill" :style="'width: ' + job.progress + '%'"></div>
+                                    </div>
+                                </div>
+                            </template>
+                            
+                            <div x-show="training.jobs.length === 0" class="text-center py-12">
+                                <i class="fas fa-graduation-cap text-4xl text-slate-700 mb-4"></i>
+                                <p class="text-slate-500">No training jobs</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- NETWORK -->
+                    <div x-show="currentView === 'network'" x-transition.opacity.duration.200ms class="h-full overflow-auto p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-2xl font-display font-bold text-[#00e5c9] neon-text">Network Operations</h2>
+                                <p class="text-slate-500 text-sm mt-1">Real-time network statistics and packet capture</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button x-show="!network.capturing" @click="startPacketCapture()" class="btn-primary px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2">
+                                    <i class="fas fa-play"></i>
+                                    Start Capture
+                                </button>
+                                <button x-show="network.capturing" @click="stopPacketCapture()" class="bg-red-600/20 hover:bg-red-600/40 border border-red-500/30 text-red-400 px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition-all">
+                                    <i class="fas fa-stop"></i>
+                                    Stop Capture
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="glass-panel rounded-xl p-5">
+                                <h3 class="text-sm font-bold mb-4 text-slate-300">Network Traffic</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-slate-500">Bytes Sent</span>
+                                        <span x-text="formatBytes(network.stats?.traffic?.bytes_sent || 0)" class="text-[#00e5c9] font-mono"></span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-slate-500">Bytes Received</span>
+                                        <span x-text="formatBytes(network.stats?.traffic?.bytes_recv || 0)" class="text-purple-400 font-mono"></span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-slate-500">Packets Sent</span>
+                                        <span x-text="(network.stats?.traffic?.packets_sent || 0).toLocaleString()" class="text-emerald-400 font-mono"></span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-slate-500">Packets Received</span>
+                                        <span x-text="(network.stats?.traffic?.packets_recv || 0).toLocaleString()" class="text-amber-400 font-mono"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="glass-panel rounded-xl p-5">
+                                <h3 class="text-sm font-bold mb-4 text-slate-300">Connections</h3>
+                                <div class="space-y-3">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-slate-500">Established</span>
+                                        <span x-text="network.stats?.connections?.established || 0" class="text-emerald-400 font-mono"></span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-slate-500">Listening</span>
+                                        <span x-text="network.stats?.connections?.listen || 0" class="text-blue-400 font-mono"></span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-slate-500">Time Wait</span>
+                                        <span x-text="network.stats?.connections?.time_wait || 0" class="text-amber-400 font-mono"></span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-slate-500">Total</span>
+                                        <span x-text="network.stats?.connections?.total || 0" class="text-slate-300 font-mono"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Network Interfaces -->
+                        <div class="glass-panel rounded-xl p-5 mb-6">
+                            <h3 class="text-sm font-bold mb-4 text-slate-300">Network Interfaces</h3>
+                            <div class="grid grid-cols-3 gap-3">
+                                <template x-for="iface in network.stats?.interfaces || []" :key="iface.name + iface.address">
+                                    <div class="bg-slate-800/30 rounded-lg p-3">
+                                        <div class="text-xs text-slate-500 mb-1" x-text="iface.name"></div>
+                                        <div class="text-sm text-[#00e5c9] font-mono" x-text="iface.address"></div>
+                                    </div>
+                                </template>
+                                <div x-show="!(network.stats?.interfaces?.length)" class="col-span-3 text-center text-slate-500 py-4">
+                                    No interfaces detected
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Packet Capture -->
+                        <div x-show="network.packets.length > 0 || network.capturing" class="glass-panel rounded-xl p-5">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-sm font-bold text-slate-300">
+                                    <i class="fas fa-exchange-alt mr-2 text-[#00e5c9]"></i>
+                                    Captured Packets (<span x-text="network.packets.length"></span>)
+                                </h3>
+                                <span x-show="network.capturing" class="text-xs text-emerald-400 animate-pulse">● Capturing...</span>
+                            </div>
+                            <div class="terminal-container rounded-lg p-3 h-64 overflow-auto font-mono text-xs">
+                                <table class="w-full">
+                                    <thead class="text-slate-500 sticky top-0 bg-[#020408]">
+                                        <tr>
+                                            <th class="text-left py-1">Time</th>
+                                            <th class="text-left py-1">Source</th>
+                                            <th class="text-left py-1">Destination</th>
+                                            <th class="text-left py-1">Proto</th>
+                                            <th class="text-right py-1">Size</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="pkt in network.packets.slice(-50)" :key="pkt.timestamp">
+                                            <tr class="border-b border-slate-800/50">
+                                                <td class="py-1 text-slate-400" x-text="pkt.timestamp?.split('T')[1]?.split('.')[0] || '-'"></td>
+                                                <td class="py-1 text-[#00e5c9]" x-text="pkt.src"></td>
+                                                <td class="py-1 text-purple-400" x-text="pkt.dst"></td>
+                                                <td class="py-1">
+                                                    <span :class="pkt.proto === 'TCP' ? 'text-emerald-400' : (pkt.proto === 'UDP' ? 'text-amber-400' : 'text-blue-400')" x-text="pkt.proto"></span>
+                                                </td>
+                                                <td class="py-1 text-right text-slate-400" x-text="pkt.size + ' B'"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- RESEARCH -->
+                    <div x-show="currentView === 'research'" x-transition.opacity.duration.200ms class="h-full overflow-auto p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-2xl font-display font-bold text-[#00e5c9] neon-text">Deep Research</h2>
+                                <p class="text-slate-500 text-sm mt-1">Web research with synthesized findings</p>
+                            </div>
+                            <button @click="showCreateResearch = true" class="btn-primary px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2">
+                                <i class="fas fa-search"></i>
+                                New Research Task
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <template x-for="task in research.tasks" :key="task.id">
+                                <div class="glass-panel rounded-xl p-5">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <h3 x-text="task.query" class="text-base font-bold text-slate-200"></h3>
+                                                <span :class="task.status === 'researching' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : (task.status === 'completed' ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-amber-500/20 text-amber-400 border-amber-500/30')" 
+                                                      class="px-2 py-0.5 rounded text-[10px] font-bold uppercase border" x-text="task.status"></span>
+                                            </div>
+                                            <p class="text-slate-400 text-xs">
+                                                Type: <span x-text="task.type" class="text-[#00e5c9]"></span> • 
+                                                Started: <span x-text="formatTime(task.created_at)"></span>
+                                            </p>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button @click="viewResearchDetails(task)" class="text-slate-500 hover:text-[#00e5c9] transition-colors p-2" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button @click="shareResearch(task)" class="text-slate-500 hover:text-blue-400 transition-colors p-2" title="Share">
+                                                <i class="fas fa-share-alt"></i>
+                                            </button>
+                                            <button @click="deleteResearchTask(task.id)" class="text-slate-500 hover:text-red-400 transition-colors p-2" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div x-show="task.status === 'researching' || task.status === 'completed'" class="mb-4">
+                                        <div class="flex justify-between text-xs mb-1">
+                                            <span class="text-slate-500">Research Progress</span>
+                                            <span x-text="task.progress + '%'" class="text-[#00e5c9] font-mono"></span>
+                                        </div>
+                                        <div class="progress-bar h-1.5">
+                                            <div class="progress-fill" :style="'width: ' + task.progress + '%'"></div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Sources -->
+                                    <div x-show="task.sources?.length > 0" class="mb-4">
+                                        <h4 class="text-xs font-bold text-slate-400 mb-2">Sources</h4>
+                                        <div class="flex flex-wrap gap-2">
+                                            <template x-for="source in task.sources" :key="source.url">
+                                                <a :href="source.url" target="_blank" 
+                                                   class="text-[10px] bg-slate-800/50 hover:bg-slate-700/50 text-slate-300 px-2 py-1 rounded border border-slate-700 hover:border-[#00e5c9]/30 transition-all flex items-center gap-1">
+                                                    <i class="fas fa-external-link-alt text-[#00e5c9]"></i>
+                                                    <span x-text="source.title" class="truncate max-w-[150px]"></span>
+                                                    <span x-show="source.word_count" x-text="source.word_count + ' words'" class="text-slate-500 ml-1"></span>
+                                                </a>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Findings Preview -->
+                                    <div x-show="task.findings?.length > 0" class="bg-slate-800/30 rounded-lg p-3">
+                                        <h4 class="text-xs font-bold text-slate-400 mb-2">Key Findings</h4>
+                                        <ul class="space-y-1">
+                                            <template x-for="(finding, idx) in task.findings.slice(0, 3)" :key="idx">
+                                                <li class="text-xs text-slate-300 flex items-start gap-2">
+                                                    <span class="text-[#00e5c9]">•</span>
+                                                    <span x-text="finding"></span>
+                                                </li>
+                                            </template>
+                                            <li x-show="task.findings.length > 3" class="text-xs text-slate-500 italic">
+                                                + <span x-text="task.findings.length - 3"></span> more findings...
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- Summary -->
+                                    <div x-show="task.summary" class="mt-4 p-3 bg-[#00e5c9]/5 border border-[#00e5c9]/20 rounded-lg">
+                                        <p x-text="task.summary" class="text-sm text-slate-300"></p>
+                                    </div>
+                                </div>
+                            </template>
+                            
+                            <div x-show="research.tasks.length === 0" class="text-center py-12">
+                                <i class="fas fa-search text-4xl text-slate-700 mb-4"></i>
+                                <p class="text-slate-500">No research tasks yet</p>
+                                <p class="text-slate-600 text-sm">Create a research task to scrape and synthesize information</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </main>
+        </div>
+        
+        <!-- MODALS -->
+        
+        <!-- Create Agent -->
+        <div x-show="showCreateAgent" x-cloak class="fixed inset-0 z-[300] flex items-center justify-center modal-backdrop" @click.self="showCreateAgent = false">
+            <div class="glass-panel rounded-xl p-6 max-w-md w-full">
+                <h3 class="text-xl font-bold text-[#00e5c9] mb-4">Deploy New Agent</h3>
+                <form @submit.prevent="createAgent()" class="space-y-4">
+                    <div>
+                        <label class="block text-slate-400 text-xs mb-2 font-mono uppercase">Agent Name</label>
+                        <input type="text" x-model="newAgent.name" required class="w-full bg-[#05080a] border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00e5c9] focus:outline-none" placeholder="e.g., DELTA-4">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-xs mb-2 font-mono uppercase">Persona</label>
+                        <select x-model="newAgent.persona" class="w-full bg-[#05080a] border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00e5c9] focus:outline-none">
+                            <option value="System Architect">System Architect</option>
+                            <option value="Security Engineer">Security Engineer</option>
+                            <option value="Code Specialist">Code Specialist</option>
+                            <option value="Data Analyst">Data Analyst</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-xs mb-2 font-mono uppercase">Model</label>
+                        <select x-model="newAgent.model" class="w-full bg-[#05080a] border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00e5c9] focus:outline-none">
+                            <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant</option>
+                            <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</option>
+                            <option value="moonshotai/kimi-k2-instruct">Kimi K2</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" @click="showCreateAgent = false" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 rounded-lg transition-all text-sm">Cancel</button>
+                        <button type="submit" class="flex-1 bg-gradient-to-r from-[#00e5c9] to-[#00d4ff] text-[#0a0f14] font-bold py-2.5 rounded-lg transition-all text-sm">Deploy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Agent Logs Modal -->
+        <div x-show="viewingAgentLogs" x-cloak class="fixed inset-0 z-[300] flex items-center justify-center modal-backdrop" @click.self="viewingAgentLogs = null">
+            <div class="glass-panel rounded-xl p-6 max-w-2xl w-full max-h-[80vh] flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-[#00e5c9]" x-text="(viewingAgentLogs?.name || '') + ' - Audit Log'"></h3>
+                    <button @click="viewingAgentLogs = null" class="text-slate-500 hover:text-white"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="flex-1 overflow-auto terminal-container rounded-lg p-4">
+                    <div x-show="!agentLogs.length" class="text-slate-500 text-center py-8">No logs available</div>
+                    <div class="space-y-2">
+                        <template x-for="log in agentLogs" :key="log.timestamp">
+                            <div class="text-xs border-b border-slate-800 pb-2">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[#00e5c9] font-mono" x-text="formatTime(log.timestamp)"></span>
+                                    <span :class="log.action === 'TERMINATED' ? 'text-red-400' : (log.action === 'SWARM_TASK' ? 'text-purple-400' : 'text-emerald-400')" 
+                                          class="font-bold" x-text="log.action"></span>
+                                </div>
+                                <div class="text-slate-300" x-text="log.details"></div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Research Details Modal -->
+        <div x-show="viewingResearch" x-cloak class="fixed inset-0 z-[300] flex items-center justify-center modal-backdrop" @click.self="viewingResearch = null">
+            <div class="glass-panel rounded-xl p-6 max-w-3xl w-full max-h-[85vh] flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-[#00e5c9]" x-text="viewingResearch?.query"></h3>
+                    <button @click="viewingResearch = null" class="text-slate-500 hover:text-white"><i class="fas fa-times"></i></button>
+                </div>
+                
+                <div class="flex-1 overflow-auto space-y-4">
+                    <!-- Scraped Data -->
+                    <div x-show="viewingResearch?.scraped_data?.length" class="space-y-3">
+                        <h4 class="text-sm font-bold text-slate-300">Scraped Content</h4>
+                        <template x-for="data in viewingResearch?.scraped_data || []" :key="data.url">
+                            <div class="bg-slate-800/30 rounded-lg p-4">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-globe text-[#00e5c9]"></i>
+                                    <a :href="data.url" target="_blank" x-text="data.title" class="text-[#00e5c9] hover:underline text-sm font-bold"></a>
+                                </div>
+                                <p x-show="data.description" x-text="data.description" class="text-xs text-slate-400 mb-2"></p>
+                                <div x-show="data.headings?.length" class="flex flex-wrap gap-1">
+                                    <template x-for="h in data.headings" :key="h">
+                                        <span x-text="h" class="text-[10px] bg-slate-700/50 text-slate-300 px-2 py-0.5 rounded"></span>
+                                    </template>
+                                </div>
+                                <div x-show="data.word_count" class="mt-2 text-[10px] text-slate-500">
+                                    <span x-text="data.word_count.toLocaleString()"></span> words • 
+                                    <span x-text="data.status_code"></span>
+                                </div>
+                                <div x-show="data.error" class="text-red-400 text-xs mt-2" x-text="data.error"></div>
+                            </div>
+                        </template>
+                    </div>
+                    
+                    <!-- All Findings -->
+                    <div x-show="viewingResearch?.findings?.length">
+                        <h4 class="text-sm font-bold text-slate-300 mb-2">All Findings</h4>
+                        <div class="space-y-1">
+                            <template x-for="finding in viewingResearch?.findings || []" :key="finding">
+                                <div class="text-sm text-slate-300 bg-slate-800/30 p-2 rounded" x-text="finding"></div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Other modals (Swarm, Training, Research Create) -->
+        <div x-show="showCreateSwarm" x-cloak class="fixed inset-0 z-[300] flex items-center justify-center modal-backdrop" @click.self="showCreateSwarm = false">
+            <div class="glass-panel rounded-xl p-6 max-w-md w-full">
+                <h3 class="text-xl font-bold text-[#00e5c9] mb-4">New Swarm Operation</h3>
+                <form @submit.prevent="createSwarmOperation()" class="space-y-4">
+                    <div>
+                        <label class="block text-slate-400 text-xs mb-2 font-mono uppercase">Operation Name</label>
+                        <input type="text" x-model="newSwarm.name" required class="w-full bg-[#05080a] border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00e5c9] focus:outline-none" placeholder="e.g., Code Audit">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-xs mb-2 font-mono uppercase">Objective</label>
+                        <textarea x-model="newSwarm.objective" rows="3" class="w-full bg-[#05080a] border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00e5c9] focus:outline-none resize-none" placeholder="Describe what you want the agents to do..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-xs mb-2 font-mono uppercase">Assign Agents</label>
+                        <div class="space-y-2 max-h-32 overflow-y-auto bg-slate-800/30 rounded-lg p-2">
+                            <template x-for="agent in agents.filter(a => a.status === 'active')" :key="agent.id">
+                                <label class="flex items-center gap-2 p-2 hover:bg-slate-700/30 rounded cursor-pointer">
+                                    <input type="checkbox" :value="agent.id" x-model="newSwarm.selectedAgents" class="accent-[#00e5c9]">
+                                    <span x-text="agent.name" class="text-sm text-slate-300"></span>
+                                    <span x-text="agent.persona" class="text-[10px] text-[#00e5c9] ml-auto"></span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" @click="showCreateSwarm = false" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 rounded-lg transition-all text-sm">Cancel</button>
+                        <button type="submit" class="flex-1 bg-gradient-to-r from-[#00e5c9] to-[#00d4ff] text-[#0a0f14] font-bold py-2.5 rounded-lg transition-all text-sm">Launch</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div x-show="showCreateTraining" x-cloak class="fixed inset-0 z-[300] flex items-center justify-center modal-backdrop" @click.self="showCreateTraining = false">
+            <div class="glass-panel rounded-xl p-6 max-w-md w-full">
+                <h3 class="text-xl font-bold text-[#00e5c9] mb-4">New Training Job</h3>
+                <form @submit.prevent="createTrainingJob()" class="space-y-4">
+                    <div>
+                        <label class="block text-slate-400 text-xs mb-2 font-mono uppercase">Job Name</label>
+                        <input type="text" x-model="newTraining.name" required class="w-full bg-[#05080a] border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00e5c9] focus:outline-none" placeholder="e.g., Fine-tune Alpha">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-xs mb-2 font-mono uppercase">Base Model</label>
+                        <select x-model="newTraining.model" class="w-full bg-[#05080a] border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00e5c9] focus:outline-none">
+                            <option value="llama-3.1-8b">Llama 3.1 8B</option>
+                            <option value="llama-3.3-70b">Llama 3.3 70B</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-xs mb-2 font-mono uppercase">Dataset</label>
+                        <select x-model="newTraining.dataset" class="w-full bg-[#05080a] border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00e5c9] focus:outline-none">
+                            <option value="code-instruct">Code Instructions</option>
+                            <option value="security-audit">Security Audits</option>
+                            <option value="architecture">System Design</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" @click="showCreateTraining = false" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 rounded-lg transition-all text-sm">Cancel</button>
+                        <button type="submit" class="flex-1 bg-gradient-to-r from-[#00e5c9] to-[#00d4ff] text-[#0a0f14] font-bold py-2.5 rounded-lg transition-all text-sm">Start Training</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div x-show="showCreateResearch" x-cloak class="fixed inset-0 z-[300] flex items-center justify-center modal-backdrop" @click.self="showCreateResearch = false">
+            <div class="glass-panel rounded-xl p-6 max-w-md w-full">
+                <h3 class="text-xl font-bold text-[#00e5c9] mb-4">New Research Task</h3>
+                <form @submit.prevent="createResearchTask()" class="space-y-4">
+                    <div>
+                        <label class="block text-slate-400 text-xs mb-2 font-mono uppercase">Research Query or URL</label>
+                        <input type="text" x-model="newResearch.query" required class="w-full bg-[#05080a] border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00e5c9] focus:outline-none" placeholder="e.g., https://bnrgreen.com or 'AI safety research'">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-xs mb-2 font-mono uppercase">Research Type</label>
+                        <select x-model="newResearch.type" class="w-full bg-[#05080a] border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm focus:border-[#00e5c9] focus:outline-none">
+                            <option value="web_search">Web Search / Scrape</option>
+                            <option value="academic">Academic Papers</option>
+                            <option value="github">GitHub Repositories</option>
+                            <option value="documentation">Technical Docs</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" @click="showCreateResearch = false" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2.5 rounded-lg transition-all text-sm">Cancel</button>
+                        <button type="submit" class="flex-1 bg-gradient-to-r from-[#00e5c9] to-[#00d4ff] text-[#0a0f14] font-bold py-2.5 rounded-lg transition-all text-sm">Start Research</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+    </div>
+    
+    <script>
+        function NexusApp() {
+            return {
+                authenticated: false,
+                authForm: { codename: '', token: '', loading: false, error: '' },
+                user: { codename: '', clearance: 'TS/SCI/NOFORN' },
+                currentView: 'dashboard',
+                currentTime: '',
+                
+                navItems: [
+                    { id: 'dashboard', label: 'Dashboard', icon: 'fas fa-chart-line' },
+                    { id: 'playground', label: 'AI Playground', icon: 'fas fa-flask' },
+                    { id: 'agents', label: 'Agent Fleet', icon: 'fas fa-robot' },
+                    { id: 'swarm', label: 'Swarm Ops', icon: 'fas fa-project-diagram', badge: '0' },
+                    { id: 'training', label: 'Training', icon: 'fas fa-graduation-cap', badge: '0' },
+                    { id: 'network', label: 'Network', icon: 'fas fa-network-wired' },
+                    { id: 'research', label: 'Research', icon: 'fas fa-search' },
+                ],
+                
+                system: { cpu: 0, memory: 0, storage: 0, latency: 0, network: {} },
+                systemStatus: 'checking',
+                systemStatusText: 'Checking system status...',
+                
+                stats: {
+                    agents: { active: 0, total: 0 },
+                    conversations: 0,
+                    requests: { total: 0, perMinute: 0 }
+                },
+                
+                terminal: { input: '', lines: [], history: [], historyIndex: -1 },
+                
+                playground: {
+                    input: '',
+                    loading: false,
+                    config: { model: 'llama-3.3-70b-versatile', temperature: 0.7, maxTokens: 4096, streaming: true },
+                    messages: [],
+                    activeTool: null,
+                    toolUrl: ''
+                },
+                
+                agents: [],
+                showCreateAgent: false,
+                newAgent: { name: '', persona: 'Code Specialist', model: 'llama-3.3-70b-versatile', clearance: 'SECRET' },
+                controllingAgent: null,
+                viewingAgentLogs: null,
+                agentLogs: [],
+                
+                swarm: { operations: [] },
+                showCreateSwarm: false,
+                newSwarm: { name: '', objective: '', selectedAgents: [] },
+                
+                training: { jobs: [] },
+                showCreateTraining: false,
+                newTraining: { name: '', model: 'llama-3.1-8b', dataset: 'code-instruct' },
+                customModels: [],
+                
+                network: { stats: null, nodes: [], packets: [], capturing: false },
+                
+                research: { tasks: [] },
+                showCreateResearch: false,
+                newResearch: { query: '', type: 'web_search' },
+                viewingResearch: null,
+                
+                init() {
+                    this.initBackground();
+                    this.updateTime();
+                    setInterval(() => this.updateTime(), 1000);
+                    
+                    const stored = localStorage.getItem('nexus_session');
+                    const token = localStorage.getItem('nexus_token');
+                    
+                    if (stored && token) {
+                        try {
+                            const session = JSON.parse(stored);
+                            if (session.expires > Date.now()) {
+                                this.user = session.user;
+                                this.authForm.token = token;
+                                this.authenticated = true;
+                                this.loadData();
+                            }
+                        } catch (e) {}
+                    }
+                },
+                
+                initBackground() {
+                    const canvas = document.getElementById('bg-canvas');
+                    if (!canvas) return;
+                    
+                    const ctx = canvas.getContext('2d');
+                    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+                    resize();
+                    window.addEventListener('resize', resize);
+                    
+                    const particles = [];
+                    for (let i = 0; i < 60; i++) {
+                        particles.push({
+                            x: Math.random() * canvas.width,
+                            y: Math.random() * canvas.height,
+                            vx: (Math.random() - 0.5) * 0.3,
+                            vy: (Math.random() - 0.5) * 0.3,
+                            size: Math.random() * 2 + 0.5,
+                            pulse: Math.random() * Math.PI * 2
+                        });
+                    }
+                    
+                    const animate = () => {
+                        ctx.fillStyle = 'rgba(5, 8, 10, 0.08)';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        
+                        particles.forEach((p, i) => {
+                            p.x += p.vx; p.y += p.vy; p.pulse += 0.015;
+                            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                            
+                            const pulseSize = p.size + Math.sin(p.pulse) * 0.3;
+                            const alpha = 0.3 + Math.sin(p.pulse) * 0.2;
+                            
+                            ctx.beginPath();
+                            ctx.arc(p.x, p.y, pulseSize, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(0, 229, 201, ${alpha})`;
+                            ctx.fill();
+                            
+                            particles.slice(i + 1).forEach(p2 => {
+                                const dx = p.x - p2.x, dy = p.y - p2.y;
+                                const dist = Math.sqrt(dx * dx + dy * dy);
+                                if (dist < 120) {
+                                    ctx.beginPath();
+                                    ctx.moveTo(p.x, p.y);
+                                    ctx.lineTo(p2.x, p2.y);
+                                    ctx.strokeStyle = `rgba(0, 229, 201, ${0.15 * (1 - dist / 120)})`;
+                                    ctx.lineWidth = 0.5;
+                                    ctx.stroke();
+                                }
+                            });
+                        });
+                        requestAnimationFrame(animate);
+                    };
+                    animate();
+                },
+                
+                updateTime() {
+                    this.currentTime = new Date().toLocaleString('en-US', {
+                        weekday: 'short', year: 'numeric', month: 'short', day: '2-digit',
+                        hour: '2-digit', minute: '2-digit', second: '2-digit'
+                    });
+                },
+                
+                async loadData() {
+                    await this.fetchSystemStatus();
+                    await this.fetchAgents();
+                    await this.fetchSwarmOperations();
+                    await this.fetchTrainingJobs();
+                    await this.fetchNetworkStatus();
+                    await this.fetchResearchTasks();
+                    await this.fetchCustomModels();
+                    
+                    setInterval(() => {
+                        this.fetchSystemStatus();
+                        this.fetchNetworkStatus();
+                    }, 5000);
+                },
+                
+                async fetchSystemStatus() {
+                    try {
+                        const response = await fetch('/api/system/status', {
+                            headers: { 'Authorization': `Bearer ${this.authForm.token}` }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.systemStatus = data.status;
+                            this.systemStatusText = data.status === 'operational' ? 'All systems operational' : 'System degraded';
+                            
+                            if (data.metrics) {
+                                this.system.cpu = Math.round(data.metrics.cpu.percent);
+                                this.system.memory = Math.round(data.metrics.memory.percent);
+                                this.system.storage = Math.round(data.metrics.storage.percent);
+                                this.system.network = data.metrics.network;
+                                this.system.latency = data.router?.latency_ms || 0;
+                                this.stats.requests.total = data.metrics.requests?.total || 0;
+                                this.stats.requests.perMinute = data.metrics.requests?.per_minute || 0;
+                            }
+                        }
+                    } catch (e) {
+                        this.systemStatus = 'degraded';
+                        this.systemStatusText = 'Connection lost';
+                    }
+                },
+                
+                async fetchAgents() {
+                    try {
+                        const response = await fetch('/api/agents', {
+                            headers: { 'Authorization': `Bearer ${this.authForm.token}` }
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.agents = data.agents || [];
+                            this.stats.agents.total = data.count || 0;
+                            this.stats.agents.active = this.agents.filter(a => a.status === 'active').length;
+                        }
+                    } catch (e) {}
+                },
+                
+                async fetchCustomModels() {
+                    try {
+                        const response = await fetch('/api/models/custom', {
+                            headers: { 'Authorization': `Bearer ${this.authForm.token}` }
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.customModels = data.models || [];
+                        }
+                    } catch (e) {}
+                },
+                
+                async fetchSwarmOperations() {
+                    try {
+                        const response = await fetch('/api/swarm/operations', {
+                            headers: { 'Authorization': `Bearer ${this.authForm.token}` }
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.swarm.operations = data.operations || [];
+                            this.navItems.find(n => n.id === 'swarm').badge = this.swarm.operations.filter(o => o.status === 'running').length || '0';
+                        }
+                    } catch (e) {}
+                },
+                
+                async fetchTrainingJobs() {
+                    try {
+                        const response = await fetch('/api/training/jobs', {
+                            headers: { 'Authorization': `Bearer ${this.authForm.token}` }
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.training.jobs = data.jobs || [];
+                            this.navItems.find(n => n.id === 'training').badge = this.training.jobs.filter(j => j.status === 'running').length || '0';
+                        }
+                    } catch (e) {}
+                },
+                
+                async fetchNetworkStatus() {
+                    try {
+                        const response = await fetch('/api/network/status', {
+                            headers: { 'Authorization': `Bearer ${this.authForm.token}` }
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.network.stats = data;
+                            this.network.nodes = data.nodes || [];
+                        }
+                    } catch (e) {}
+                },
+                
+                async fetchResearchTasks() {
+                    try {
+                        const response = await fetch('/api/research/tasks', {
+                            headers: { 'Authorization': `Bearer ${this.authForm.token}` }
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.research.tasks = data.tasks || [];
+                        }
+                    } catch (e) {}
+                },
+                
+                async doAuth() {
+                    this.authForm.loading = true;
+                    this.authForm.error = '';
+                    
+                    await new Promise(r => setTimeout(r, 1500));
+                    
+                    const VALID_TOKEN = 'WINSOCK!IS!GOAT!ORDL3991!-3dc65a69fda7069b53e40ff05c9f5620';
+                    
+                    if (this.authForm.token !== VALID_TOKEN) {
+                        this.authForm.error = 'ACCESS DENIED: Invalid credentials';
+                        this.authForm.loading = false;
+                        return;
+                    }
+                    
+                    this.user = { codename: this.authForm.codename || 'OPERATOR', clearance: 'TS/SCI/NOFORN' };
+                    localStorage.setItem('nexus_session', JSON.stringify({ user: this.user, expires: Date.now() + (8 * 60 * 60 * 1000) }));
+                    localStorage.setItem('nexus_token', this.authForm.token);
+                    
+                    this.authenticated = true;
+                    this.authForm.loading = false;
+                    this.loadData();
+                },
+                
+                logout() {
+                    localStorage.removeItem('nexus_session');
+                    localStorage.removeItem('nexus_token');
+                    this.authenticated = false;
+                    this.authForm = { codename: '', token: '', loading: false, error: '' };
+                },
+                
+                execCommand() {
+                    const cmd = this.terminal.input.trim();
+                    if (!cmd) return;
+                    
+                    const id = Date.now();
+                    this.terminal.lines.push({ id, text: `$ ${cmd}`, color: 'text-[#00e5c9]' });
+                    
+                    const command = cmd.split(' ')[0].toLowerCase();
+                    
+                    switch (command) {
+                        case 'help':
+                            this.terminal.lines.push({ id: id+1, text: 'Commands: help, clear, status, agents, models, swarm, training', color: 'text-slate-400' });
+                            break;
+                        case 'clear':
+                            this.terminal.lines = [];
+                            break;
+                        case 'status':
+                            this.terminal.lines.push({ id: id+1, text: `Status: ${this.systemStatus.toUpperCase()}`, color: 'text-emerald-400' });
+                            this.terminal.lines.push({ id: id+2, text: `CPU: ${this.system.cpu}% | RAM: ${this.system.memory}% | Latency: ${this.system.latency}ms`, color: 'text-slate-400' });
+                            break;
+                        case 'agents':
+                            this.terminal.lines.push({ id: id+1, text: `${this.agents.length} agents:`, color: 'text-slate-300' });
+                            this.agents.forEach((a, i) => {
+                                this.terminal.lines.push({ id: id+2+i, text: `  [${a.status.toUpperCase()}] ${a.name}`, color: a.status === 'active' ? 'text-emerald-400' : 'text-slate-400' });
+                            });
+                            break;
+                        default:
+                            this.terminal.lines.push({ id: id+1, text: `Unknown: ${command}`, color: 'text-red-400' });
+                    }
+                    
+                    this.terminal.input = '';
+                    this.$nextTick(() => {
+                        const el = document.getElementById('terminal-output');
+                        if (el) el.scrollTop = el.scrollHeight;
+                    });
+                },
+                
+                async sendMessage() {
+                    const content = this.playground.input.trim();
+                    if (!content || this.playground.loading) return;
+                    
+                    this.playground.messages.push({ id: Date.now(), role: 'user', content });
+                    this.playground.input = '';
+                    this.playground.loading = true;
+                    this.stats.conversations++;
+                    
+                    try {
+                        const body = {
+                            model: this.playground.config.model,
+                            messages: [{ role: 'user', content }],
+                            temperature: parseFloat(this.playground.config.temperature),
+                            max_tokens: parseInt(this.playground.config.maxTokens)
+                        };
+                        
+                        // Add tool if active
+                        if (this.playground.activeTool === 'web_search' && this.playground.toolUrl) {
+                            body.tool = 'web_search';
+                            body.tool_url = this.playground.toolUrl;
+                        }
+                        
+                        const response = await fetch('/api/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.authForm.token}` },
+                            body: JSON.stringify(body)
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (response.ok && data.choices && data.choices[0]) {
+                            this.playground.messages.push({
+                                id: Date.now() + 1,
+                                role: 'assistant',
+                                content: data.choices[0].message.content,
+                                model: data.model,
+                                tool_used: data.tool_used,
+                                scraped_url: data.scraped_url
+                            });
+                            this.stats.requests.total++;
+                        } else {
+                            this.playground.messages.push({ id: Date.now() + 1, role: 'assistant', content: `Error: ${data.error || 'API error'}` });
+                        }
+                    } catch (error) {
+                        this.playground.messages.push({ id: Date.now() + 1, role: 'assistant', content: `Error: ${error.message}` });
+                    }
+                    
+                    this.playground.loading = false;
+                    this.$nextTick(() => {
+                        const el = document.getElementById('chat-container');
+                        if (el) el.scrollTop = el.scrollHeight;
+                    });
+                },
+                
+                formatContent(content) {
+                    return content
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="bg-[#020408] p-3 rounded-lg my-2 overflow-x-auto font-mono text-xs border border-slate-800 text-[#00e5c9]"><code>$2</code></pre>')
+                        .replace(/`([^`]+)`/g, '<code class="bg-[#020408] px-1.5 py-0.5 rounded text-[#00e5c9] font-mono text-xs border border-slate-800">$1</code>')
+                        .replace(/\n/g, '<br>');
+                },
+                
+                formatBytes(bytes) {
+                    if (bytes === 0) return '0 B';
+                    const k = 1024;
+                    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                },
+                
+                formatTime(isoString) {
+                    if (!isoString) return '-';
+                    const date = new Date(isoString);
+                    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                },
+                
+                // Agent Management
+                async createAgent() {
+                    try {
+                        const response = await fetch('/api/agents', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.authForm.token}` },
+                            body: JSON.stringify(this.newAgent)
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.agents.push(data.agent);
+                            this.stats.agents.total++;
+                            this.showCreateAgent = false;
+                            this.newAgent = { name: '', persona: 'Code Specialist', model: 'llama-3.3-70b-versatile', clearance: 'SECRET' };
+                        }
+                    } catch (e) { alert('Failed: ' + e.message); }
+                },
+                
+                async viewAgentLogs(agent) {
+                    try {
+                        const response = await fetch(`/api/agents/${agent.id}/logs`, {
+                            headers: { 'Authorization': `Bearer ${this.authForm.token}` }
+                        });
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.agentLogs = data.logs || [];
+                            this.viewingAgentLogs = agent;
+                        }
+                    } catch (e) {}
+                },
+                
+                controlAgent(agent) { this.controllingAgent = agent; },
+                
+                async toggleAgentStatus() {
+                    if (!this.controllingAgent) return;
+                    const newStatus = this.controllingAgent.status === 'active' ? 'idle' : 'active';
+                    const action = newStatus === 'active' ? 'activate' : 'deactivate';
+                    
+                    try {
+                        await fetch(`/api/agents/${this.controllingAgent.id}/control`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.authForm.token}` },
+                            body: JSON.stringify({ action })
+                        });
+                        
+                        const agent = this.agents.find(a => a.id === this.controllingAgent.id);
+                        if (agent) {
+                            agent.status = newStatus;
+                            this.stats.agents.active = this.agents.filter(a => a.status === 'active').length;
+                        }
+                    } catch (e) {}
+                    this.controllingAgent = null;
+                },
+                
+                async deleteAgent(id) {
+                    if (!confirm('Terminate this agent?')) return;
+                    try {
+                        await fetch(`/api/agents/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${this.authForm.token}` }});
+                        this.agents = this.agents.filter(a => a.id !== id);
+                        this.stats.agents.total = this.agents.length;
+                        this.stats.agents.active = this.agents.filter(a => a.status === 'active').length;
+                    } catch (e) {}
+                },
+                
+                viewAgentDetails(agent) { /* Could open detailed view */ },
+                
+                // Swarm
+                async createSwarmOperation() {
+                    try {
+                        const response = await fetch('/api/swarm/operations', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.authForm.token}` },
+                            body: JSON.stringify({
+                                name: this.newSwarm.name,
+                                objective: this.newSwarm.objective,
+                                agents: this.newSwarm.selectedAgents
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.swarm.operations.push(data.operation);
+                            this.showCreateSwarm = false;
+                            this.newSwarm = { name: '', objective: '', selectedAgents: [] };
+                        }
+                    } catch (e) {}
+                },
+                
+                async deleteSwarmOperation(id) {
+                    try {
+                        await fetch(`/api/swarm/operations/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${this.authForm.token}` }});
+                        this.swarm.operations = this.swarm.operations.filter(o => o.id !== id);
+                    } catch (e) {}
+                },
+                
+                // Training
+                async createTrainingJob() {
+                    try {
+                        const response = await fetch('/api/training/jobs', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.authForm.token}` },
+                            body: JSON.stringify(this.newTraining)
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.training.jobs.push(data.job);
+                            this.showCreateTraining = false;
+                            this.newTraining = { name: '', model: 'llama-3.1-8b', dataset: 'code-instruct' };
+                        }
+                    } catch (e) {}
+                },
+                
+                async deleteTrainingJob(id) {
+                    try {
+                        await fetch(`/api/training/jobs/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${this.authForm.token}` }});
+                        const job = this.training.jobs.find(j => j.id === id);
+                        if (job) job.status = 'cancelled';
+                    } catch (e) {}
+                },
+                
+                // Network
+                async startPacketCapture() {
+                    try {
+                        const response = await fetch('/api/network/capture', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.authForm.token}` },
+                            body: JSON.stringify({ interface: 'eth0' })
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.network.capturing = true;
+                            this.pollPackets(data.capture.id);
+                        }
+                    } catch (e) {}
+                },
+                
+                async pollPackets(captureId) {
+                    if (!this.network.capturing) return;
+                    
+                    try {
+                        const response = await fetch(`/api/network/capture/${captureId}`, {
+                            headers: { 'Authorization': `Bearer ${this.authForm.token}` }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.network.packets = data.packets_data || [];
+                            
+                            if (data.status === 'capturing') {
+                                setTimeout(() => this.pollPackets(captureId), 1000);
+                            } else {
+                                this.network.capturing = false;
+                            }
+                        }
+                    } catch (e) { this.network.capturing = false; }
+                },
+                
+                async stopPacketCapture() {
+                    this.network.capturing = false;
+                },
+                
+                // Research
+                async createResearchTask() {
+                    try {
+                        const response = await fetch('/api/research/tasks', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.authForm.token}` },
+                            body: JSON.stringify(this.newResearch)
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            this.research.tasks.push(data.task);
+                            this.showCreateResearch = false;
+                            this.newResearch = { query: '', type: 'web_search' };
+                        }
+                    } catch (e) {}
+                },
+                
+                viewResearchDetails(task) { this.viewingResearch = task; },
+                
+                shareResearch(task) {
+                    const text = `Research: ${task.query}\n\nFindings:\n${task.findings?.join('\n') || 'No findings yet'}\n\nSources: ${task.sources?.map(s => s.url).join(', ')}`;
+                    navigator.clipboard.writeText(text).then(() => alert('Research copied to clipboard!'));
+                },
+                
+                async deleteResearchTask(id) {
+                    try {
+                        await fetch(`/api/research/tasks/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${this.authForm.token}` }});
+                        this.research.tasks = this.research.tasks.filter(t => t.id !== id);
+                    } catch (e) {}
+                }
+            }
+        }
+    </script>
+</body>
+</html>

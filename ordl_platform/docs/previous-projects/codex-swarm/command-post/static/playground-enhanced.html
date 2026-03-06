@@ -1,0 +1,88 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORDL AI Playground</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<style>*{font-family:'Inter',sans-serif;}::-webkit-scrollbar{width:8px;}::-webkit-scrollbar-track{background:#0f172a;}::-webkit-scrollbar-thumb{background:#334155;border-radius:4px;}</style>
+</head><body class="bg-slate-950 text-slate-100 h-screen overflow-hidden">
+<div x-data="playgroundApp()" class="h-full flex flex-col">
+<header class="bg-slate-900 border-b border-slate-700 h-14 flex items-center justify-between px-4 shrink-0">
+<div class="flex items-center gap-3"><div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"><svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+<h1 class="font-semibold text-lg">ORDL AI Playground</h1><span class="text-xs px-2 py-0.5 rounded-full bg-slate-700 text-slate-400">v5.0</span></div>
+<select x-model="config.model" class="bg-slate-800 border border-slate-600 rounded-lg px-3 py-1.5 text-sm">
+<option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
+<option value="llama-3.1-8b-instant">Llama 3.1 8B</option>
+</select>
+</header>
+<div class="flex-1 flex overflow-hidden">
+<aside class="w-64 bg-slate-900 border-r border-slate-700 flex flex-col shrink-0" x-show="showSidebar">
+<div class="p-3 border-b border-slate-700">
+<button @click="newChat()" class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 px-4 transition-colors">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>New Chat</button>
+</div>
+<div class="flex-1 overflow-y-auto p-2">
+<template x-for="conv in conversations" :key="conv.id">
+<div @click="loadConversation(conv.id)" :class="{'bg-slate-800': currentConversation === conv.id}" class="group flex items-center gap-3 p-2 rounded-lg hover:bg-slate-800 cursor-pointer transition-colors mb-1">
+<span class="text-sm truncate flex-1" x-text="conv.title"></span>
+<button @click.stop="deleteConversation(conv.id)" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-600 rounded transition-all">×</button>
+</div>
+</template>
+</div>
+</aside>
+<main class="flex-1 flex flex-col min-w-0">
+<div class="flex-1 overflow-y-auto p-4 space-y-4" id="messages-container" x-ref="messagesContainer">
+<div x-show="messages.length === 0" class="text-center py-12">
+<div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"><svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></div>
+<h2 class="text-2xl font-bold mb-2">ORDL AI Playground</h2>
+<p class="text-slate-400 max-w-md mx-auto">Advanced AI operations center with real-time training and multi-agent coordination.</p>
+</div>
+<template x-for="(message, index) in messages" :key="index">
+<div class="message-enter" :class="message.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+<div class="max-w-[85%]" :class="message.role === 'user' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-100'" class="rounded-2xl px-4 py-3">
+<div class="prose prose-invert prose-sm max-w-none" x-html="renderMarkdown(message.content)"></div>
+</div>
+</div>
+</template>
+<div x-show="isTyping" class="flex justify-start message-enter">
+<div class="bg-slate-800 rounded-2xl px-4 py-3"><div class="flex items-center gap-1"><div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div><div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay:0.2s"></div><div class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay:0.4s"></div></div></div>
+</div>
+</div>
+<div class="border-t border-slate-700 p-4 bg-slate-900/50">
+<div class="max-w-4xl mx-auto">
+<div class="relative">
+<textarea x-model="inputMessage" @keydown="handleKeydown($event)" placeholder="Message ORDL AI... (Shift+Enter for new line)" class="w-full bg-slate-800 border border-slate-600 rounded-xl px-4 py-3 pr-12 resize-none focus:outline-none focus:border-blue-500" rows="1" x-ref="inputBox"></textarea>
+<button @click="sendMessage()" :disabled="!inputMessage.trim() || isTyping" class="absolute right-2 bottom-2 p-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg transition-colors">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+<script>
+function playgroundApp() {
+return {
+messages: [], inputMessage: '', isTyping: false, showSidebar: true, currentConversation: null, conversations: [],
+config: {model: 'llama-3.3-70b-versatile', temperature: 0.7},
+renderMarkdown(text) { return marked.parse(text || ''); },
+handleKeydown(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.sendMessage(); } },
+newChat() { this.messages = []; this.currentConversation = null; },
+async sendMessage() {
+const message = this.inputMessage.trim(); if (!message || this.isTyping) return;
+this.messages.push({role: 'user', content: message}); this.inputMessage = ''; this.isTyping = true;
+try {
+const response = await fetch('/api/chat', {method: 'POST', headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer '+localStorage.getItem('token')||''},
+body: JSON.stringify({model: this.config.model, messages: this.messages.map(m=>({role:m.role,content:m.content}))})});
+const data = await response.json();
+this.messages.push({role: 'assistant', content: data.choices?.[0]?.message?.content || 'No response'});
+} catch (error) { this.messages.push({role: 'assistant', content: 'Error: '+error.message}); }
+this.isTyping = false;
+}
+};
+}
+</script>
+</body></html>

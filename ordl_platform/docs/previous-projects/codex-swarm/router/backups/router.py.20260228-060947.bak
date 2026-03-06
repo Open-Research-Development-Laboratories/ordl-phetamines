@@ -1,0 +1,476 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import asyncio
+import ipaddress
+import json
+import logging
+import os
+import time
+import uuid
+from dataclasses import dataclass
+from typing import Any, AsyncIterator, Dict, List, Optional
+
+import httpx
+from fastapi import FastAPI, Header, HTTPException, Request
+from fastapi.responses import JSONResponse, PlainTextResponse, Response, StreamingResponse
+
+LOG_LEVEL = os.getenv("ROUTER_LOG_LEVEL", "INFO").upper()
+logging.basicConfig(level=LOG_LEVEL, format="%(asctime)s %(levelname)s [%(name)s] %(message)s")
+log = logging.getLogger("codex-router")
+
+
+def _env(name: str, default: Optional[str] = None) -> str:
+    v = os.getenv(name, default)
+    if v is None:
+        raise RuntimeError(f"Missing required env var: {name}")
+    return v
+
+
+def _parse_networks(csv: str) -> List[ipaddress._BaseNetwork]:
+    out: List[ipaddress._BaseNetwork] = []
+    raw = (csv or "").strip()
+    if not raw:
+        return out
+    for part in raw.split(","):
+        p = part.strip()
+        if p:
+            out.append(ipaddress.ip_network(p, strict=False))
+    return out
+
+
+@dataclass(frozen=True)
+class Config:
+    router_bind: str
+    router_port: int
+    ollama_base: str
+    router_mode: str
+    model_arch: str
+    model_impl: str
+    model_review: str
+    router_timeout_s: float
+    allow_cidrs: List[ipaddress._BaseNetwork]
+    trusted_proxy_cidrs: List[ipaddress._BaseNetwork]
+    require_bearer_token: Optional[str]
+    max_request_bytes: int
+    max_prompt_chars: int
+    max_upstream_error_bytes: int
+    rate_limit_rps: float
+    rate_limit_burst: int
+
+
+def load_config() -> Config:
+    router_bind = _env("ROUTER_BIND", "0.0.0.0")
+    router_port = int(_env("ROUTER_PORT", "18000"))
+    ollama_base = _env("OLLAMA_BASE", "http://127.0.0.1:11434").rstrip("/")
+    router_mode = _env("ROUTER_MODE", "max_quality")
+    model_arch = _env("MODEL_ARCH", "qwen2.5:72b-instruct-q4_K_M")
+    model_impl = _env("MODEL_IMPL", "qwen2.5-coder:32b")
+    model_review = _env("MODEL_REVIEW", "qwen2.5-coder:14b")
+    router_timeout_s = float(_env("ROUTER_TIMEOUT_S", "1800"))
+    allow_cidrs = _parse_networks(os.getenv("ALLOW_CIDRS", ""))
+    trusted_proxy_cidrs = _parse_networks(os.getenv("TRUSTED_PROXY_CIDRS", ""))
+    require_bearer_token = os.getenv("ROUTER_BEARER_TOKEN", "").strip() or None
+    max_request_bytes = int(_env("MAX_REQUEST_BYTES", str(256 * 1024)))
+    max_prompt_chars = int(_env("MAX_PROMPT_CHARS", str(256_000)))
+    max_upstream_error_bytes = int(_env("MAX_UPSTREAM_ERROR_BYTES", str(64 * 1024)))
+    rate_limit_rps = float(_env("RATE_LIMIT_RPS", "10"))
+    rate_limit_burst = int(_env("RATE_LIMIT_BURST", "20"))
+    return Config(
+        router_bind=router_bind,
+        router_port=router_port,
+        ollama_base=ollama_base,
+        router_mode=router_mode,
+        model_arch=model_arch,
+        model_impl=model_impl,
+        model_review=model_review,
+        router_timeout_s=router_timeout_s,
+        allow_cidrs=allow_cidrs,
+        trusted_proxy_cidrs=trusted_proxy_cidrs,
+        require_bearer_token=require_bearer_token,
+        max_request_bytes=max_request_bytes,
+        max_prompt_chars=max_prompt_chars,
+        max_upstream_error_bytes=max_upstream_error_bytes,
+        rate_limit_rps=rate_limit_rps,
+        rate_limit_burst=rate_limit_burst,
+    )
+
+
+CFG = load_config()
+
+UPSTREAM_TIMEOUT = httpx.Timeout(connect=5.0, read=CFG.router_timeout_s, write=30.0, pool=5.0)
+UPSTREAM_LIMITS = httpx.Limits(max_connections=32, max_keepalive_connections=16, keepalive_expiry=30.0)
+UPSTREAM_HEADERS = {"Accept": "application/json", "Content-Type": "application/json"}
+
+_http: Optional[httpx.AsyncClient] = None
+
+
+async def get_client() -> httpx.AsyncClient:
+    global _http
+    if _http is None:
+        _http = httpx.AsyncClient(timeout=UPSTREAM_TIMEOUT, limits=UPSTREAM_LIMITS, http2=False)
+    return _http
+
+
+class TokenBucket:
+    __slots__ = ("capacity", "rate", "tokens", "ts")
+
+    def __init__(self, capacity: int, rate: float) -> None:
+        self.capacity = float(max(1, capacity))
+        self.rate = float(max(0.0001, rate))
+        self.tokens = float(capacity)
+        self.ts = time.monotonic()
+
+    def allow(self, cost: float = 1.0) -> bool:
+        now = time.monotonic()
+        elapsed = now - self.ts
+        self.ts = now
+        self.tokens = min(self.capacity, self.tokens + elapsed * self.rate)
+        if self.tokens >= cost:
+            self.tokens -= cost
+            return True
+        return False
+
+
+_rate_lock = asyncio.Lock()
+_rate_state: Dict[str, TokenBucket] = {}
+
+
+async def rate_limit_allow(ip: str) -> bool:
+    async with _rate_lock:
+        b = _rate_state.get(ip)
+        if b is None:
+            b = TokenBucket(capacity=CFG.rate_limit_burst, rate=CFG.rate_limit_rps)
+            _rate_state[ip] = b
+        return b.allow(1.0)
+
+
+def _ip_in_any(ip_str: str, nets: List[ipaddress._BaseNetwork]) -> bool:
+    if not nets:
+        return False
+    try:
+        ip = ipaddress.ip_address(ip_str)
+    except ValueError:
+        return False
+    return any(ip in net for net in nets)
+
+
+def client_ip(request: Request) -> str:
+    peer = request.client.host if request.client else "0.0.0.0"
+    if CFG.trusted_proxy_cidrs and _ip_in_any(peer, CFG.trusted_proxy_cidrs):
+        xff = request.headers.get("x-forwarded-for", "").strip()
+        if xff:
+            first = xff.split(",")[0].strip()
+            if first:
+                return first
+    return peer
+
+
+def cidr_allowed(ip_str: str) -> bool:
+    if not CFG.allow_cidrs:
+        return True
+    return _ip_in_any(ip_str, CFG.allow_cidrs)
+
+
+def require_bearer(authorization: Optional[str]) -> None:
+    if not CFG.require_bearer_token:
+        return
+    if not authorization:
+        raise HTTPException(status_code=401, detail="Missing Authorization")
+    expected = f"Bearer {CFG.require_bearer_token}"
+    if authorization.strip() != expected:
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+
+def choose_model(input_text: str) -> str:
+    t = input_text.lower()
+    if any(x in t for x in ("security review", "threat model", "audit", "vulnerability", "vuln", "cve", "exploit", "hardening")):
+        return CFG.model_review
+    if any(x in t for x in ("implement", "patch", "diff", "fix", "bug", "refactor", "unit test", "write tests")):
+        return CFG.model_impl
+    if any(x in t for x in ("architecture", "design spec", "specification", "system design", "rfc")):
+        return CFG.model_arch
+    return CFG.model_arch
+
+
+def normalize_responses_input(payload: Dict[str, Any]) -> str:
+    inp = payload.get("input", "")
+    if isinstance(inp, str):
+        return inp.strip()
+    if isinstance(inp, list):
+        parts: List[str] = []
+        for item in inp:
+            if isinstance(item, str):
+                s = item.strip()
+                if s:
+                    parts.append(s)
+            elif isinstance(item, dict):
+                role = item.get("role")
+                content = item.get("content")
+                if isinstance(content, str):
+                    s = content.strip()
+                    if s:
+                        parts.append(f"{role}: {s}" if role else s)
+                elif item.get("type") in ("input_text", "output_text"):
+                    txt = item.get("text")
+                    if isinstance(txt, str):
+                        s = txt.strip()
+                        if s:
+                            parts.append(s)
+                elif isinstance(content, list):
+                    for c in content:
+                        if isinstance(c, dict) and isinstance(c.get("text"), str):
+                            s = c["text"].strip()
+                            if s:
+                                parts.append(s)
+        return "\n".join(parts).strip()
+    return str(inp).strip()
+
+
+def normalize_chat_messages(payload: Dict[str, Any]) -> str:
+    msgs = payload.get("messages", [])
+    if not isinstance(msgs, list):
+        return ""
+    out: List[str] = []
+    for m in msgs:
+        if not isinstance(m, dict):
+            continue
+        role = str(m.get("role", "user"))
+        content = m.get("content", "")
+        if isinstance(content, str):
+            s = content.strip()
+            if s:
+                out.append(f"{role}: {s}")
+        elif isinstance(content, list):
+            texts: List[str] = []
+            for c in content:
+                if isinstance(c, dict):
+                    txt = c.get("text")
+                    if isinstance(txt, str):
+                        s = txt.strip()
+                        if s:
+                            texts.append(s)
+            if texts:
+                out.append(f"{role}: " + "\n".join(texts))
+    return "\n".join(out).strip()
+
+
+def map_generation_options(payload: Dict[str, Any]) -> Dict[str, Any]:
+    opts: Dict[str, Any] = {}
+    mot = payload.get("max_output_tokens", payload.get("max_tokens"))
+    if isinstance(mot, int) and mot > 0:
+        opts["num_predict"] = mot
+    temp = payload.get("temperature")
+    if isinstance(temp, (int, float)):
+        opts["temperature"] = float(temp)
+    top_p = payload.get("top_p")
+    if isinstance(top_p, (int, float)):
+        opts["top_p"] = float(top_p)
+    stop = payload.get("stop")
+    if isinstance(stop, str) and stop:
+        opts["stop"] = [stop]
+    elif isinstance(stop, list):
+        s2 = [x for x in stop if isinstance(x, str) and x]
+        if s2:
+            opts["stop"] = s2
+    for k in ("seed", "num_ctx", "repeat_penalty", "presence_penalty", "frequency_penalty"):
+        v = payload.get(k)
+        if isinstance(v, (int, float)):
+            opts[k] = v
+    return opts
+
+
+def _truncate(s: str, n: int) -> str:
+    return s if len(s) <= n else s[:n] + f"...(truncated, {len(s) - n} chars omitted)"
+
+
+async def _read_json_body_limited(request: Request) -> Dict[str, Any]:
+    try:
+        body = await request.body()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Unable to read request body")
+    if len(body) > CFG.max_request_bytes:
+        raise HTTPException(status_code=413, detail="Request too large")
+    try:
+        data = json.loads(body.decode("utf-8"))
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+    if not isinstance(data, dict):
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+    return data
+
+
+app = FastAPI(title="Codex Swarm Router", version="2.0.2")
+
+
+@app.on_event("startup")
+async def _startup() -> None:
+    await get_client()
+    log.info("router startup ok bind=%s port=%s ollama=%s mode=%s", CFG.router_bind, CFG.router_port, CFG.ollama_base, CFG.router_mode)
+
+
+@app.on_event("shutdown")
+async def _shutdown() -> None:
+    global _http
+    if _http is not None:
+        await _http.aclose()
+        _http = None
+
+
+@app.get("/health")
+async def health() -> Dict[str, str]:
+    return {"status": "ok"}
+
+
+@app.get("/")
+async def root() -> Dict[str, Any]:
+    return {"service": "codex-router", "status": "ok", "ollama_base": CFG.ollama_base, "mode": CFG.router_mode, "version": app.version}
+
+
+@app.middleware("http")
+async def security_middleware(request: Request, call_next):
+    ip = client_ip(request)
+    if not cidr_allowed(ip):
+        return JSONResponse(status_code=403, content={"error": "forbidden"})
+    if not await rate_limit_allow(ip):
+        return JSONResponse(status_code=429, content={"error": "rate_limited"})
+    request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
+    request.state.request_id = request_id
+    resp: Response = await call_next(request)
+    resp.headers["x-request-id"] = request_id
+    return resp
+
+
+async def ollama_generate(request_id: str, model: str, prompt: str, stream: bool, options: Dict[str, Any]) -> Response:
+    client = await get_client()
+    url = f"{CFG.ollama_base}/api/generate"
+    body: Dict[str, Any] = {"model": model, "prompt": prompt, "stream": bool(stream)}
+    if options:
+        body["options"] = options
+
+    t0 = time.time()
+    log.info("[%s] -> ollama /api/generate model=%s stream=%s prompt_len=%d options=%s", request_id, model, stream, len(prompt), options)
+
+    try:
+        if stream:
+            req = client.build_request("POST", url, headers=UPSTREAM_HEADERS, json=body)
+            upstream = await client.send(req, stream=True)
+
+            ct0 = (upstream.headers.get("content-type") or "").lower()
+            if "application/json" in ct0 and "application/x-ndjson" not in ct0:
+                raw = await upstream.aread()
+                await upstream.aclose()
+                trimmed = raw[: CFG.max_upstream_error_bytes]
+                try:
+                    data = json.loads(trimmed.decode("utf-8"))
+                    return JSONResponse(status_code=upstream.status_code, content=data)
+                except Exception:
+                    return PlainTextResponse(
+                        status_code=502,
+                        content="Upstream returned JSON content-type but invalid JSON.\n"
+                        f"status={upstream.status_code}\n"
+                        f"body={_truncate(trimmed.decode('utf-8', 'replace'), 4000)}",
+                    )
+
+            async def gen() -> AsyncIterator[bytes]:
+                try:
+                    async for chunk in upstream.aiter_bytes():
+                        if chunk:
+                            yield chunk
+                except asyncio.CancelledError:
+                    raise
+                except httpx.StreamClosed:
+                    log.warning("[%s] upstream stream closed early", request_id)
+                except Exception:
+                    log.exception("[%s] error while streaming from upstream", request_id)
+                finally:
+                    try:
+                        await upstream.aclose()
+                    except Exception:
+                        pass
+                    log.info("[%s] <- ollama stream closed elapsed=%.3fs", request_id, time.time() - t0)
+
+            media = upstream.headers.get("content-type", "application/x-ndjson")
+            return StreamingResponse(gen(), status_code=upstream.status_code, media_type=media)
+
+        r = await client.post(url, headers=UPSTREAM_HEADERS, json=body)
+        log.info("[%s] <- ollama status=%s ct=%s elapsed=%.3fs", request_id, r.status_code, r.headers.get("content-type", ""), time.time() - t0)
+        try:
+            data = r.json()
+        except Exception:
+            return PlainTextResponse(status_code=502, content=f"Upstream returned non-JSON (status={r.status_code}):\n{_truncate(r.text, 4000)}")
+        return JSONResponse(status_code=r.status_code, content=data)
+
+    except httpx.TimeoutException:
+        log.exception("[%s] upstream timeout calling %s", request_id, url)
+        raise HTTPException(status_code=504, detail="Upstream timeout (Ollama)")
+    except httpx.HTTPError:
+        log.exception("[%s] upstream HTTP error calling %s", request_id, url)
+        raise HTTPException(status_code=502, detail="Upstream HTTP error (Ollama)")
+    except Exception:
+        log.exception("[%s] unexpected error calling %s", request_id, url)
+        raise HTTPException(status_code=500, detail="Router internal error")
+
+
+@app.post("/v1/responses")
+async def v1_responses(request: Request, authorization: Optional[str] = Header(default=None)):
+    require_bearer(authorization)
+    request_id: str = getattr(request.state, "request_id", None) or request.headers.get("x-request-id") or str(uuid.uuid4())
+    payload = await _read_json_body_limited(request)
+    stream = bool(payload.get("stream", False))
+
+    prompt = normalize_responses_input(payload)
+    if not prompt:
+        raise HTTPException(status_code=400, detail="Missing input")
+    if len(prompt) > CFG.max_prompt_chars:
+        raise HTTPException(status_code=413, detail="Input too large")
+
+    model = choose_model(prompt)
+    options = map_generation_options(payload)
+
+    log.info("[%s] /v1/responses start client=%s stream=%s chosen_model=%s", request_id, client_ip(request), stream, model)
+    resp = await ollama_generate(request_id, model=model, prompt=prompt, stream=stream, options=options)
+    log.info("[%s] /v1/responses done elapsed=%.3fs", request_id, time.time() - getattr(request.state, "t0", time.time()))
+    return resp
+
+
+@app.post("/v1/chat/completions")
+async def v1_chat_completions(request: Request, authorization: Optional[str] = Header(default=None)):
+    require_bearer(authorization)
+    request_id: str = getattr(request.state, "request_id", None) or request.headers.get("x-request-id") or str(uuid.uuid4())
+    t0 = time.time()
+
+    payload = await _read_json_body_limited(request)
+    stream = bool(payload.get("stream", False))
+
+    prompt = normalize_chat_messages(payload)
+    if not prompt:
+        raise HTTPException(status_code=400, detail="Missing messages")
+    if len(prompt) > CFG.max_prompt_chars:
+        raise HTTPException(status_code=413, detail="Input too large")
+
+    model = choose_model(prompt)
+    options = map_generation_options(payload)
+
+    log.info("[%s] /v1/chat/completions start client=%s stream=%s chosen_model=%s", request_id, client_ip(request), stream, model)
+    upstream_resp = await ollama_generate(request_id, model=model, prompt=prompt, stream=stream, options=options)
+
+    if isinstance(upstream_resp, JSONResponse):
+        try:
+            data = json.loads(upstream_resp.body.decode("utf-8"))
+        except Exception:
+            return upstream_resp
+
+        text = data.get("response", "") if isinstance(data, dict) else ""
+        wrapped = {
+            "id": f"chatcmpl_{request_id.replace('-', '')}",
+            "object": "chat.completion",
+            "created": int(time.time()),
+            "model": model,
+            "choices": [{"index": 0, "message": {"role": "assistant", "content": text}, "finish_reason": "stop"}],
+        }
+        log.info("[%s] /v1/chat/completions wrapped done elapsed=%.3fs", request_id, time.time() - t0)
+        return JSONResponse(status_code=200, content=wrapped)
+
+    log.info("[%s] /v1/chat/completions proxied stream elapsed=%.3fs", request_id, time.time() - t0)
+    return upstream_resp

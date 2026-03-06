@@ -1,0 +1,222 @@
+<!-- AI Playground - Full Featured Interface -->
+<div x-show="currentView === 'playground'" x-transition.opacity.duration.200ms class="h-full flex">
+    
+    <!-- LEFT SIDEBAR - Settings -->
+    <div class="w-80 bg-[#0a0f14] border-r border-[#00e5c9]/10 overflow-y-auto">
+        
+        <!-- Model Selection -->
+        <div class="p-4 border-b border-[#00e5c9]/10">
+            <div class="flex items-center gap-2 mb-3">
+                <i class="fas fa-brain text-[#00e5c9]"></i>
+                <h3 class="text-sm font-bold text-slate-200">Model</h3>
+            </div>
+            
+            <select x-model="playground.config.model" class="w-full bg-[#05080a] border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-300 focus:border-[#00e5c9] focus:outline-none mb-3">
+                <optgroup label="Base Models">
+                    <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
+                    <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant</option>
+                    <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
+                    <option value="gemma2-9b-it">Gemma 2 9B</option>
+                </optgroup>
+                <optgroup label="Custom Models" x-show="customModels.length > 0">
+                    <template x-for="model in customModels" :key="model.id">
+                        <option :value="model.id" x-text="model.name"></option>
+                    </template>
+                </optgroup>
+            </select>
+            
+            <!-- Quick Settings -->
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-500">Temperature</span>
+                        <span x-text="playground.config.temperature" class="text-[#00e5c9] font-mono"></span>
+                    </div>
+                    <input type="range" x-model="playground.config.temperature" min="0" max="2" step="0.1" class="w-full">
+                </div>
+                
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-500">Top P</span>
+                        <span x-text="playground.config.topP" class="text-[#00e5c9] font-mono"></span>
+                    </div>
+                    <input type="range" x-model="playground.config.topP" min="0" max="1" step="0.05" class="w-full">
+                </div>
+                
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-500">Max Tokens</span>
+                        <span x-text="playground.config.maxTokens" class="text-[#00e5c9] font-mono"></span>
+                    </div>
+                    <input type="range" x-model="playground.config.maxTokens" min="256" max="8192" step="256" class="w-full">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-slate-500">Streaming</span>
+                    <div class="toggle-switch" :class="playground.config.streaming ? 'active' : ''" @click="playground.config.streaming = !playground.config.streaming"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tools Section -->
+        <div class="p-4 border-b border-[#00e5c9]/10">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-tools text-[#00e5c9]"></i>
+                    <h3 class="text-sm font-bold text-slate-200">Tools</h3>
+                </div>
+                <span x-text="playground.selectedTools.length + ' selected'" class="text-xs text-slate-500"></span>
+            </div>
+            
+            <div class="space-y-2">
+                <template x-for="tool in tools.list" :key="tool.id">
+                    <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-800/30 hover:bg-slate-800/50 cursor-pointer transition-all">
+                        <input type="checkbox" :value="tool.id" x-model="playground.selectedTools" class="rounded border-slate-600 bg-slate-700 text-[#00e5c9] focus:ring-[#00e5c9]">
+                        <div class="flex-1 min-w-0">
+                            <div class="text-xs font-medium text-slate-300 truncate" x-text="tool.name"></div>
+                            <div class="text-[10px] text-slate-500 truncate" x-text="tool.description"></div>
+                        </div>
+                    </label>
+                </template>
+            </div>
+            
+            <button @click="tools.editingTool = true" class="mt-3 w-full btn-primary py-2 rounded-lg text-xs font-semibold">
+                <i class="fas fa-plus mr-1"></i> Add Custom Tool
+            </button>
+        </div>
+        
+        <!-- MCP Servers -->
+        <div class="p-4 border-b border-[#00e5c9]/10">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-plug text-[#00e5c9]"></i>
+                    <h3 class="text-sm font-bold text-slate-200">MCP Servers</h3>
+                </div>
+                <span x-text="mcpServers.list.filter(s => s.status === 'connected').length + '/' + mcpServers.list.length" class="text-xs text-slate-500"></span>
+            </div>
+            
+            <div class="space-y-2">
+                <template x-for="server in mcpServers.list" :key="server.id">
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-800/30">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full" :class="server.status === 'connected' ? 'bg-emerald-400' : 'bg-amber-400'"></span>
+                            <span class="text-xs text-slate-300" x-text="server.name"></span>
+                        </div>
+                        <button @click="toggleMcpServer(server.id)" class="text-xs text-slate-500 hover:text-[#00e5c9]">
+                            <i class="fas" :class="server.status === 'connected' ? 'fa-toggle-on' : 'fa-toggle-off'"></i>
+                        </button>
+                    </div>
+                </template>
+            </div>
+            
+            <button @click="mcpServers.showCreate = true" class="mt-3 w-full btn-primary py-2 rounded-lg text-xs font-semibold">
+                <i class="fas fa-plus mr-1"></i> Add MCP Server
+            </button>
+        </div>
+        
+        <!-- System Prompt -->
+        <div class="p-4">
+            <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-comment-dots text-[#00e5c9]"></i>
+                    <h3 class="text-sm font-bold text-slate-200">System Prompt</h3>
+                </div>
+            </div>
+            <textarea x-model="playground.systemPrompt" rows="6" 
+                class="w-full bg-[#05080a] border border-slate-700 rounded-lg p-3 text-xs text-slate-300 focus:border-[#00e5c9] focus:outline-none resize-none"
+                placeholder="You are a helpful assistant..."></textarea>
+        </div>
+    </div>
+    
+    <!-- CENTER - Chat Area -->
+    <div class="flex-1 flex flex-col bg-[#05080a]">
+        
+        <!-- Chat Header -->
+        <div class="h-14 border-b border-[#00e5c9]/10 flex items-center justify-between px-4 bg-[#0a0f14]">
+            <div class="flex items-center gap-3">
+                <h2 class="text-lg font-display font-bold text-slate-200">AI Playground</h2>
+                <span x-show="playground.loading" class="text-xs text-amber-400">
+                    <i class="fas fa-circle-notch fa-spin mr-1"></i> Thinking...
+                </span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button @click="showApiCode = true" class="p-2 text-slate-500 hover:text-[#00e5c9] transition-colors" title="View API Code">
+                    <i class="fas fa-code"></i>
+                </button>
+                <button @click="clearChat()" class="p-2 text-slate-500 hover:text-red-400 transition-colors" title="Clear Chat">
+                    <i class="fas fa-trash"></i>
+                </button>
+                <button @click="playground.showSaveConversation = true" class="p-2 text-slate-500 hover:text-emerald-400 transition-colors" title="Save Conversation">
+                    <i class="fas fa-save"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Messages -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chat-messages">
+            <template x-for="(message, idx) in playground.messages" :key="idx">
+                <div class="flex gap-3" :class="message.role === 'user' ? 'flex-row-reverse' : ''">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                         :class="message.role === 'user' ? 'bg-[#00e5c9]/20' : (message.role === 'system' ? 'bg-slate-700' : 'bg-purple-500/20')">
+                        <i class="fas text-sm" :class="message.role === 'user' ? 'fa-user text-[#00e5c9]' : (message.role === 'system' ? 'fa-cog text-slate-400' : 'fa-robot text-purple-400')"></i>
+                    </div>
+                    <div class="max-w-[80%] rounded-xl px-4 py-3 text-sm"
+                         :class="message.role === 'user' ? 'bg-[#00e5c9]/10 border border-[#00e5c9]/30 text-slate-200' : (message.role === 'system' ? 'bg-slate-800/50 border border-slate-700 text-slate-400' : 'bg-slate-800 border border-slate-700 text-slate-200')">
+                        <div class="whitespace-pre-wrap" x-html="formatMessage(message.content)"></div>
+                        
+                        <!-- Tool calls -->
+                        <template x-if="message.tool_calls">
+                            <div class="mt-3 space-y-2">
+                                <template x-for="call in message.tool_calls" :key="call.id">
+                                    <div class="bg-[#05080a] rounded-lg p-2 border border-[#00e5c9]/20">
+                                        <div class="flex items-center gap-2 text-xs text-[#00e5c9] mb-1">
+                                            <i class="fas fa-wrench"></i>
+                                            <span x-text="'Tool: ' + call.function.name"></span>
+                                        </div>
+                                        <div class="text-xs text-slate-400 font-mono" x-text="JSON.stringify(JSON.parse(call.function.arguments), null, 2)"></div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        
+                        <div class="mt-1 text-[10px] text-slate-600" x-text="formatTime(message.timestamp)"></div>
+                    </div>
+                </div>
+            </template>
+            
+            <div x-show="playground.messages.length === 0" class="text-center py-12 text-slate-600">
+                <i class="fas fa-robot text-4xl mb-4"></i>
+                <p>Start a conversation with the AI</p>
+                <p class="text-xs mt-2">Configure settings on the left, then type your message below</p>
+            </div>
+        </div>
+        
+        <!-- Input Area -->
+        <div class="border-t border-[#00e5c9]/10 p-4 bg-[#0a0f14]">
+            <div class="flex gap-2">
+                <div class="relative flex-1">
+                    <textarea x-model="playground.input" @keydown="handleChatKeydown($event)" rows="3"
+                        class="w-full bg-[#05080a] border border-slate-700 rounded-xl px-4 py-3 pr-12 text-sm text-slate-300 focus:border-[#00e5c9] focus:outline-none resize-none"
+                        placeholder="Type your message... (Shift+Enter for new line, Enter to send)"></textarea>
+                    <div class="absolute bottom-3 right-3 text-xs text-slate-600">
+                        <span x-text="playground.input.length"></span> chars
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button @click="sendMessage()" :disabled="!playground.input.trim() || playground.loading"
+                            class="btn-primary w-12 h-12 rounded-xl flex items-center justify-center transition-all disabled:opacity-50">
+                        <i x-show="!playground.loading" class="fas fa-paper-plane"></i>
+                        <i x-show="playground.loading" class="fas fa-circle-notch fa-spin"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex items-center justify-between mt-2 text-xs text-slate-500">
+                <div class="flex items-center gap-4">
+                    <span><i class="fas fa-shield-alt mr-1"></i> Secured</span>
+                    <span><i class="fas fa-microchip mr-1"></i> <span x-text="playground.config.model"></span></span>
+                </div>
+                <span>Press Shift+Enter for new line</span>
+            </div>
+        </div>
+    </div>
+</div>

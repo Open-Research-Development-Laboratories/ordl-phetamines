@@ -91,6 +91,18 @@ At `mount=secret`, `path=ordl`, provision:
 5. Validate protocol compatibility + conformance runs.
 6. Enable external ingress policy.
 
+## Local no-dependency bootstrap mode
+
+If you want zero external dependencies for initial bring-up:
+
+- `podman-compose -f ordl_platform/infra/podman-compose.prod.yml --profile local-vault --profile local-idp up --build -d`
+
+This starts:
+- local Vault (dev mode) at `http://127.0.0.1:8200`
+- local Keycloak (dev mode) at `http://127.0.0.1:8080`
+
+For production, replace both with hardened managed services and keep the same backend interfaces.
+
 ## Current hardening gap list (next sprint)
 
 - OIDC login UI and authorization-code flow endpoints.
