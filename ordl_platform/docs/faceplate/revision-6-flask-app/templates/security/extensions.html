@@ -1,0 +1,311 @@
+{% extends "app_base.html" %}
+
+{% block title %}Extensions - ORDL Security{% endblock %}
+{% block page_id %}extensions-page{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/security/extensions.css') }}">
+{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item">Security</span>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item active">Extensions</span>
+{% endblock %}
+
+{% block content_header %}
+<h1>Extensions Registry</h1>
+<p>Plugin, skill, and MCP registry with signature verification and revocation controls</p>
+{% endblock %}
+
+{% block content %}
+<div class="extensions-container">
+    
+    <!-- Extensions Overview -->
+    <div class="extensions-section">
+        <div class="section-header">
+            <div class="extension-stats">
+                <div class="stat-item">
+                    <span class="stat-value">{{ extensions|length if extensions else 12 }}</span>
+                    <span class="stat-label">Registered</span>
+                </div>
+                <div class="stat-item success">
+                    <span class="stat-value">11</span>
+                    <span class="stat-label">Verified</span>
+                </div>
+                <div class="stat-item warning">
+                    <span class="stat-value">1</span>
+                    <span class="stat-label">Pending</span>
+                </div>
+                <div class="stat-item error">
+                    <span class="stat-value">0</span>
+                    <span class="stat-label">Revoked</span>
+                </div>
+            </div>
+            <div class="section-actions">
+                <button class="btn" data-action="verify-all">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 11 12 14 22 4"/>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                    Verify All
+                </button>
+                <button class="btn btn-amber" data-action="register-extension">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Register
+                </button>
+            </div>
+        </div>
+
+        <!-- Extensions Tabs -->
+        <div class="extensions-tabs">
+            <button class="tab-btn active" data-tab="all">All</button>
+            <button class="tab-btn" data-tab="plugins">Plugins</button>
+            <button class="tab-btn" data-tab="skills">Skills</button>
+            <button class="tab-btn" data-tab="mcp">MCP</button>
+        </div>
+
+        <!-- Extensions Grid -->
+        <div class="extensions-grid" id="extensionsGrid">
+            {% for ext in extensions if extensions else [
+                {'id': 'ext_001', 'name': 'OpenAPI Spec Validator', 'type': 'plugin', 'version': '2.1.0', 'author': 'ORDL Team', 'signature': 'verified', 'status': 'active', 'updated': '2024-03-01'},
+                {'id': 'ext_002', 'name': 'Python Code Analyzer', 'type': 'skill', 'version': '1.5.3', 'author': 'Safety Lab', 'signature': 'verified', 'status': 'active', 'updated': '2024-02-28'},
+                {'id': 'ext_003', 'name': 'GitHub Integration', 'type': 'mcp', 'version': '3.0.1', 'author': 'Platform Team', 'signature': 'verified', 'status': 'active', 'updated': '2024-03-05'},
+                {'id': 'ext_004', 'name': 'SQL Query Builder', 'type': 'skill', 'version': '1.2.0', 'author': 'Data Team', 'signature': 'verified', 'status': 'active', 'updated': '2024-02-15'},
+                {'id': 'ext_005', 'name': 'Slack Notifications', 'type': 'plugin', 'version': '2.0.0', 'author': 'DevOps', 'signature': 'verified', 'status': 'active', 'updated': '2024-03-03'},
+                {'id': 'ext_006', 'name': 'JIRA Connector', 'type': 'mcp', 'version': '1.8.2', 'author': 'Product Team', 'signature': 'pending', 'status': 'review', 'updated': '2024-03-06'},
+                {'id': 'ext_007', 'name': 'Documentation Generator', 'type': 'skill', 'version': '1.0.5', 'author': 'Tech Writing', 'signature': 'verified', 'status': 'active', 'updated': '2024-02-20'},
+                {'id': 'ext_008', 'name': 'Kubernetes Deploy', 'type': 'plugin', 'version': '2.3.1', 'author': 'Platform Team', 'signature': 'verified', 'status': 'active', 'updated': '2024-03-04'}
+            ] %}
+            <div class="extension-card {{ ext.status }}" data-ext-id="{{ ext.id }}" data-type="{{ ext.type }}">
+                <div class="extension-header">
+                    <div class="extension-type-icon {{ ext.type }}">
+                        {% if ext.type == 'plugin' %}
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                        </svg>
+                        {% elif ext.type == 'skill' %}
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                        </svg>
+                        {% else %}
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"/>
+                            <rect x="9" y="9" width="6" height="6"/>
+                            <line x1="9" y1="1" x2="9" y2="4"/>
+                            <line x1="15" y1="1" x2="15" y2="4"/>
+                            <line x1="9" y1="20" x2="9" y2="23"/>
+                            <line x1="15" y1="20" x2="15" y2="23"/>
+                            <line x1="20" y1="9" x2="23" y2="9"/>
+                            <line x1="20" y1="14" x2="23" y2="14"/>
+                            <line x1="1" y1="9" x2="4" y2="9"/>
+                            <line x1="1" y1="14" x2="4" y2="14"/>
+                        </svg>
+                        {% endif %}
+                    </div>
+                    <div class="extension-info">
+                        <h4>{{ ext.name }}</h4>
+                        <span class="extension-id">{{ ext.id }}</span>
+                    </div>
+                    <div class="extension-badges">
+                        <span class="type-badge {{ ext.type }}">{{ ext.type|title }}</span>
+                        <span class="signature-badge {{ ext.signature }}">
+                            {% if ext.signature == 'verified' %}
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            {% endif %}
+                            {{ ext.signature|title }}
+                        </span>
+                    </div>
+                </div>
+                <div class="extension-meta">
+                    <div class="meta-row">
+                        <span class="meta-label">Version</span>
+                        <span class="meta-value">{{ ext.version }}</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">Author</span>
+                        <span class="meta-value">{{ ext.author }}</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">Updated</span>
+                        <span class="meta-value">{{ ext.updated }}</span>
+                    </div>
+                </div>
+                <div class="extension-footer">
+                    <span class="status-indicator {{ ext.status }}">{{ ext.status|title }}</span>
+                    <div class="extension-actions">
+                        <button class="action-btn" title="View Details" data-action="view-ext" data-ext="{{ ext.id }}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                        {% if ext.signature == 'pending' %}
+                        <button class="action-btn btn-amber" title="Verify" data-action="verify-ext" data-ext="{{ ext.id }}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 11 12 14 22 4"/>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                            </svg>
+                        </button>
+                        {% endif %}
+                        <button class="action-btn" title="Revoke" data-action="revoke-ext" data-ext="{{ ext.id }}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/>
+                                <line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Signature Verification Panel -->
+    <div class="extensions-section">
+        <div class="section-header">
+            <h2>Signature Verification</h2>
+            <button class="btn" data-action="view-sig-log">View Log</button>
+        </div>
+        <div class="signature-panel">
+            <div class="sig-config">
+                <h4>Verification Settings</h4>
+                <div class="config-list">
+                    <div class="config-item">
+                        <span>Require signed extensions</span>
+                        <label class="toggle">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="config-item">
+                        <span>Verify on install</span>
+                        <label class="toggle">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="config-item">
+                        <span>Auto-revoke on tamper</span>
+                        <label class="toggle">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="config-item">
+                        <span>Certificate pinning</span>
+                        <label class="toggle">
+                            <input type="checkbox">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="sig-trust-anchors">
+                <h4>Trusted Signers</h4>
+                <div class="anchor-list">
+                    <div class="anchor-item">
+                        <div class="anchor-info">
+                            <span class="anchor-name">ORDL Official</span>
+                            <span class="anchor-id">sha256:7a3f...9e2d</span>
+                        </div>
+                        <span class="anchor-status verified">Trusted</span>
+                    </div>
+                    <div class="anchor-item">
+                        <div class="anchor-info">
+                            <span class="anchor-name">Community Verified</span>
+                            <span class="anchor-id">sha256:4b8c...1f5a</span>
+                        </div>
+                        <span class="anchor-status verified">Trusted</span>
+                    </div>
+                    <div class="anchor-item">
+                        <div class="anchor-info">
+                            <span class="anchor-name">Partner Org</span>
+                            <span class="anchor-id">sha256:9d2e...6c4b</span>
+                        </div>
+                        <span class="anchor-status pending">Pending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revocation Controls -->
+    <div class="extensions-section">
+        <div class="section-header">
+            <h2>Revocation Controls</h2>
+            <button class="btn btn-amber" data-action="emergency-revoke">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                Emergency Revoke
+            </button>
+        </div>
+        <div class="revocation-panel">
+            <div class="revocation-stats">
+                <div class="rev-stat">
+                    <span class="rev-count">0</span>
+                    <span class="rev-label">Active Revocations</span>
+                </div>
+                <div class="rev-stat">
+                    <span class="rev-count">3</span>
+                    <span class="rev-label">Historical</span>
+                </div>
+                <div class="rev-stat">
+                    <span class="rev-count">24h</span>
+                    <span class="rev-label">CRL TTL</span>
+                </div>
+            </div>
+            <div class="revocation-history">
+                <h4>Revocation History</h4>
+                <div class="history-list">
+                    <div class="history-item">
+                        <div class="history-info">
+                            <span class="history-ext">Data Connector v1.0.2</span>
+                            <span class="history-reason">Vulnerability CVE-2024-1234</span>
+                        </div>
+                        <div class="history-meta">
+                            <span>2024-02-15</span>
+                            <span class="revoked-by">by Security Team</span>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-info">
+                            <span class="history-ext">Legacy Auth Plugin</span>
+                            <span class="history-reason">Deprecated</span>
+                        </div>
+                        <div class="history-meta">
+                            <span>2024-01-20</span>
+                            <span class="revoked-by">by Admin</span>
+                        </div>
+                    </div>
+                    <div class="history-item">
+                        <div class="history-info">
+                            <span class="history-ext">Test Extension v0.9</span>
+                            <span class="history-reason">Signature invalid</span>
+                        </div>
+                        <div class="history-meta">
+                            <span>2024-01-05</span>
+                            <span class="revoked-by">by System</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/security/extensions.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,872 @@
+{% extends "app_base.html" %}
+
+{% block title %}Deployments — ORDL Control{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item">Control</span>
+<span class="breadcrumb-separator">›</span>
+<span class="breadcrumb-item">Deployments</span>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .deployments-layout {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    /* Environments Sidebar */
+    .env-sidebar {
+        display: flex;
+        border-bottom: 1px solid var(--border-default);
+        background: var(--bg-secondary);
+    }
+
+    .env-item {
+        padding: 16px 24px;
+        border-right: 1px solid var(--border-default);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        min-width: 160px;
+    }
+
+    .env-item:hover {
+        background: var(--bg-hover);
+    }
+
+    .env-item.active {
+        background: var(--bg-tertiary);
+        border-bottom: 2px solid var(--accent-primary);
+    }
+
+    .env-name {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .env-meta {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .env-status {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .env-status.healthy { background: var(--success); }
+    .env-status.warning { background: var(--warning); }
+    .env-status.error { background: var(--error); }
+
+    /* Main Content */
+    .deployments-main {
+        flex: 1;
+        overflow: auto;
+        padding: 24px;
+    }
+
+    /* Metrics Bar */
+    .metrics-bar {
+        display: flex;
+        gap: 32px;
+        padding: 20px 24px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 8px;
+        margin-bottom: 24px;
+    }
+
+    .metric {
+        text-align: center;
+    }
+
+    .metric-value {
+        font-family: var(--font-mono);
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .metric-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 4px;
+    }
+
+    /* Toolbar */
+    .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .filter-input {
+        padding: 8px 12px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 13px;
+        min-width: 240px;
+    }
+
+    .filter-input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+    }
+
+    .filter-select {
+        padding: 8px 32px 8px 12px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 13px;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6660' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+    }
+
+    /* Deployment Cards */
+    .deployment-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 8px;
+        margin-bottom: 16px;
+        overflow: hidden;
+    }
+
+    .deployment-header {
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        cursor: pointer;
+        transition: background var(--transition-fast);
+    }
+
+    .deployment-header:hover {
+        background: var(--bg-hover);
+    }
+
+    .deployment-id {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+        min-width: 120px;
+    }
+
+    .deployment-badge {
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .badge-deployed { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+    .badge-failed { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+    .badge-pending { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .badge-rolling { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+
+    .deployment-info {
+        flex: 1;
+        display: flex;
+        gap: 24px;
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .deployment-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .action-btn {
+        padding: 8px 14px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-default);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .action-btn:hover {
+        background: var(--bg-hover);
+        border-color: var(--border-strong);
+    }
+
+    .action-btn.primary {
+        background: var(--accent-primary);
+        border-color: var(--accent-primary);
+        color: #000;
+    }
+
+    .action-btn.primary:hover {
+        background: var(--accent-hover);
+    }
+
+    .action-btn.danger {
+        background: rgba(239, 68, 68, 0.15);
+        border-color: rgba(239, 68, 68, 0.3);
+        color: #f87171;
+    }
+
+    .action-btn.danger:hover {
+        background: rgba(239, 68, 68, 0.25);
+    }
+
+    .action-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Deployment Details */
+    .deployment-details {
+        display: none;
+        border-top: 1px solid var(--border-default);
+        background: var(--bg-tertiary);
+    }
+
+    .deployment-details.open {
+        display: block;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        padding: 20px;
+        border-bottom: 1px solid var(--border-default);
+    }
+
+    .detail-item {
+        padding: 16px;
+        background: var(--bg-secondary);
+        border-radius: 6px;
+    }
+
+    .detail-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .detail-value {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        color: var(--text-primary);
+    }
+
+    /* Release Pipeline */
+    .pipeline-section {
+        padding: 20px;
+        border-bottom: 1px solid var(--border-default);
+    }
+
+    .pipeline-header {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+    }
+
+    .pipeline-flow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .pipeline-stage {
+        padding: 10px 20px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 6px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pipeline-stage.completed {
+        border-color: var(--success);
+        background: rgba(34, 197, 94, 0.1);
+    }
+
+    .pipeline-stage.active {
+        border-color: var(--accent-primary);
+        background: var(--accent-dim);
+    }
+
+    .pipeline-stage.failed {
+        border-color: var(--error);
+        background: rgba(239, 68, 68, 0.1);
+    }
+
+    .stage-status {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .stage-status.completed { background: var(--success); }
+    .stage-status.active { background: var(--accent-primary); }
+    .stage-status.pending { background: var(--text-muted); }
+    .stage-status.failed { background: var(--error); }
+
+    .pipeline-arrow {
+        color: var(--text-muted);
+    }
+
+    /* Canary Controls */
+    .canary-section {
+        padding: 20px;
+    }
+
+    .canary-header {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 16px;
+    }
+
+    .canary-controls {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        margin-bottom: 16px;
+    }
+
+    .canary-slider {
+        flex: 1;
+        max-width: 400px;
+    }
+
+    .canary-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    .canary-percentage {
+        font-family: var(--font-mono);
+        color: var(--accent-primary);
+        font-weight: 600;
+    }
+
+    .canary-metrics {
+        display: flex;
+        gap: 24px;
+    }
+
+    .canary-metric {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .canary-metric-label {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .canary-metric-value {
+        font-family: var(--font-mono);
+        font-size: 16px;
+        color: var(--text-primary);
+    }
+
+    .canary-metric-value.good { color: var(--success); }
+    .canary-metric-value.warning { color: var(--warning); }
+    .canary-metric-value.error { color: var(--error); }
+
+    /* Rollback Section */
+    .rollback-section {
+        padding: 20px;
+        border-top: 1px solid var(--border-default);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .rollback-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .rollback-label {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .rollback-version {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        color: var(--text-primary);
+    }
+
+    /* Progress Bar for staged rollout */
+    .rollout-progress {
+        margin-top: 16px;
+    }
+
+    .progress-bar {
+        height: 8px;
+        background: var(--bg-secondary);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent-primary), var(--accent-hover));
+        border-radius: 4px;
+        transition: width 0.3s ease;
+    }
+
+    .progress-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .details-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .env-sidebar {
+            overflow-x: auto;
+        }
+        .deployment-info {
+            flex-direction: column;
+            gap: 8px;
+        }
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+        .pipeline-flow {
+            flex-wrap: wrap;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="deployments-layout">
+    <!-- Environments Sidebar -->
+    <div class="env-sidebar">
+        <div class="env-item active" onclick="selectEnv(this, 'production')">
+            <div class="env-name">
+                <span class="env-status healthy"></span>
+                Production
+            </div>
+            <div class="env-meta">v2.4.1 • 99.99% uptime</div>
+        </div>
+        <div class="env-item" onclick="selectEnv(this, 'staging')">
+            <div class="env-name">
+                <span class="env-status healthy"></span>
+                Staging
+            </div>
+            <div class="env-meta">v2.5.0-rc1 • 12 deployments</div>
+        </div>
+        <div class="env-item" onclick="selectEnv(this, 'qa')">
+            <div class="env-name">
+                <span class="env-status warning"></span>
+                QA
+            </div>
+            <div class="env-meta">v2.5.0-dev • 3 failed tests</div>
+        </div>
+        <div class="env-item" onclick="selectEnv(this, 'dev')">
+            <div class="env-name">
+                <span class="env-status healthy"></span>
+                Development
+            </div>
+            <div class="env-meta">Latest • Auto-deploy</div>
+        </div>
+    </div>
+
+    <div class="deployments-main">
+        <!-- Metrics -->
+        <div class="metrics-bar">
+            <div class="metric">
+                <div class="metric-value">127</div>
+                <div class="metric-label">Total Deployments</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">99.2%</div>
+                <div class="metric-label">Success Rate</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">4m 32s</div>
+                <div class="metric-label">Avg Duration</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">2h</div>
+                <div class="metric-label">Last Deploy</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">3</div>
+                <div class="metric-label">Pending Approval</div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <button class="action-btn primary" onclick="deployNow()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
+                Deploy Now
+            </button>
+            <button class="action-btn" onclick="rollbackModal()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                </svg>
+                Rollback
+            </button>
+            <button class="action-btn" onclick="viewMetrics()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 3v18h18"/>
+                    <path d="m19 9-5 5-4-4-3 3"/>
+                </svg>
+                Metrics
+            </button>
+            <div style="margin-left: auto; display: flex; gap: 12px;">
+                <input type="text" class="filter-input" placeholder="Search deployments...">
+                <select class="filter-select">
+                    <option>All Status</option>
+                    <option>Deployed</option>
+                    <option>Failed</option>
+                    <option>Pending</option>
+                    <option>Rolling</option>
+                </select>
+                <select class="filter-select">
+                    <option>Last 7 Days</option>
+                    <option>Last 30 Days</option>
+                    <option>Last 90 Days</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Deployments List -->
+        <div id="deploymentsList">
+            <!-- Deployment Card 1 - Rolling -->
+            <div class="deployment-card">
+                <div class="deployment-header" onclick="toggleDetails(this)">
+                    <span class="deployment-id">#dep-2k9x4n</span>
+                    <span class="deployment-badge badge-rolling">Rolling</span>
+                    <div class="deployment-info">
+                        <span>📦 v2.5.0</span>
+                        <span>👤 sarah.chen</span>
+                        <span>🕐 14:32:18</span>
+                        <span>⏱ 4m 12s</span>
+                    </div>
+                    <div class="deployment-actions" onclick="event.stopPropagation()">
+                        <button class="action-btn" onclick="viewLogs('dep-2k9x4n')">Logs</button>
+                        <button class="action-btn" onclick="pauseDeploy('dep-2k9x4n')">Pause</button>
+                        <button class="action-btn danger" onclick="rollback('dep-2k9x4n')">Rollback</button>
+                    </div>
+                </div>
+                <div class="deployment-details">
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Build ID</div>
+                            <div class="detail-value">#4825</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Git Commit</div>
+                            <div class="detail-value">a4f8c2d</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Tests</div>
+                            <div class="detail-value">847 passed</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Approval</div>
+                            <div class="detail-value">Approved by 3/3</div>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-section">
+                        <div class="pipeline-header">Release Pipeline</div>
+                        <div class="pipeline-flow">
+                            <div class="pipeline-stage completed">
+                                <span class="stage-status completed"></span>
+                                Build
+                            </div>
+                            <span class="pipeline-arrow">→</span>
+                            <div class="pipeline-stage completed">
+                                <span class="stage-status completed"></span>
+                                Test
+                            </div>
+                            <span class="pipeline-arrow">→</span>
+                            <div class="pipeline-stage completed">
+                                <span class="stage-status completed"></span>
+                                Stage
+                            </div>
+                            <span class="pipeline-arrow">→</span>
+                            <div class="pipeline-stage active">
+                                <span class="stage-status active"></span>
+                                Canary
+                            </div>
+                            <span class="pipeline-arrow">→</span>
+                            <div class="pipeline-stage">
+                                <span class="stage-status pending"></span>
+                                Production
+                            </div>
+                        </div>
+
+                        <div class="rollout-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%;"></div>
+                            </div>
+                            <div class="progress-labels">
+                                <span>32/50 nodes updated</span>
+                                <span>ETA: 8 minutes</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="canary-section">
+                        <div class="canary-header">Canary Controls</div>
+                        <div class="canary-controls">
+                            <div class="canary-slider">
+                                <div class="canary-label">
+                                    <span>Traffic Split</span>
+                                    <span class="canary-percentage">25%</span>
+                                </div>
+                                <input type="range" id="canarySlider" min="0" max="100" value="25">
+                            </div>
+                            <div class="canary-metrics">
+                                <div class="canary-metric">
+                                    <span class="canary-metric-label">Error Rate</span>
+                                    <span class="canary-metric-value good">0.02%</span>
+                                </div>
+                                <div class="canary-metric">
+                                    <span class="canary-metric-label">Latency P99</span>
+                                    <span class="canary-metric-value good">45ms</span>
+                                </div>
+                                <div class="canary-metric">
+                                    <span class="canary-metric-label">Throughput</span>
+                                    <span class="canary-metric-value">2.4k/s</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rollback-section">
+                        <div class="rollback-info">
+                            <span class="rollback-label">Rollback to</span>
+                            <span class="rollback-version">v2.4.1 (Build #4821)</span>
+                        </div>
+                        <button class="action-btn danger" onclick="rollback('dep-2k9x4n')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                <path d="M3 3v5h5"/>
+                            </svg>
+                            Rollback Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deployment Card 2 - Deployed -->
+            <div class="deployment-card">
+                <div class="deployment-header" onclick="toggleDetails(this)">
+                    <span class="deployment-id">#dep-2k9x3m</span>
+                    <span class="deployment-badge badge-deployed">Deployed</span>
+                    <div class="deployment-info">
+                        <span>📦 v2.4.1</span>
+                        <span>👤 mike.rodriguez</span>
+                        <span>🕐 2 days ago</span>
+                        <span>⏱ 3m 48s</span>
+                    </div>
+                    <div class="deployment-actions" onclick="event.stopPropagation()">
+                        <button class="action-btn" onclick="viewLogs('dep-2k9x3m')">Logs</button>
+                        <button class="action-btn" onclick="promote('dep-2k9x3m')">Promote</button>
+                        <button class="action-btn danger" onclick="rollback('dep-2k9x3m')">Rollback</button>
+                    </div>
+                </div>
+                <div class="deployment-details">
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Build ID</div>
+                            <div class="detail-value">#4821</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Git Commit</div>
+                            <div class="detail-value">b7e2d9a</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Tests</div>
+                            <div class="detail-value">847 passed</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Nodes</div>
+                            <div class="detail-value">50/50 updated</div>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-section">
+                        <div class="pipeline-header">Release Pipeline</div>
+                        <div class="pipeline-flow">
+                            <div class="pipeline-stage completed">
+                                <span class="stage-status completed"></span>
+                                Build
+                            </div>
+                            <span class="pipeline-arrow">→</span>
+                            <div class="pipeline-stage completed">
+                                <span class="stage-status completed"></span>
+                                Test
+                            </div>
+                            <span class="pipeline-arrow">→</span>
+                            <div class="pipeline-stage completed">
+                                <span class="stage-status completed"></span>
+                                Stage
+                            </div>
+                            <span class="pipeline-arrow">→</span>
+                            <div class="pipeline-stage completed">
+                                <span class="stage-status completed"></span>
+                                Canary
+                            </div>
+                            <span class="pipeline-arrow">→</span>
+                            <div class="pipeline-stage completed">
+                                <span class="stage-status completed"></span>
+                                Production
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rollback-section">
+                        <div class="rollback-info">
+                            <span class="rollback-label">Rollback to</span>
+                            <span class="rollback-version">v2.4.0 (Build #4819)</span>
+                        </div>
+                        <button class="action-btn danger" onclick="rollback('dep-2k9x3m')">Rollback</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deployment Card 3 - Failed -->
+            <div class="deployment-card">
+                <div class="deployment-header" onclick="toggleDetails(this)">
+                    <span class="deployment-id">#dep-2k9w2l</span>
+                    <span class="deployment-badge badge-failed">Failed</span>
+                    <div class="deployment-info">
+                        <span>📦 v2.4.2-rc2</span>
+                        <span>👤 auto-deploy</span>
+                        <span>🕐 3 days ago</span>
+                        <span>⏱ 2m 15s</span>
+                    </div>
+                    <div class="deployment-actions" onclick="event.stopPropagation()">
+                        <button class="action-btn" onclick="viewLogs('dep-2k9w2l')">Logs</button>
+                        <button class="action-btn" onclick="retryDeploy('dep-2k9w2l')">Retry</button>
+                        <button class="action-btn danger" onclick="rollback('dep-2k9w2l')">Rollback</button>
+                    </div>
+                </div>
+                <div class="deployment-details">
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Build ID</div>
+                            <div class="detail-value">#4823</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Error</div>
+                            <div class="detail-value" style="color: var(--error);">Health check failed</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Failed Nodes</div>
+                            <div class="detail-value">12/50</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Auto-rollback</div>
+                            <div class="detail-value">Completed</div>
+                        </div>
+                    </div>
+
+                    <div class="pipeline-section">
+                        <div class="pipeline-header">Release Pipeline</div>
+                        <div class="pipeline-flow">
+                            <div class="pipeline-stage completed">
+                                <span class="stage-status completed"></span>
+                                Build
+                            </div>
+                            <span class="pipeline-arrow">→</span>
+                            <div class="pipeline-stage completed">
+                                <span class="stage-status completed"></span>
+                                Test
+                            </div>
+                            <span class="pipeline-arrow">→</span>
+                            <div class="pipeline-stage failed">
+                                <span class="stage-status failed"></span>
+                                Stage
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rollback Modal -->
+<div class="modal-overlay" id="rollbackModal">
+    <div class="modal">
+        <div class="modal-header">Select Version to Rollback</div>
+        <div class="modal-body">
+            <div class="rollback-list" style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="rollback-item" onclick="selectRollback(this)" style="padding: 12px; background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: 6px; cursor: pointer;">
+                    <div style="font-weight: 600;">v2.4.0</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Deployed 3 days ago • Build #4821</div>
+                </div>
+                <div class="rollback-item" onclick="selectRollback(this)" style="padding: 12px; background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: 6px; cursor: pointer;">
+                    <div style="font-weight: 600;">v2.3.9</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Deployed 1 week ago • Build #4792</div>
+                </div>
+                <div class="rollback-item" onclick="selectRollback(this)" style="padding: 12px; background: var(--bg-tertiary); border: 1px solid var(--border-default); border-radius: 6px; cursor: pointer;">
+                    <div style="font-weight: 600;">v2.3.8</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Deployed 2 weeks ago • Build #4750</div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeRollbackModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="confirmRollback()">Rollback</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/control/deployments.js') }}"></script>
+{% endblock %}

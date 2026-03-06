@@ -1,0 +1,486 @@
+/* ============================================
+   ORDL GOVERNANCE - TEAMS
+   Institutional Monochrome Machinery Aesthetic
+   ============================================ */
+
+:root {
+    --bg-primary: #0d0d0d;
+    --bg-secondary: #141414;
+    --bg-tertiary: #1a1a1a;
+    --bg-elevated: #1f1f1f;
+    --bg-hover: #262626;
+    --bg-active: #2e2e2e;
+    
+    --text-primary: #faf8f5;
+    --text-secondary: #d4cfc7;
+    --text-tertiary: #a8a39c;
+    --text-muted: #6b6660;
+    
+    --amber-primary: #f59e0b;
+    --amber-hover: #fbbf24;
+    --amber-dim: rgba(245, 158, 11, 0.15);
+    --amber-glow: rgba(245, 158, 11, 0.4);
+    
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --info: #3b82f6;
+    
+    --border-subtle: rgba(255, 255, 255, 0.06);
+    --border-default: rgba(255, 255, 255, 0.1);
+    --border-strong: rgba(255, 255, 255, 0.15);
+}
+
+.teams-container {
+    padding: 24px 32px;
+    max-width: 1400px;
+}
+
+.teams-section {
+    margin-bottom: 40px;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.section-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.section-filter {
+    display: flex;
+    gap: 12px;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    color: var(--text-tertiary);
+}
+
+.search-box input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    color: var(--text-primary);
+    width: 200px;
+}
+
+.search-box input::placeholder {
+    color: var(--text-muted);
+}
+
+.filter-select {
+    padding: 8px 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+/* Teams Grid */
+.teams-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.team-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 150ms ease;
+}
+
+.team-card:hover {
+    border-color: var(--border-strong);
+}
+
+.team-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.team-identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.team-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    color: var(--text-secondary);
+}
+
+.team-info h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.team-id {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.scope-badge {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.scope-badge.global {
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--success);
+}
+
+.scope-badge.regional {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--info);
+}
+
+.scope-badge.project {
+    background: rgba(168, 163, 156, 0.15);
+    color: var(--text-tertiary);
+}
+
+/* Team Stats */
+.team-stats {
+    display: flex;
+    gap: 24px;
+    padding: 16px 0;
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: 16px;
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stat-value {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+/* Team Footer */
+.team-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.team-lead {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.lead-label {
+    color: var(--text-muted);
+}
+
+.lead-name {
+    color: var(--text-secondary);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+/* Operating Scope Matrix */
+.scope-matrix-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    overflow: auto;
+}
+
+.matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.matrix-table th {
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-default);
+    white-space: nowrap;
+}
+
+.matrix-table th:first-child {
+    text-align: left;
+}
+
+.matrix-table td {
+    padding: 12px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.matrix-table td:first-child {
+    text-align: left;
+}
+
+.matrix-table tr:hover td {
+    background: var(--bg-hover);
+}
+
+.team-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.permission-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.permission-badge.full {
+    background: rgba(34, 197, 94, 0.15);
+    color: var(--success);
+}
+
+.permission-badge.limited,
+.permission-badge.read,
+.permission-badge.view,
+.permission-badge.maintain {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--info);
+}
+
+.permission-badge.audit,
+.permission-badge.anonymized,
+.permission-badge.approve,
+.permission-badge.request {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--warning);
+}
+
+.permission-badge.none {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+}
+
+/* Escalation Tree */
+.escalation-tree-container {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    padding: 32px;
+}
+
+.escalation-tree {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.tree-level {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.tree-node {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    border-radius: 8px;
+    padding: 16px 24px;
+    min-width: 280px;
+}
+
+.tree-node.critical {
+    border-color: var(--error);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.node-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.node-role {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.node-contact {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-tertiary);
+}
+
+.node-sla {
+    padding: 2px 8px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.tree-connector {
+    width: 2px;
+    height: 24px;
+    background: var(--border-default);
+}
+
+.escalation-legend {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.legend-dot {
+    width: 12px;
+    height: 12px;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-default);
+    border-radius: 50%;
+}
+
+.legend-dot.critical {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: var(--error);
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 150ms ease;
+}
+
+.btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-strong);
+}
+
+.btn-amber {
+    background: var(--amber-dim);
+    border-color: var(--amber-primary);
+    color: var(--amber-primary);
+}
+
+.btn-amber:hover {
+    background: var(--amber-primary);
+    color: var(--bg-primary);
+    box-shadow: 0 0 12px var(--amber-glow);
+}
+
+.tree-selector select {
+    padding: 8px 14px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .teams-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .teams-container {
+        padding: 16px;
+    }
+    
+    .teams-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .section-filter {
+        flex-direction: column;
+    }
+    
+    .escalation-tree-container {
+        padding: 16px;
+    }
+    
+    .tree-node {
+        min-width: auto;
+        width: 100%;
+    }
+}

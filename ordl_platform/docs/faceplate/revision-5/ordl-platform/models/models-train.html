@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Runs | ORDL Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1a1a1a;
+            --bg-elevated: #1f1f1f;
+            --bg-hover: #262626;
+            --text-primary: #faf8f5;
+            --text-secondary: #d4cfc7;
+            --text-tertiary: #a8a39c;
+            --text-muted: #6b6660;
+            --accent-primary: #f59e0b;
+            --accent-secondary: #d97706;
+            --accent-hover: #fbbf24;
+            --accent-dim: rgba(245, 158, 11, 0.15);
+            --accent-glow: rgba(245, 158, 11, 0.4);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-default: rgba(255, 255, 255, 0.1);
+            --border-strong: rgba(255, 255, 255, 0.15);
+            --topbar-height: 48px;
+            --sidebar-collapsed: 64px;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: var(--font-sans);
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-shell {
+            display: grid;
+            grid-template-areas: "topbar topbar" "sidebar main";
+            grid-template-rows: var(--topbar-height) 1fr;
+            grid-template-columns: var(--sidebar-collapsed) 1fr;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .topbar {
+            grid-area: topbar;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: var(--topbar-height);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-default);
+            padding: 0 16px;
+            z-index: 400;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 24px; }
+        .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-primary); }
+        .brand-logo {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-mono); font-weight: 700; font-size: 14px;
+            color: var(--bg-primary);
+        }
+        .brand-wordmark { font-family: var(--font-mono); font-size: 16px; font-weight: 600; letter-spacing: 0.05em; }
+        .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+        .breadcrumb-item { color: var(--text-tertiary); }
+        .breadcrumb-item:last-child { color: var(--text-primary); font-weight: 500; }
+        .breadcrumb-separator { color: var(--text-muted); font-size: 11px; margin: 0 4px; }
+
+        .sidebar {
+            grid-area: sidebar;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-default);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        .sidebar-header { height: 48px; border-bottom: 1px solid var(--border-subtle); }
+        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+        .nav-section { margin-bottom: 8px; }
+        .nav-section-title { padding: 8px 16px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 16px; margin: 2px 8px;
+            border-radius: 6px;
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 13px; font-weight: 500;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+        .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .nav-item.active { background: var(--accent-dim); color: var(--accent-primary); }
+        .nav-item.active::before {
+            content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+            width: 3px; height: 20px; background: var(--accent-primary);
+            border-radius: 0 2px 2px 0; box-shadow: 0 0 8px var(--accent-glow);
+        }
+        .nav-icon { width: 20px; height: 20px; }
+
+        .main-content {
+            grid-area: main;
+            background: var(--bg-primary);
+            overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .content-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .content-header h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+        .content-header p { font-size: 14px; color: var(--text-tertiary); }
+        .header-actions { display: flex; gap: 12px; }
+
+        .content-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 32px;
+        }
+
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 16px;
+            font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+            border-radius: 6px; border: 1px solid transparent;
+            cursor: pointer; transition: all var(--transition-fast);
+        }
+        .btn-primary { background: var(--accent-primary); color: var(--bg-primary); }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-secondary { background: var(--bg-tertiary); color: var(--text-primary); border-color: var(--border-default); }
+        .btn-secondary:hover { background: var(--bg-hover); }
+        .btn-ghost { background: transparent; color: var(--text-secondary); }
+        .btn-ghost:hover { color: var(--text-primary); }
+
+        /* Stats Overview */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .stat-header {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 12px;
+        }
+        .stat-icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .stat-icon.queued { background: rgba(59, 130, 246, 0.15); color: var(--info); }
+        .stat-icon.running { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .stat-icon.completed { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .stat-icon.failed { background: rgba(239, 68, 68, 0.15); color: var(--error); }
+        .stat-label { font-size: 12px; color: var(--text-muted); }
+        .stat-value { font-family: var(--font-mono); font-size: 28px; font-weight: 600; }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+        }
+        .filter-group { display: flex; align-items: center; gap: 8px; }
+        .filter-label { font-size: 12px; color: var(--text-muted); }
+        .filter-select, .filter-input {
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+        .search-box {
+            flex: 1;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 6px 12px 6px 36px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+        .search-box svg {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        /* Runs Table */
+        .runs-table-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .runs-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .runs-table th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-default);
+        }
+        .runs-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            vertical-align: middle;
+        }
+        .runs-table tr:hover td { background: var(--bg-hover); }
+        .runs-table tr:last-child td { border-bottom: none; }
+
+        .run-info { display: flex; flex-direction: column; gap: 4px; }
+        .run-name { font-weight: 500; color: var(--text-primary); }
+        .run-model { font-size: 12px; color: var(--text-muted); font-family: var(--font-mono); }
+
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px; font-weight: 500;
+        }
+        .status-badge::before {
+            content: ''; width: 6px; height: 6px; border-radius: 50%;
+        }
+        .status-badge.queued { background: rgba(59, 130, 246, 0.15); color: var(--info); }
+        .status-badge.queued::before { background: var(--info); }
+        .status-badge.running { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .status-badge.running::before { background: var(--warning); animation: pulse 1.5s infinite; }
+        .status-badge.completed { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+        .status-badge.completed::before { background: var(--success); }
+        .status-badge.failed { background: rgba(239, 68, 68, 0.15); color: var(--error); }
+        .status-badge.failed::before { background: var(--error); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Progress Bar */
+        .progress-cell { min-width: 200px; }
+        .progress-header {
+            display: flex; justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+        .progress-current { font-family: var(--font-mono); color: var(--text-primary); }
+        .progress-total { color: var(--text-muted); }
+        .progress-bar {
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        .progress-fill.queued { background: var(--info); width: 0%; }
+        .progress-fill.running { 
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-hover));
+            background-size: 200% 100%;
+            animation: gradient-shift 2s linear infinite;
+        }
+        .progress-fill.completed { background: var(--success); }
+        .progress-fill.failed { background: var(--error); }
+
+        @keyframes gradient-shift {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+
+        .eta-cell { font-family: var(--font-mono); font-size: 13px; }
+        .eta-cell.remaining { color: var(--warning); }
+        .eta-cell.done { color: var(--text-muted); }
+
+        .metrics-cell { display: flex; gap: 16px; }
+        .metric-box {
+            display: flex; flex-direction: column;
+            min-width: 70px;
+        }
+        .metric-label-sm { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
+        .metric-value-sm {
+            font-family: var(--font-mono); font-size: 14px; font-weight: 500;
+        }
+        .metric-value-sm.improving { color: var(--success); }
+        .metric-value-sm.worsening { color: var(--error); }
+
+        /* Mini Chart */
+        .chart-cell { width: 120px; }
+        .mini-chart {
+            height: 40px;
+            display: flex; align-items: flex-end; gap: 2px;
+        }
+        .chart-bar {
+            flex: 1;
+            background: var(--border-default);
+            border-radius: 2px 2px 0 0;
+            min-height: 4px;
+        }
+        .chart-bar.active { background: var(--accent-primary); }
+
+        /* Resource Usage */
+        .resources-cell { min-width: 180px; }
+        .resource-row {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 6px;
+        }
+        .resource-row:last-child { margin-bottom: 0; }
+        .resource-icon { font-size: 12px; }
+        .resource-mini-bar {
+            flex: 1; height: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .resource-mini-fill {
+            height: 100%;
+            border-radius: 2px;
+        }
+        .resource-mini-fill.gpu { background: var(--accent-primary); }
+        .resource-mini-fill.memory { background: var(--info); }
+        .resource-mini-fill.storage { background: var(--success); }
+        .resource-pct {
+            font-family: var(--font-mono); font-size: 11px;
+            color: var(--text-muted);
+            min-width: 35px;
+            text-align: right;
+        }
+
+        /* Action Buttons */
+        .actions-cell { text-align: right; }
+        .action-btn {
+            padding: 6px 10px;
+            background: transparent;
+            border: 1px solid var(--border-default);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .action-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-strong);
+            color: var(--text-primary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 60px;
+            text-align: center;
+        }
+        .empty-icon {
+            width: 64px; height: 64px;
+            margin: 0 auto 20px;
+            background: var(--bg-tertiary);
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+        }
+        .empty-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+        .empty-desc { color: var(--text-muted); margin-bottom: 20px; }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="topbar-left">
+                <a href="#" class="brand">
+                    <div class="brand-logo">O</div>
+                    <span class="brand-wordmark">ORDL</span>
+                </a>
+                <nav class="breadcrumb">
+                    <span class="breadcrumb-item">Models</span>
+                    <span class="breadcrumb-separator">›</span>
+                    <span class="breadcrumb-item">Training</span>
+                </nav>
+            </div>
+        </header>
+
+        <aside class="sidebar">
+            <div class="sidebar-header"></div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Core</div>
+                    <a href="#" class="nav-item">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect width="7" height="7" x="3" y="3" rx="1"></rect>
+                            <rect width="7" height="7" x="14" y="3" rx="1"></rect>
+                            <rect width="7" height="7" x="14" y="14" rx="1"></rect>
+                            <rect width="7" height="7" x="3" y="14" rx="1"></rect>
+                        </svg>
+                    </a>
+                    <a href="#" class="nav-item">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                        </svg>
+                    </a>
+                    <a href="#" class="nav-item active">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                            <path d="M2 17l10 5 10-5"></path>
+                            <path d="M2 12l10 5 10-5"></path>
+                        </svg>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-header">
+                <div>
+                    <h1>Training Runs</h1>
+                    <p>Monitor and manage model training jobs</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-secondary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                        </svg>
+                        Filter
+                    </button>
+                    <button class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        New Training
+                    </button>
+                </div>
+            </div>
+
+            <div class="content-body">
+                <!-- Stats Overview -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon queued">⏳</div>
+                            <span class="stat-label">Queued</span>
+                        </div>
+                        <div class="stat-value">2</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon running">▶️</div>
+                            <span class="stat-label">Running</span>
+                        </div>
+                        <div class="stat-value">3</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon completed">✓</div>
+                            <span class="stat-label">Completed</span>
+                        </div>
+                        <div class="stat-value">156</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-icon failed">✕</div>
+                            <span class="stat-label">Failed</span>
+                        </div>
+                        <div class="stat-value">3</div>
+                    </div>
+                </div>
+
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.3-4.3"></path>
+                        </svg>
+                        <input type="text" placeholder="Search runs by name or ID...">
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Status:</span>
+                        <select class="filter-select">
+                            <option>All Statuses</option>
+                            <option>Queued</option>
+                            <option>Running</option>
+                            <option>Completed</option>
+                            <option>Failed</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">Model:</span>
+                        <select class="filter-select">
+                            <option>All Models</option>
+                            <option>Llama 3</option>
+                            <option>Mistral</option>
+                            <option>Qwen2</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Runs Table -->
+                <div class="runs-table-container">
+                    <table class="runs-table">
+                        <thead>
+                            <tr>
+                                <th>Run</th>
+                                <th>Status</th>
+                                <th>Progress</th>
+                                <th>ETA / Duration</th>
+                                <th>Metrics</th>
+                                <th>Loss Curve</th>
+                                <th>Resources</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Running -->
+                            <tr>
+                                <td>
+                                    <div class="run-info">
+                                        <span class="run-name">llama-3-coding-v2</span>
+                                        <span class="run-model">meta-llama/Meta-Llama-3-8B</span>
+                                    </div>
+                                </td>
+                                <td><span class="status-badge running">Running</span></td>
+                                <td class="progress-cell">
+                                    <div class="progress-header">
+                                        <span class="progress-current">1,247</span>
+                                        <span class="progress-total">/ 3,000 steps</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill running" style="width: 41.5%"></div>
+                                    </div>
+                                </td>
+                                <td class="eta-cell remaining">~2h 14m remaining</td>
+                                <td class="metrics-cell">
+                                    <div class="metric-box">
+                                        <span class="metric-label-sm">Loss</span>
+                                        <span class="metric-value-sm improving">1.247 ↓</span>
+                                    </div>
+                                    <div class="metric-box">
+                                        <span class="metric-label-sm">LR</span>
+                                        <span class="metric-value-sm">2.1e-4</span>
+                                    </div>
+                                    <div class="metric-box">
+                                        <span class="metric-label-sm">Tokens/s</span>
+                                        <span class="metric-value-sm">3,421</span>
+                                    </div>
+                                </td>
+                                <td class="chart-cell">
+                                    <div class="mini-chart">
+                                        <div class="chart-bar" style="height: 80%"></div>
+                                        <div class="chart-bar" style="height: 75%"></div>
+                                        <div class="chart-bar" style="height: 70%"></div>
+                                        <div class="chart-bar" style="height: 65%"></div>
+                                        <div class="chart-bar" style="height: 60%"></div>
+                                        <div class="chart-bar" style="height: 55%"></div>
+                                        <div class="chart-bar active" style="height: 50%"></div>
+                                    </div>
+                                </td>
+                                <td class="resources-cell">
+                                    <div class="resource-row">
+                                        <span class="resource-icon">🎮</span>
+                                        <div class="resource-mini-bar">
+                                            <div class="resource-mini-fill gpu" style="width: 87%"></div>
+                                        </div>
+                                        <span class="resource-pct">87%</span>
+                                    </div>
+                                    <div class="resource-row">
+                                        <span class="resource-icon">💾</span>
+                                        <div class="resource-mini-bar">
+                                            <div class="resource-mini-fill memory" style="width: 62%"></div>
+                                        </div>
+                                        <span class="resource-pct">62%</span>
+                                    </div>
+                                </td>
+                                <td class="actions-cell">
+                                    <button class="action-btn">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="run-info">
+                                        <span class="run-name">mistral-sql-sft</span>
+                                        <span class="run-model">mistralai/Mistral-7B-Instruct</span>
+                                    </div>
+                                </td>
+                                <td><span class="status-badge running">Running</span></td>
+                                <td class="progress-cell">
+                                    <div class="progress-header">
+                                        <span class="progress-current">892</span>
+                                        <span class="progress-total">/ 1,500 steps</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill running" style="width: 59.5%"></div>
+                                    </div>
+                                </td>
+                                <td class="eta-cell remaining">~45m remaining</td>
+                                <td class="metrics-cell">
+                                    <div class="metric-box">
+                                        <span class="metric-label-sm">Loss</span>
+                                        <span class="metric-value-sm improving">0.893 ↓</span>
+                                    </div>
+                                    <div class="metric-box">
+                                        <span class="metric-label-sm">LR</span>
+                                        <span class="metric-value-sm">1.8e-4</span>
+                                    </div>
+                                    <div class="metric-box">
+                                        <span class="metric-label-sm">Tokens/s</span>
+                                        <span class="metric-value-sm">4,127</span>
+                                    </div>
+                                </td>
+                                <td class="chart-cell">
+                                    <div class="mini-chart">
+                                        <div class="chart-bar" style="height: 90%"></div>
+                                        <div class="chart-bar" style="height: 82%"></div>
+                                        <div class="chart-bar" style="height: 76%"></div>
+                                        <div class="chart-bar" style="height: 72%"></div>
+                                        <div class="chart-bar" style="height: 68%"></div>
+                                        <div class="chart-bar" style="height: 65%"></div>
+                                        <div class="chart-bar active" style="height: 60%"></div>
+                                    </div>
+                                </td>
+                                <td class="resources-cell">
+                                    <div class="resource-row">
+                                        <span class="resource-icon">🎮</span>
+                                        <div class="resource-mini-bar">
+                                            <div class="resource-mini-fill gpu" style="width: 94%"></div>
+                                        </div>
+                                        <span class="resource-pct">94%</span>
+                                    </div>
+                                    <div class="resource-row">
+                                        <span class="resource-icon">💾</span>
+                                        <div class="resource-mini-bar">
+                                            <div class="resource-mini-fill memory" style="width: 78%"></div>
+                                        </div>
+                                        <span class="resource-pct">78%</span>
+                                    </div>
+                                </td>
+                                <td class="actions-cell">
+                                    <button class="action-btn">View</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="run-info">
+                                        <span class="run-name">qwen-math-reasoning</span>
+                                        <span class="run-model">Qwen/Qwen2-72B-Instruct</span>
+                                    </div>
+                                </td>
+                                <td><span class="status-badge running">Running</span></td>
+                                <td class="progress-cell">
+                                    <div class="progress-header">
+                                        <span class="progress-current">412</span>
+                                        <span class="progress-total">/ 2,000 steps</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill running" style="width: 20.6%"></div>
+                                    </div>
+                                </td>
+                                <td class="eta-cell remaining">~5h 32m remaining</td>
+                                <td class="metrics-cell">
+                                    <div class="metric-box">
+                                        <span class="metric-label-sm">Loss</span>
+                                        <span class="metric-value-sm improving">1.523 ↓</span>
+                                    </div>
+                                    <div class="metric-box">
+                                        <span class="metric-label-sm">LR</span>
+                                        <span class="metric-value-sm">2.5e-4</span>
+                                    </div>
+                                    <div class="metric-box">
+                                        <span class="metric-label-sm">Tokens/s</span>
+                                        <span class="metric-value-sm">1,847</span>
+                                    </div>
+                                </td>
+                                <td class="chart-cell">
+                                    <div class="mini-chart">
+                                        <div class="chart-bar" style="height: 100%"></div>
+                                        <div class="chart-bar" style="height: 95%"></div>
+                                        <div class="chart-bar" style="height: 88%"></div>
+                                        <div class="chart-bar" style="height: 82%"></div>
+                                        <div class="chart-bar active" style="height: 76%"></div>
+                                    </div>
+                                </td>
+                                <td class="resources-cell">
+                                    <div class="resource-row">
+                                        <span class="resource-icon">🎮</span>
+                                        <div class="resource-mini-bar">
+                                            <div class="resource-mini-fill gpu" style="width: 98%"></div>
+                                        </div>
+                                        <span class="resource-pct">98%</span>
+                                    </div>
+                                    <div class="resource-row">
+                                        <span class="resource-icon">💾</span>
+                                        <div class="resource-mini-bar">
+                                            <div class="resource-mini-fill memory" style="width: 89%"></div>
+                                        </div>
+                                        <span class="resource-pct">89%</span>
+                                    </div>
+                                </td>
+                                <td class="actions-cell">
+                                    <button class="action-btn">View</button>
+                                </td>
+                            </tr>
+
+                            <!-- Queued -->
+                            <tr>
+                                <td>
+                                    <div class="run-info">
+                                        <span class="run-name">llama-3-medical-domain</span>
+                                        <span class="run-model">meta-llama/Meta-Llama-3-70B</span>
+                                    </div>
+                                </td>
+                                <td><span class="status-badge queued">Queued</span></td>
+                                <td class="progress-cell">
+                                    <div class="progress-header">
+                                        <span class="progress-current">0</span>
+                                        <span class="progress-total">/ 5,000 steps</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill queued" style="width: 0%"></div>
+                                    </div>
+                                </td>
+                                <td class="eta-cell">Waiting for GPUs...</td>
+                                <td class="metrics-cell">—</td>
+                                <td class="chart-cell">—</td>
+                                <td class="resources-cell">—</td>
+                                <td class="actions-cell">
+                                    <button class="action-btn">Cancel</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="run-info">
+                                        <span class="run-name">mixtral-moe-experiment</span>
+                                        <span class="run-model">mistralai/Mixtral-8x7B</span>
+                                    </div>
+                                </td>
+                                <td><span class="status-badge queued">Queued</span></td>
+                                <td class="progress-cell">
+                                    <div class="progress-header">
+                                        <span class="progress-current">0</span>
+                                        <span class="progress-total">/ 2,500 steps</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill queued" style="width: 0%"></div>
+                                    </div>
+                                </td>
+                                <td class="eta-cell">Position: #2 in queue</td>
+                                <td class="metrics-cell">—</td>
+                                <td class="chart-cell">—</td>
+                                <td class="resources-cell">—</td>
+                                <td class="actions-cell">
+                                    <button class="action-btn">Cancel</button>
+                                </td>
+                            </tr>
+
+                            <!-- Completed -->
+                            <tr>
+                                <td>
+                                    <div class="run-info">
+                                        <span class="run-name">llama-3-rag-adapter</span>
+                                        <span class="run-model">meta-llama/Meta-Llama-3-8B</span>
+                                    </div>
+                                </td>
+                                <td><span class="status-badge completed">Completed</span></td>
+                                <td class="progress-cell">
+                                    <div class="progress-header">
+                                        <span class="progress-current">2,000</span>
+                                        <span class="progress-total">/ 2,000 steps</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill completed" style="width: 100%"></div>
+                                    </div>
+                                </td>
+                                <td class="eta-cell done">3h 42m</td>
+                                <td class="metrics-cell">
+                                    <div class="metric-box">
+                                        <span class="metric-label-sm">Final Loss</span>
+                                        <span class="metric-value-sm">0.743</span>
+                                    </div>
+                                    <div class="metric-box">
+                                        <span class="metric-label-sm">Perplexity</span>
+                                        <span class="metric-value-sm">2.10</span>
+                                    </div>
+                                </td>
+                                <td class="chart-cell">
+                                    <div class="mini-chart">
+                                        <div class="chart-bar" style="height: 85%; background: var(--success)"></div>
+                                        <div class="chart-bar" style="height: 75%; background: var(--success)"></div>
+                                        <div class="chart-bar" style="height: 65%; background: var(--success)"></div>
+                                        <div class="chart-bar" style="height: 55%; background: var(--success)"></div>
+                                        <div class="chart-bar" style="height: 45%; background: var(--success)"></div>
+                                        <div class="chart-bar" style="height: 40%; background: var(--success)"></div>
+                                        <div class="chart-bar" style="height: 38%; background: var(--success)"></div>
+                                    </div>
+                                </td>
+                                <td class="resources-cell">
+                                    <div class="resource-row">
+                                        <span class="resource-icon">🎮</span>
+                                        <span style="font-size: 11px; color: var(--text-muted)">4× A100 80GB</span>
+                                    </div>
+                                    <div class="resource-row">
+                                        <span class="resource-icon">💾</span>
+                                        <span style="font-size: 11px; color: var(--text-muted)">156 GB used</span>
+                                    </div>
+                                </td>
+                                <td class="actions-cell">
+                                    <button class="action-btn">Eval</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="run-info">
+                                        <span class="run-name">qwen-agent-tuning</span>
+                                        <span class="run-model">Qwen/Qwen2-7B-Instruct</span>
+                                    </div>
+                                </td>
+                                <td><span class="status-badge completed">Completed</span></td>
+                                <td class="progress-cell">
+                                    <div class="progress-header">
+                                        <span class="progress-current">3,500</span>
+                                        <span class="progress-total">/ 3,500 steps</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill completed" style="width: 100%"></div>
+                                    </div>
+                                </td>
+                                <td class="eta-cell done">5h 18m</td>
+                                <td class="metrics-cell">
+                                    <div class="metric-box">
+                                        <span class="metric-label-sm">Final Loss</span>
+                                        <span class="metric-value-sm">0.612</span>
+                                    </div>
+                                    <div class="metric-box">
+                                        <span class="metric-label-sm">Perplexity</span>
+                                        <span class="metric-value-sm">1.84</span>
+                                    </div>
+                                </td>
+                                <td class="chart-cell">
+                                    <div class="mini-chart">
+                                        <div class="chart-bar" style="height: 90%; background: var(--success)"></div>
+                                        <div class="chart-bar" style="height: 80%; background: var(--success)"></div>
+                                        <div class="chart-bar" style="height: 70%; background: var(--success)"></div>
+                                        <div class="chart-bar" style="height: 62%; background: var(--success)"></div>
+                                        <div class="chart-bar" style="height: 55%; background: var(--success)"></div>
+                                        <div class="chart-bar" style="height: 50%; background: var(--success)"></div>
+                                        <div class="chart-bar" style="height: 47%; background: var(--success)"></div>
+                                    </div>
+                                </td>
+                                <td class="resources-cell">
+                                    <div class="resource-row">
+                                        <span class="resource-icon">🎮</span>
+                                        <span style="font-size: 11px; color: var(--text-muted)">2× A100 40GB</span>
+                                    </div>
+                                    <div class="resource-row">
+                                        <span class="resource-icon">💾</span>
+                                        <span style="font-size: 11px; color: var(--text-muted)">89 GB used</span>
+                                    </div>
+                                </td>
+                                <td class="actions-cell">
+                                    <button class="action-btn">Eval</button>
+                                </td>
+                            </tr>
+
+                            <!-- Failed -->
+                            <tr>
+                                <td>
+                                    <div class="run-info">
+                                        <span class="run-name">llama-3-oom-test</span>
+                                        <span class="run-model">meta-llama/Meta-Llama-3-70B</span>
+                                    </div>
+                                </td>
+                                <td><span class="status-badge failed">Failed</span></td>
+                                <td class="progress-cell">
+                                    <div class="progress-header">
+                                        <span class="progress-current">127</span>
+                                        <span class="progress-total">/ 5,000 steps</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill failed" style="width: 2.5%"></div>
+                                    </div>
+                                </td>
+                                <td class="eta-cell" style="color: var(--error)">OOM Error</td>
+                                <td class="metrics-cell">—</td>
+                                <td class="chart-cell">—</td>
+                                <td class="resources-cell">—</td>
+                                <td class="actions-cell">
+                                    <button class="action-btn">Retry</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

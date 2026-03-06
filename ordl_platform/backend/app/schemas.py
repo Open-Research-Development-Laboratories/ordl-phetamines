@@ -46,6 +46,52 @@ class OrgOut(BaseModel):
     board_scope_mode: str
 
 
+class OrgCurrentUpdate(BaseModel):
+    name: str | None = None
+    board_scope_mode: str | None = None
+
+
+class OrgBoardMemberCreate(BaseModel):
+    name: str
+    role: str
+    clearance: str = "internal"
+    appointed: str = ""
+    expires: str = ""
+    status: str = "active"
+
+
+class OrgBoardMemberUpdate(BaseModel):
+    name: str | None = None
+    role: str | None = None
+    clearance: str | None = None
+    appointed: str | None = None
+    expires: str | None = None
+    status: str | None = None
+
+
+class OrgRegionCreate(BaseModel):
+    code: str
+    name: str
+    residency: str = "global"
+    compliance: str = "standard"
+    encryption: str = "default"
+    cross_border: str = "restricted"
+    status: str = "active"
+
+
+class OrgRegionUpdate(BaseModel):
+    name: str | None = None
+    residency: str | None = None
+    compliance: str | None = None
+    encryption: str | None = None
+    cross_border: str | None = None
+    status: str | None = None
+
+
+class OrgPolicyDefaultsUpdate(BaseModel):
+    defaults: dict[str, Any] = Field(default_factory=dict)
+
+
 class TeamCreate(BaseModel):
     org_id: str
     name: str
@@ -55,6 +101,10 @@ class TeamOut(BaseModel):
     id: str
     org_id: str
     name: str
+
+
+class TeamScopeMatrixUpdate(BaseModel):
+    scope_matrix: dict[str, Any] = Field(default_factory=dict)
 
 
 class ProjectCreate(BaseModel):
@@ -72,6 +122,14 @@ class ProjectOut(BaseModel):
     name: str
     ingress_mode: str
     visibility_mode: str
+
+
+class ProjectDefaultsUpdate(BaseModel):
+    defaults: dict[str, Any] = Field(default_factory=dict)
+
+
+class ProjectPolicyProfilesUpdate(BaseModel):
+    profiles: dict[str, Any] = Field(default_factory=dict)
 
 
 class SeatCreate(BaseModel):
@@ -99,11 +157,102 @@ class SeatOut(BaseModel):
     status: str
 
 
+class SeatUpdate(BaseModel):
+    user_id: str | None = None
+    role: str | None = None
+    rank: str | None = None
+    position: str | None = None
+    group_name: str | None = None
+    clearance_tier: str | None = None
+    compartments: list[str] | None = None
+    status: str | None = None
+
+
+class SeatAssignRequest(BaseModel):
+    user_id: str
+    role: str | None = None
+    rank: str | None = None
+    position: str | None = None
+    group_name: str | None = None
+    clearance_tier: str | None = None
+    compartments: list[str] = Field(default_factory=list)
+
+
+class SeatVacateRequest(BaseModel):
+    reason: str = ""
+
+
+class SeatBulkItem(BaseModel):
+    seat_id: str | None = None
+    user_id: str
+    role: str
+    rank: str = "member"
+    position: str = ""
+    group_name: str = ""
+    clearance_tier: str = "internal"
+    compartments: list[str] = Field(default_factory=list)
+    status: str = "active"
+
+
+class SeatBulkAssignRequest(BaseModel):
+    project_id: str
+    assignments: list[SeatBulkItem] = Field(default_factory=list)
+
+
+class SeatMatrixUpdate(BaseModel):
+    project_id: str
+    matrix: dict[str, Any] = Field(default_factory=dict)
+
+
 class ClearanceEvaluateRequest(BaseModel):
     action: str
     required_clearance: str = "internal"
     required_compartments: list[str] = Field(default_factory=list)
     high_risk: bool = False
+
+
+class ClearanceTierRecord(BaseModel):
+    level: str
+    name: str
+    description: str = ""
+    color: str = ""
+
+
+class ClearanceCompartmentRecord(BaseModel):
+    id: str
+    name: str
+    description: str = ""
+    min_clearance: str = "internal"
+    status: str = "active"
+
+
+class ClearanceTiersUpdate(BaseModel):
+    tiers: list[ClearanceTierRecord] = Field(default_factory=list)
+
+
+class ClearanceTierUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    color: str | None = None
+
+
+class ClearanceCompartmentCreate(BaseModel):
+    id: str
+    name: str
+    description: str = ""
+    min_clearance: str = "internal"
+    status: str = "active"
+
+
+class ClearanceCompartmentUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    min_clearance: str | None = None
+    status: str | None = None
+
+
+class ClearanceMatrixUpdate(BaseModel):
+    matrix: dict[str, Any] = Field(default_factory=dict)
 
 
 class AuthorizationDecisionOut(BaseModel):
@@ -265,6 +414,104 @@ class ExtensionOut(BaseModel):
     version: str
     scopes: list[str]
     status: str
+
+
+class ExtensionVerifyRequest(BaseModel):
+    extension_ids: list[str] = Field(default_factory=list)
+
+
+class ExtensionBatchRequest(BaseModel):
+    operation: Literal["activate", "disable", "revoke", "delete"]
+    extension_ids: list[str] = Field(default_factory=list)
+    reason: str = ""
+
+
+class ModelEvalRunCreate(BaseModel):
+    project_id: str
+    provider: str = "openai_codex"
+    model: str
+    suite_name: str = "default"
+    score_bp: int = Field(default=0, ge=0, le=10000)
+    threshold_bp: int = Field(default=0, ge=0, le=10000)
+    status: Literal["pass", "fail"] = "pass"
+    metrics: dict[str, Any] = Field(default_factory=dict)
+    findings: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class ModelEvalRunOut(BaseModel):
+    id: str
+    project_id: str
+    provider: str
+    model: str
+    suite_name: str
+    score_bp: int
+    threshold_bp: int
+    status: str
+    metrics: dict[str, Any]
+    findings: list[dict[str, Any]]
+    executed_by_user_id: str
+    created_at: str | None
+
+
+class ModelFineTuneRunCreate(BaseModel):
+    project_id: str
+    provider: str = "openai_codex"
+    base_model: str
+    target_model: str
+    dataset_uri: str
+    dataset_digest: str
+    dataset_provenance: dict[str, Any] = Field(default_factory=dict)
+    training_params: dict[str, Any] = Field(default_factory=dict)
+
+
+class ModelFineTuneRunStateUpdate(BaseModel):
+    status: Literal["queued", "running", "completed", "failed", "canceled"]
+    notes: str = ""
+    latest_eval_run_id: str | None = None
+
+
+class ModelFineTuneRunOut(BaseModel):
+    id: str
+    project_id: str
+    provider: str
+    base_model: str
+    target_model: str
+    status: str
+    dataset_uri: str
+    dataset_digest: str
+    dataset_provenance: dict[str, Any]
+    training_params: dict[str, Any]
+    latest_eval_run_id: str | None
+    promotion_state: str
+    created_by_user_id: str
+    created_at: str | None
+    updated_at: str | None
+
+
+class ModelPromotionCreate(BaseModel):
+    project_id: str
+    provider: str = "openai_codex"
+    model: str
+    environment: Literal["staging", "production"] = "staging"
+    fine_tune_run_id: str | None = None
+    eval_run_id: str | None = None
+    mode: Literal["promote", "deploy"] = "promote"
+
+
+class ModelPromotionOut(BaseModel):
+    id: str
+    project_id: str
+    provider: str
+    model: str
+    environment: str
+    mode: str
+    fine_tune_run_id: str | None
+    required_eval_run_id: str | None
+    status: str
+    reason_codes: list[str]
+    approved_by_user_id: str
+    created_at: str | None
+    updated_at: str | None
 
 
 class WorkerRegister(BaseModel):

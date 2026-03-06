@@ -1,0 +1,270 @@
+{% extends "app_base.html" %}
+
+{% block title %}Trust Center | ORDL{% endblock %}
+{% block page_name %}trust{% endblock %}
+
+{% block breadcrumb %}
+<nav class="fp-breadcrumb" aria-label="Breadcrumb">
+  <div class="fp-container">
+    <ol class="fp-breadcrumb-list">
+      <li class="fp-breadcrumb-item"><a href="{{ url_for('home') }}">Home</a> <span class="fp-breadcrumb-separator">›</span></li>
+      <li class="fp-breadcrumb-item">Trust Center</li>
+    </ol>
+  </div>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/faceplate/trust.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="trust-hero">
+  <div class="fp-container">
+    <div class="trust-header" data-animate>
+      <div class="trust-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 12 15 16 10"></polyline></svg>
+        Trust Center
+      </div>
+      <h1 class="trust-title">Your data security is our mission</h1>
+      <p class="trust-subtitle">ORDL is built from the ground up for the world's most security-conscious organizations. Our platform meets or exceeds the compliance requirements of U.S. government agencies and Fortune 500 enterprises.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Compliance Certifications -->
+<section class="fp-section fp-section-alt">
+  <div class="fp-container">
+    <h2 class="section-label">Compliance Certifications</h2>
+
+    <div class="compliance-grid">
+      <div class="compliance-card" data-animate>
+        <div class="compliance-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        </div>
+        <h3 class="compliance-name">FedRAMP</h3>
+        <p class="compliance-level">Authorized - High</p>
+        <p class="compliance-desc">Federal Risk and Authorization Management Program authorization for use across U.S. government agencies.</p>
+        <a href="#" class="compliance-link">View ATO Package →</a>
+      </div>
+
+      <div class="compliance-card" data-animate>
+        <div class="compliance-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <h3 class="compliance-name">SOC 2</h3>
+        <p class="compliance-level">Type II Certified</p>
+        <p class="compliance-desc">Service Organization Control 2 Type II certification for security, availability, and confidentiality.</p>
+        <a href="#" class="compliance-link">Request Report →</a>
+      </div>
+
+      <div class="compliance-card" data-animate>
+        <div class="compliance-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <h3 class="compliance-name">ISO 27001</h3>
+        <p class="compliance-level">Certified</p>
+        <p class="compliance-desc">International standard for information security management systems (ISMS).</p>
+        <a href="#" class="compliance-link">View Certificate →</a>
+      </div>
+
+      <div class="compliance-card" data-animate>
+        <div class="compliance-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+        </div>
+        <h3 class="compliance-name">NIST 800-53</h3>
+        <p class="compliance-level">Rev 5 Controls</p>
+        <p class="compliance-desc">Security and privacy controls for federal information systems and organizations.</p>
+        <a href="#" class="compliance-link">Control Matrix →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Control Mapping -->
+<section class="fp-section">
+  <div class="fp-container">
+    <h2 class="section-label">Security Control Mapping</h2>
+
+    <div class="controls-table-wrapper" data-animate>
+      <table class="controls-table">
+        <thead>
+          <tr>
+            <th>Control Family</th>
+            <th>NIST 800-53</th>
+            <th>Implementation</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Access Control</td>
+            <td>AC-2, AC-3, AC-6</td>
+            <td>RBAC with clearance levels, MFA enforcement</td>
+            <td><span class="status-badge status-implemented">Implemented</span></td>
+          </tr>
+          <tr>
+            <td>Audit & Accountability</td>
+            <td>AU-6, AU-12</td>
+            <td>Immutable logs, real-time alerting</td>
+            <td><span class="status-badge status-implemented">Implemented</span></td>
+          </tr>
+          <tr>
+            <td>Configuration Management</td>
+            <td>CM-2, CM-6, CM-7</td>
+            <td>IaC, drift detection, hardened baselines</td>
+            <td><span class="status-badge status-implemented">Implemented</span></td>
+          </tr>
+          <tr>
+            <td>Incident Response</td>
+            <td>IR-4, IR-8</td>
+            <td>24/7 SOC, automated containment</td>
+            <td><span class="status-badge status-implemented">Implemented</span></td>
+          </tr>
+          <tr>
+            <td>Risk Assessment</td>
+            <td>RA-3, RA-5</td>
+            <td>Continuous vulnerability scanning</td>
+            <td><span class="status-badge status-in-progress">In Progress</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- Data Residency -->
+<section class="fp-section fp-section-alt">
+  <div class="fp-container">
+    <div class="residency-grid">
+      <div class="residency-info" data-animate>
+        <h2 class="section-label">Data Residency</h2>
+        <p class="residency-desc">Choose where your data is stored and processed. ORDL operates regional data centers to meet your sovereignty requirements.</p>
+
+        <ul class="residency-features">
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> US Commercial (multi-region)</li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> US GovCloud (IL4/IL5)</li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> EU (GDPR compliant)</li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> UK (post-Brexit)</li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Australia (IRAP)</li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Air-gapped (on-premises)</li>
+        </ul>
+      </div>
+
+      <div class="residency-map" data-animate>
+        <div class="region-map">
+          <div class="region-point active" style="top: 35%; left: 20%;" data-region="US">
+            <span class="region-pulse"></span>
+            <span class="region-label">US</span>
+          </div>
+          <div class="region-point" style="top: 30%; left: 52%;" data-region="EU">
+            <span class="region-pulse"></span>
+            <span class="region-label">EU</span>
+          </div>
+          <div class="region-point" style="top: 75%; left: 85%;" data-region="AU">
+            <span class="region-pulse"></span>
+            <span class="region-label">AU</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Vulnerability Disclosure -->
+<section class="fp-section">
+  <div class="fp-container">
+    <div class="disclosure-grid">
+      <div class="disclosure-info" data-animate>
+        <h2 class="section-label">Vulnerability Disclosure</h2>
+        <p class="disclosure-desc">We take security seriously and appreciate the work of security researchers. If you believe you've discovered a vulnerability, please follow our responsible disclosure process.</p>
+
+        <div class="disclosure-steps">
+          <div class="disclosure-step">
+            <span class="step-number">1</span>
+            <div class="step-content">
+              <h4>Report</h4>
+              <p>Submit vulnerability details to security@ordl.io</p>
+            </div>
+          </div>
+
+          <div class="disclosure-step">
+            <span class="step-number">2</span>
+            <div class="step-content">
+              <h4>Acknowledge</h4>
+              <p>We respond within 48 hours with assessment timeline</p>
+            </div>
+          </div>
+
+          <div class="disclosure-step">
+            <span class="step-number">3</span>
+            <div class="step-content">
+              <h4>Resolve</h4>
+              <p>We fix valid vulnerabilities within 90 days</p>
+            </div>
+          </div>
+
+          <div class="disclosure-step">
+            <span class="step-number">4</span>
+            <div class="step-content">
+              <h4>Recognize</h4>
+              <p>Researchers receive acknowledgment and bounty</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="disclosure-contact" data-animate>
+        <div class="contact-card">
+          <h3>Security Contact</h3>
+          <p class="contact-email"><a href="mailto:security@ordl.io">security@ordl.io</a></p>
+          <p class="contact-pgp">PGP Key: <code>0xA1B2C3D4</code></p>
+          
+          <hr>
+          
+          <h4>Bug Bounty</h4>
+          <p>We participate in HackerOne's bug bounty program with rewards up to $50,000 for critical vulnerabilities.</p>
+          
+          <a href="#" class="fp-btn fp-btn-primary fp-btn-block">View Program</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Penetration Testing -->
+<section class="fp-section fp-section-alt">
+  <div class="fp-container">
+    <div class="pentest-info" data-animate>
+      <h2 class="section-label">Third-Party Validation</h2>
+      
+      <div class="pentest-grid">
+        <div class="pentest-item">
+          <div class="pentest-date">Jan 2026</div>
+          <h4>Annual Penetration Test</h4>
+          <p>Conducted by NCC Group. No critical or high findings.</p>
+          <a href="#" class="pentest-link">View Summary →</a>
+        </div>
+
+        <div class="pentest-item">
+          <div class="pentest-date">Oct 2025</div>
+          <h4>Red Team Exercise</h4>
+          <p>Simulated APT attack scenario. Defended successfully.</p>
+          <a href="#" class="pentest-link">View Summary →</a>
+        </div>
+
+        <div class="pentest-item">
+          <div class="pentest-date">Quarterly</div>
+          <h4>Vulnerability Scanning</h4>
+          <p>Continuous automated scanning with weekly reports.</p>
+          <a href="#" class="pentest-link">View Latest →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/faceplate/trust.js') }}"></script>
+{% endblock %}

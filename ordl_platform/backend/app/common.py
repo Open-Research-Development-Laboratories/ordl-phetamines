@@ -8,7 +8,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models import CollabMessage, Org, Project, SeatAssignment, Team, Tenant, User
+from app.models import CollabMessage, ConfigState, Org, Project, SeatAssignment, Team, Tenant, User
 from app.security import Principal
 
 
@@ -24,6 +24,118 @@ def json_list(value: str | None) -> list[str]:
     if not isinstance(loaded, list):
         return []
     return [str(item) for item in loaded]
+
+
+def json_obj(value: str | None, default: dict | None = None) -> dict:
+    fallback = default or {}
+    try:
+        loaded = json.loads(value or '{}')
+    except json.JSONDecodeError:
+        return dict(fallback)
+    if not isinstance(loaded, dict):
+        return dict(fallback)
+    return loaded
+
+
+def default_project_policy_profiles(environment: str = "development") -> dict:
+    env = (environment or "development").lower()
+    prod_like = env in {"production", "prod"}
+    return {
+        "version": "v1",
+        "model": {
+            "enforce_snapshot_pinning": True if prod_like else True,
+            "allowed_snapshot_patterns": [
+                r".*-\d{4}-\d{2}-\d{2}$",
+                r".*\.\d+(\.\d+)?$",
+            ],
+            "blocked_aliases": [
+                "gpt-5",
+                "gpt-5-mini",
+                "gpt-5-nano",
+                "gpt-4.1",
+                "gpt-4o",
+                "gpt-4o-mini",
+                "o3",
+                "o4-mini",
+            ],
+            "require_eval_for_promotion": True,
+            "min_eval_score_bp": 8000,
+        },
+        "instructions": {
+            "require_instructions_for_openai": False,
+            "min_instruction_chars": 12,
+        },
+        "schema": {
+            "require_json_schema_for_machine_consumed": True,
+            "require_strict_json_schema": True,
+        },
+        "tooling": {
+            "enforce_tool_allowlist": False,
+            "allowed_tools": [],
+        },
+    }
+
+
+def get_config_state(
+    db: Session,
+    *,
+    tenant_id: str,
+    scope_type: str,
+    scope_id: str,
+    config_key: str,
+    default: dict | list | None = None,
+) -> dict | list:
+    row = db.scalar(
+        select(ConfigState).where(
+            ConfigState.tenant_id == tenant_id,
+            ConfigState.scope_type == scope_type,
+            ConfigState.scope_id == scope_id,
+            ConfigState.config_key == config_key,
+        )
+    )
+    if row is None:
+        if default is None:
+            return {}
+        return default
+    try:
+        parsed = json.loads(row.value_json or '{}')
+    except json.JSONDecodeError:
+        return default if default is not None else {}
+    if default is not None and not isinstance(parsed, type(default)):
+        return default
+    return parsed
+
+
+def upsert_config_state(
+    db: Session,
+    *,
+    tenant_id: str,
+    scope_type: str,
+    scope_id: str,
+    config_key: str,
+    value: dict | list,
+    updated_by_user_id: str,
+) -> ConfigState:
+    row = db.scalar(
+        select(ConfigState).where(
+            ConfigState.tenant_id == tenant_id,
+            ConfigState.scope_type == scope_type,
+            ConfigState.scope_id == scope_id,
+            ConfigState.config_key == config_key,
+        )
+    )
+    if row is None:
+        row = ConfigState(
+            tenant_id=tenant_id,
+            scope_type=scope_type,
+            scope_id=scope_id,
+            config_key=config_key,
+            updated_by_user_id=updated_by_user_id,
+        )
+        db.add(row)
+    row.value_json = json.dumps(value, sort_keys=True)
+    row.updated_by_user_id = updated_by_user_id
+    return row
 
 
 def ensure_tenant_scope(db: Session, principal: Principal) -> Tenant:

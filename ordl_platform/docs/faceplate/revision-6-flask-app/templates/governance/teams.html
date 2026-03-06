@@ -1,0 +1,224 @@
+{% extends "app_base.html" %}
+
+{% block title %}Teams - ORDL Governance{% endblock %}
+{% block page_id %}teams-page{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/governance/teams.css') }}">
+{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item">Governance</span>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item active">Teams</span>
+{% endblock %}
+
+{% block content_header %}
+<h1>Teams</h1>
+<p>Team assignment, operating scope definition, and escalation tree management</p>
+{% endblock %}
+
+{% block content %}
+<div class="teams-container">
+    <!-- Teams Grid -->
+    <div class="teams-section">
+        <div class="section-header">
+            <div class="section-filter">
+                <div class="search-box">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.3-4.3"/>
+                    </svg>
+                    <input type="text" placeholder="Search teams..." id="teamSearch">
+                </div>
+                <select class="filter-select" id="scopeFilter">
+                    <option value="">All Scopes</option>
+                    <option value="global">Global</option>
+                    <option value="regional">Regional</option>
+                    <option value="project">Project</option>
+                </select>
+            </div>
+            <button class="btn btn-amber" data-action="create-team">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Create Team
+            </button>
+        </div>
+        
+        <div class="teams-grid">
+            {% for team in teams if teams else [
+                {'id': 'team_001', 'name': 'Platform Engineering', 'scope': 'Global', 'members': 24, 'lead': 'Alex Kim', 'clearance': 'L4', 'projects': 8},
+                {'id': 'team_002', 'name': 'Security Operations', 'scope': 'Global', 'members': 12, 'lead': 'Sarah Chen', 'clearance': 'L5', 'projects': 5},
+                {'id': 'team_003', 'name': 'Data Infrastructure', 'scope': 'Regional', 'members': 18, 'lead': 'Mike Ross', 'clearance': 'L4', 'projects': 6},
+                {'id': 'team_004', 'name': 'ML Research', 'scope': 'Project', 'members': 9, 'lead': 'Dr. Emily Watson', 'clearance': 'L3', 'projects': 4},
+                {'id': 'team_005', 'name': 'Compliance', 'scope': 'Global', 'members': 6, 'lead': 'James Park', 'clearance': 'L5', 'projects': 3},
+                {'id': 'team_006', 'name': 'Customer Success', 'scope': 'Regional', 'members': 32, 'lead': 'Lisa Wong', 'clearance': 'L2', 'projects': 2}
+            ] %}
+            <div class="team-card" data-team-id="{{ team.id }}">
+                <div class="team-header">
+                    <div class="team-identity">
+                        <div class="team-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                        </div>
+                        <div class="team-info">
+                            <h4>{{ team.name }}</h4>
+                            <span class="team-id">{{ team.id }}</span>
+                        </div>
+                    </div>
+                    <span class="scope-badge {{ team.scope|lower }}">{{ team.scope }}</span>
+                </div>
+                <div class="team-stats">
+                    <div class="stat">
+                        <span class="stat-value">{{ team.members }}</span>
+                        <span class="stat-label">Members</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">{{ team.projects }}</span>
+                        <span class="stat-label">Projects</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-value">{{ team.clearance }}</span>
+                        <span class="stat-label">Clearance</span>
+                    </div>
+                </div>
+                <div class="team-footer">
+                    <div class="team-lead">
+                        <span class="lead-label">Lead:</span>
+                        <span class="lead-name">{{ team.lead }}</span>
+                    </div>
+                    <button class="btn btn-sm" data-action="view-team" data-team="{{ team.id }}">View</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Operating Scope Section -->
+    <div class="teams-section">
+        <div class="section-header">
+            <h2>Operating Scope Matrix</h2>
+            <button class="btn btn-amber" data-action="edit-scope">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit Matrix
+            </button>
+        </div>
+        <div class="scope-matrix-container">
+            <table class="matrix-table">
+                <thead>
+                    <tr>
+                        <th>Team</th>
+                        <th>Production</th>
+                        <th>Staging</th>
+                        <th>Development</th>
+                        <th>Data Access</th>
+                        <th>Model Deploy</th>
+                        <th>Policy Edit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for scope in scopes if scopes else [
+                        {'team': 'Platform Engineering', 'prod': 'full', 'staging': 'full', 'dev': 'full', 'data': 'read', 'deploy': 'full', 'policy': 'none'},
+                        {'team': 'Security Operations', 'prod': 'audit', 'staging': 'full', 'dev': 'full', 'data': 'admin', 'deploy': 'approve', 'policy': 'full'},
+                        {'team': 'Data Infrastructure', 'prod': 'maintain', 'staging': 'full', 'dev': 'full', 'data': 'full', 'deploy': 'limited', 'policy': 'none'},
+                        {'team': 'ML Research', 'prod': 'none', 'staging': 'limited', 'dev': 'full', 'data': 'anonymized', 'deploy': 'request', 'policy': 'none'},
+                        {'team': 'Compliance', 'prod': 'audit', 'staging': 'audit', 'dev': 'audit', 'data': 'audit', 'deploy': 'none', 'policy': 'full'},
+                        {'team': 'Customer Success', 'prod': 'view', 'staging': 'view', 'dev': 'none', 'data': 'limited', 'deploy': 'none', 'policy': 'none'}
+                    ] %}
+                    <tr>
+                        <td class="team-name">{{ scope.team }}</td>
+                        <td><span class="permission-badge {{ scope.prod }}">{{ scope.prod|title }}</span></td>
+                        <td><span class="permission-badge {{ scope.staging }}">{{ scope.staging|title }}</span></td>
+                        <td><span class="permission-badge {{ scope.dev }}">{{ scope.dev|title }}</span></td>
+                        <td><span class="permission-badge {{ scope.data }}">{{ scope.data|title }}</span></td>
+                        <td><span class="permission-badge {{ scope.deploy }}">{{ scope.deploy|title }}</span></td>
+                        <td><span class="permission-badge {{ scope.policy }}">{{ scope.policy|title }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Escalation Trees Section -->
+    <div class="teams-section">
+        <div class="section-header">
+            <h2>Escalation Trees</h2>
+            <div class="tree-selector">
+                <select id="escalationTreeSelect">
+                    <option value="incident">Security Incident</option>
+                    <option value="outage">Production Outage</option>
+                    <option value="breach">Data Breach</option>
+                    <option value="compliance">Compliance Violation</option>
+                </select>
+            </div>
+        </div>
+        <div class="escalation-tree-container">
+            <div class="escalation-tree" id="escalationTree">
+                <div class="tree-level level-1">
+                    <div class="tree-node">
+                        <div class="node-content">
+                            <span class="node-role">L1 - On-Call Engineer</span>
+                            <span class="node-contact">#incidents channel</span>
+                            <span class="node-sla">&lt; 5 min</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tree-connector"></div>
+                <div class="tree-level level-2">
+                    <div class="tree-node">
+                        <div class="node-content">
+                            <span class="node-role">L2 - Team Lead</span>
+                            <span class="node-contact">Direct message</span>
+                            <span class="node-sla">&lt; 15 min</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tree-connector"></div>
+                <div class="tree-level level-3">
+                    <div class="tree-node">
+                        <div class="node-content">
+                            <span class="node-role">L3 - Security Team</span>
+                            <span class="node-contact">security@acme.corp</span>
+                            <span class="node-sla">&lt; 30 min</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tree-connector"></div>
+                <div class="tree-level level-4">
+                    <div class="tree-node critical">
+                        <div class="node-content">
+                            <span class="node-role">L4 - CISO / Board</span>
+                            <span class="node-contact">+1-555-0100</span>
+                            <span class="node-sla">&lt; 1 hour</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="escalation-legend">
+                <div class="legend-item">
+                    <span class="legend-dot"></span>
+                    <span>Standard Response</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot critical"></span>
+                    <span>Executive Escalation</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/governance/teams.js') }}"></script>
+{% endblock %}

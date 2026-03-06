@@ -1,0 +1,308 @@
+{% extends "app_base.html" %}
+
+{% block title %}Seats - ORDL Governance{% endblock %}
+{% block page_id %}seats-page{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/governance/seats.css') }}">
+{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item">Governance</span>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item active">Seats</span>
+{% endblock %}
+
+{% block content_header %}
+<h1>Seat Management</h1>
+<p>Seat assignment CRUD, role/rank/position/group management, and lifecycle state tracking</p>
+{% endblock %}
+
+{% block content %}
+<div class="seats-container">
+    
+    <!-- Seats List -->
+    <div class="seats-section">
+        <div class="section-header">
+            <div class="section-filter">
+                <div class="search-box">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.3-4.3"/>
+                    </svg>
+                    <input type="text" placeholder="Search seats..." id="seatSearch">
+                </div>
+                <select class="filter-select" id="stateFilter">
+                    <option value="">All States</option>
+                    <option value="filled">Filled</option>
+                    <option value="vacant">Vacant</option>
+                    <option value="reserved">Reserved</option>
+                    <option value="suspended">Suspended</option>
+                </select>
+                <select class="filter-select" id="projectFilter">
+                    <option value="">All Projects</option>
+                    <option value="proj_001">Alpha LLM Platform</option>
+                    <option value="proj_002">Data Lake Migration</option>
+                    <option value="proj_003">Security Hardening</option>
+                </select>
+            </div>
+            <div class="section-actions">
+                <button class="btn" data-action="bulk-assign">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    Bulk Assign
+                </button>
+                <button class="btn btn-amber" data-action="create-seat">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    Create Seat
+                </button>
+            </div>
+        </div>
+
+        <div class="seats-table-container">
+            <table class="data-table seats-table">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>Seat ID</th>
+                        <th>Project</th>
+                        <th>Occupant</th>
+                        <th>Role / Rank</th>
+                        <th>Position</th>
+                        <th>Group</th>
+                        <th>Clearance</th>
+                        <th>State</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for seat in seats if seats else [
+                        {'id': 'seat_001', 'project': 'Alpha LLM Platform', 'occupant': 'Dr. Emily Watson', 'role': 'Principal', 'rank': 'L5', 'position': 'Tech Lead', 'group': 'Research', 'clearance': 'L5', 'state': 'filled'},
+                        {'id': 'seat_002', 'project': 'Alpha LLM Platform', 'occupant': 'Alex Chen', 'role': 'Senior Engineer', 'rank': 'L4', 'position': 'Senior MLE', 'group': 'ML Team', 'clearance': 'L4', 'state': 'filled'},
+                        {'id': 'seat_003', 'project': 'Alpha LLM Platform', 'occupant': None, 'role': None, 'rank': None, 'position': None, 'group': None, 'clearance': None, 'state': 'vacant'},
+                        {'id': 'seat_004', 'project': 'Data Lake Migration', 'occupant': 'Mike Ross', 'role': 'Staff Engineer', 'rank': 'L4', 'position': 'Data Architect', 'group': 'Platform', 'clearance': 'L4', 'state': 'filled'},
+                        {'id': 'seat_005', 'project': 'Data Lake Migration', 'occupant': 'Jordan Lee', 'role': 'Engineer', 'rank': 'L3', 'position': 'Data Eng', 'group': 'Platform', 'clearance': 'L3', 'state': 'filled'},
+                        {'id': 'seat_006', 'project': 'Security Hardening', 'occupant': 'Reserved', 'role': 'Security Eng', 'rank': 'L4', 'position': 'Security Lead', 'group': 'SecOps', 'clearance': 'L4', 'state': 'reserved'},
+                        {'id': 'seat_007', 'project': 'Security Hardening', 'occupant': 'Sarah Chen', 'role': 'Director', 'rank': 'L5', 'position': 'Security Director', 'group': 'SecOps', 'clearance': 'L5', 'state': 'filled'},
+                        {'id': 'seat_008', 'project': 'Security Hardening', 'occupant': 'Former: Tom Smith', 'role': None, 'rank': None, 'position': None, 'group': None, 'clearance': None, 'state': 'suspended'}
+                    ] %}
+                    <tr class="seat-row {{ seat.state }}" data-seat-id="{{ seat.id }}">
+                        <td><input type="checkbox" class="seat-checkbox" value="{{ seat.id }}"></td>
+                        <td>
+                            <div class="seat-id-cell">
+                                <span class="seat-id">{{ seat.id }}</span>
+                            </div>
+                        </td>
+                        <td>{{ seat.project }}</td>
+                        <td>
+                            {% if seat.state == 'vacant' %}
+                            <span class="vacant-text">— Vacant —</span>
+                            {% elif seat.state == 'reserved' %}
+                            <span class="reserved-text">{{ seat.occupant }}</span>
+                            {% elif seat.state == 'suspended' %}
+                            <span class="suspended-text">{{ seat.occupant }}</span>
+                            {% else %}
+                            <div class="occupant-cell">
+                                <div class="occupant-avatar">{{ seat.occupant[:2]|upper if seat.occupant else '?' }}</div>
+                                <span>{{ seat.occupant }}</span>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if seat.role %}
+                            <div class="role-rank">
+                                <span class="rank-badge">{{ seat.rank }}</span>
+                                <span>{{ seat.role }}</span>
+                            </div>
+                            {% else %}
+                            <span class="na">—</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ seat.position if seat.position else '—' }}</td>
+                        <td>{{ seat.group if seat.group else '—' }}</td>
+                        <td>
+                            {% if seat.clearance %}
+                            <span class="clearance-badge tier-{{ seat.clearance[1] }}">{{ seat.clearance }}</span>
+                            {% else %}
+                            <span class="na">—</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="state-badge {{ seat.state }}">{{ seat.state|title }}</span></td>
+                        <td>
+                            <div class="actions">
+                                <button class="action-btn" title="Edit" data-action="edit-seat" data-seat="{{ seat.id }}">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                </button>
+                                {% if seat.state == 'vacant' %}
+                                <button class="action-btn btn-amber" title="Assign" data-action="assign-seat" data-seat="{{ seat.id }}">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                        <circle cx="9" cy="7" r="4"/>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                    </svg>
+                                </button>
+                                {% elif seat.state == 'filled' %}
+                                <button class="action-btn" title="Vacate" data-action="vacate-seat" data-seat="{{ seat.id }}">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                        <polyline points="16 17 21 12 16 7"/>
+                                        <line x1="21" y1="12" x2="9" y2="12"/>
+                                    </svg>
+                                </button>
+                                {% endif %}
+                                <button class="action-btn" title="History" data-action="seat-history" data-seat="{{ seat.id }}">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12 6 12 12 16 14"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Lifecycle State Manager -->
+    <div class="seats-section">
+        <div class="section-header">
+            <h2>Lifecycle State Transitions</h2>
+        </div>
+        <div class="lifecycle-diagram">
+            <div class="lifecycle-states">
+                <div class="state-node" data-state="vacant">
+                    <div class="state-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                    </div>
+                    <span class="state-label">Vacant</span>
+                    <span class="state-desc">No occupant</span>
+                </div>
+                <div class="state-arrow"></div>
+                <div class="state-node" data-state="reserved">
+                    <div class="state-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                    </div>
+                    <span class="state-label">Reserved</span>
+                    <span class="state-desc">Pending start</span>
+                </div>
+                <div class="state-arrow"></div>
+                <div class="state-node" data-state="filled">
+                    <div class="state-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <span class="state-label">Filled</span>
+                    <span class="state-desc">Active occupant</span>
+                </div>
+                <div class="state-arrow"></div>
+                <div class="state-node" data-state="suspended">
+                    <div class="state-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                    </div>
+                    <span class="state-label">Suspended</span>
+                    <span class="state-desc">Under review</span>
+                </div>
+            </div>
+            <div class="lifecycle-legend">
+                <div class="legend-item">
+                    <span class="legend-line"></span>
+                    <span>Standard transition</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-line dashed"></span>
+                    <span>Requires approval</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Position/Group Matrix -->
+    <div class="seats-section">
+        <div class="section-header">
+            <h2>Position & Group Matrix</h2>
+            <button class="btn btn-amber" data-action="edit-matrix">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit Matrix
+            </button>
+        </div>
+        <div class="matrix-container">
+            <table class="matrix-table">
+                <thead>
+                    <tr>
+                        <th>Position / Group</th>
+                        <th>Research</th>
+                        <th>Platform</th>
+                        <th>SecOps</th>
+                        <th>Data</th>
+                        <th>ML Team</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="position-name">Tech Lead</td>
+                        <td><span class="count-badge">2</span></td>
+                        <td><span class="count-badge">1</span></td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td><span class="count-badge">3</span></td>
+                    </tr>
+                    <tr>
+                        <td class="position-name">Senior MLE</td>
+                        <td><span class="count-badge">4</span></td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td><span class="count-badge">2</span></td>
+                    </tr>
+                    <tr>
+                        <td class="position-name">Data Architect</td>
+                        <td>—</td>
+                        <td><span class="count-badge">2</span></td>
+                        <td>—</td>
+                        <td><span class="count-badge">1</span></td>
+                        <td>—</td>
+                    </tr>
+                    <tr>
+                        <td class="position-name">Security Lead</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td><span class="count-badge">2</span></td>
+                        <td>—</td>
+                        <td>—</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/governance/seats.js') }}"></script>
+{% endblock %}

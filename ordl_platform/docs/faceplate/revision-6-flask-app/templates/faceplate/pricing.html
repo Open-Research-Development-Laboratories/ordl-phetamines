@@ -1,0 +1,236 @@
+{% extends "app_base.html" %}
+
+{% block title %}Pricing | ORDL{% endblock %}
+{% block page_name %}pricing{% endblock %}
+
+{% block breadcrumb %}
+<nav class="fp-breadcrumb" aria-label="Breadcrumb">
+  <div class="fp-container">
+    <ol class="fp-breadcrumb-list">
+      <li class="fp-breadcrumb-item"><a href="{{ url_for('home') }}">Home</a> <span class="fp-breadcrumb-separator">›</span></li>
+      <li class="fp-breadcrumb-item">Pricing</li>
+    </ol>
+  </div>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/faceplate/pricing.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="fp-section fp-section-header">
+  <div class="fp-container">
+    <div class="pricing-header" data-animate>
+      <h1 class="fp-section-title">Simple, Transparent Pricing</h1>
+      <p class="fp-section-subtitle">Choose the plan that fits your mission. All plans include core security features and compliance certifications.</p>
+    </div>
+
+    <!-- Billing Toggle -->
+    <div class="billing-toggle" data-animate>
+      <span class="billing-label" data-active="true">Monthly</span>
+      <button class="billing-switch" id="billingToggle" aria-label="Toggle billing period">
+        <span class="billing-knob"></span>
+      </button>
+      <span class="billing-label">Annual</span>
+      <span class="billing-save">Save 20%</span>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing Tiers -->
+<section class="fp-section pricing-tiers">
+  <div class="fp-container">
+    <div class="tiers-grid">
+      <!-- Starter -->
+      <div class="tier-card" data-animate>
+        <div class="tier-header">
+          <h3 class="tier-name">Starter</h3>
+          <p class="tier-desc">For small teams getting started with AI orchestration.</p>
+          <div class="tier-price">
+            <span class="price-currency">$</span>
+            <span class="price-amount" data-monthly="0" data-annual="0">0</span>
+            <span class="price-period">/month</span>
+          </div>
+        </div>
+        <div class="tier-features">
+          <ul class="feature-list">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Up to 5 models</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 10K inferences/month</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Community support</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Basic audit logs</li>
+            <li class="feature-disabled"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> SSO integration</li>
+          </ul>
+        </div>
+        <a href="{{ url_for('signup') }}" class="fp-btn fp-btn-secondary fp-btn-block">Get Started Free</a>
+      </div>
+
+      <!-- Professional -->
+      <div class="tier-card tier-popular" data-animate>
+        <div class="tier-badge">Most Popular</div>
+        <div class="tier-header">
+          <h3 class="tier-name">Professional</h3>
+          <p class="tier-desc">For growing teams with production workloads.</p>
+          <div class="tier-price">
+            <span class="price-currency">$</span>
+            <span class="price-amount" data-monthly="499" data-annual="399">499</span>
+            <span class="price-period">/month</span>
+          </div>
+        </div>
+        <div class="tier-features">
+          <ul class="feature-list">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Up to 50 models</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 1M inferences/month</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Priority support</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Advanced audit trails</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> SAML SSO</li>
+          </ul>
+        </div>
+        <a href="{{ url_for('signup') }}" class="fp-btn fp-btn-primary fp-btn-block">Start Free Trial</a>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="tier-card" data-animate>
+        <div class="tier-header">
+          <h3 class="tier-name">Enterprise</h3>
+          <p class="tier-desc">For organizations with mission-critical requirements.</p>
+          <div class="tier-price">
+            <span class="price-custom">Custom</span>
+          </div>
+        </div>
+        <div class="tier-features">
+          <ul class="feature-list">
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Unlimited models</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Unlimited inferences</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Dedicated support</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Custom compliance</li>
+            <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Air-gapped deployment</li>
+          </ul>
+        </div>
+        <a href="{{ url_for('contact') }}" class="fp-btn fp-btn-secondary fp-btn-block">Contact Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Add-ons -->
+<section class="fp-section fp-section-alt">
+  <div class="fp-container">
+    <div class="fp-section-header">
+      <h2 class="fp-section-title">Policy & Compliance Add-ons</h2>
+      <p class="fp-section-subtitle">Enhance your deployment with specialized compliance and security modules.</p>
+    </div>
+
+    <div class="addons-grid">
+      <div class="addon-card" data-animate>
+        <div class="addon-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        </div>
+        <h4 class="addon-title">FedRAMP High</h4>
+        <p class="addon-desc">Full FedRAMP High authorization package with continuous monitoring.</p>
+        <span class="addon-price">+$2,500/month</span>
+      </div>
+
+      <div class="addon-card" data-animate>
+        <div class="addon-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <h4 class="addon-title">CMMC Level 3</h4>
+        <p class="addon-desc">Cybersecurity Maturity Model Certification for DoD contractors.</p>
+        <span class="addon-price">+$1,800/month</span>
+      </div>
+
+      <div class="addon-card" data-animate>
+        <div class="addon-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <h4 class="addon-title">Data Residency</h4>
+        <p class="addon-desc">Guaranteed data storage in specific geographic regions.</p>
+        <span class="addon-price">+$1,200/month</span>
+      </div>
+
+      <div class="addon-card" data-animate>
+        <div class="addon-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+        </div>
+        <h4 class="addon-title">AI Governance Suite</h4>
+        <p class="addon-desc">Advanced model cards, bias detection, and explainability tools.</p>
+        <span class="addon-price">+$900/month</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Enterprise Procurement -->
+<section class="fp-section">
+  <div class="fp-container">
+    <div class="procurement-grid">
+      <div class="procurement-info" data-animate>
+        <h2 class="fp-section-title fp-text-left">Enterprise Procurement</h2>
+        <p class="procurement-desc">Streamlined purchasing for government and enterprise customers. We support a variety of procurement methods to meet your organization's requirements.</p>
+        
+        <ul class="procurement-list">
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Federal GSA Schedule</li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> NETCENTS-2 Contract Vehicle</li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> SEWP VI Contract</li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Custom BAA and TAA agreements</li>
+        </ul>
+      </div>
+
+      <div class="procurement-contact" data-animate>
+        <div class="contact-card">
+          <h3 class="contact-title">Need a custom quote?</h3>
+          <p class="contact-desc">Our sales team specializes in government and enterprise procurement. We'll work with your contracting office to meet your requirements.</p>
+          
+          <a href="{{ url_for('contact') }}?dept=sales" class="fp-btn fp-btn-primary fp-btn-lg fp-btn-block">Contact Sales</a>
+          
+          <p class="contact-sla"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Response within 24 hours</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="fp-section fp-section-alt">
+  <div class="fp-container">
+    <div class="fp-section-header">
+      <h2 class="fp-section-title">Frequently Asked Questions</h2>
+    </div>
+
+    <div class="faq-list">
+      <details class="faq-item" data-animate>
+        <summary class="faq-question">What's included in the free tier?</summary>
+        <div class="faq-answer">
+          <p>The Starter tier includes up to 5 deployed models, 10,000 inferences per month, community support via Discord and forums, and basic audit logging. It's perfect for prototyping and small projects.</p>
+        </div>
+      </details>
+
+      <details class="faq-item" data-animate>
+        <summary class="faq-question">Can I upgrade or downgrade my plan?</summary>
+        <div class="faq-answer">
+          <p>Yes, you can change your plan at any time. When upgrading, you'll have immediate access to new features. When downgrading, changes take effect at the start of your next billing cycle.</p>
+        </div>
+      </details>
+
+      <details class="faq-item" data-animate>
+        <summary class="faq-question">What compliance certifications do you have?</summary>
+        <div class="faq-answer">
+          <p>All tiers include SOC 2 Type II and ISO 27001 compliance. FedRAMP Moderate is included in Professional and above. FedRAMP High, CMMC, and other specialized certifications are available as add-ons.</p>
+        </div>
+      </details>
+
+      <details class="faq-item" data-animate>
+        <summary class="faq-question">Do you offer on-premises deployment?</summary>
+        <div class="faq-answer">
+          <p>Yes, Enterprise customers can deploy ORDL in air-gapped environments, private data centers, or classified facilities. Our team will work with yours to ensure secure deployment.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/faceplate/pricing.js') }}"></script>
+{% endblock %}

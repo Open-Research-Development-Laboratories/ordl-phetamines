@@ -1,4 +1,5 @@
 # ORDL IDE Navigation Architecture
+
 ## Design Specification v1.0
 
 > **Design Philosophy:** Industrial precision meets fluid interaction. Every transition feels like machinery engaging—deliberate, satisfying, purposeful.
@@ -21,13 +22,13 @@
 
 ### Core Tenets
 
-| Principle | Description | Implementation |
-|-----------|-------------|----------------|
-| **Mechanical Precision** | Every interaction has weight and feedback | Spring physics, tactile responses |
-| **Context Preservation** | Users never lose their place | Breadcrumbs, state retention, deep linking |
-| **Keyboard-First** | Power users never need a mouse | Vim bindings, command palette, shortcuts |
-| **Progressive Disclosure** | Complexity reveals itself as needed | Collapsible sections, detail drawers |
-| **Spatial Consistency** | Elements stay where expected | Fixed zones, predictable layouts |
+| Principle                  | Description                               | Implementation                             |
+| -------------------------- | ----------------------------------------- | ------------------------------------------ |
+| **Mechanical Precision**   | Every interaction has weight and feedback | Spring physics, tactile responses          |
+| **Context Preservation**   | Users never lose their place              | Breadcrumbs, state retention, deep linking |
+| **Keyboard-First**         | Power users never need a mouse            | Vim bindings, command palette, shortcuts   |
+| **Progressive Disclosure** | Complexity reveals itself as needed       | Collapsible sections, detail drawers       |
+| **Spatial Consistency**    | Elements stay where expected              | Fixed zones, predictable layouts           |
 
 ### Visual Language
 
@@ -108,11 +109,13 @@ ORDL IDE
 ### 2.3 Sidebar Navigation
 
 #### Collapsed State (64px)
+
 - Icon-only navigation
 - Hover reveals tooltip with shortcut hint
 - Active state: illuminated amber indicator + subtle glow
 
 #### Expanded State (240px)
+
 - Full labels visible
 - Nested sections collapsible
 - Drag-to-reorder for custom organization
@@ -151,6 +154,7 @@ Fleet Dashboard ▸ Production Environment ▸ agent-node-7 ▸ Behavior Editor
 ```
 
 **Interaction Patterns:**
+
 - Click any segment to jump to that level
 - Right-click for context menu (open in new tab, copy path, etc.)
 - Each segment shows loading state when children are fetching
@@ -196,18 +200,19 @@ Fleet Dashboard ▸ Production Environment ▸ agent-node-7 ▸ Behavior Editor
 
 #### Key Interactions
 
-| Action | Method | Result |
-|--------|--------|--------|
-| Open Agent | Click card | Navigate to Agent Workshop with agent loaded |
-| Quick Actions | Hover card | Reveal action bar (start/stop/restart/logs) |
-| Multi-select | Cmd/Ctrl + Click | Select multiple for batch operations |
-| Context Menu | Right-click card | Full agent options menu |
-| View Toggle | Grid/List icons | Switch between visual and dense list views |
-| Filter | Search bar | Real-time filtering by name, status, tags |
+| Action        | Method           | Result                                       |
+| ------------- | ---------------- | -------------------------------------------- |
+| Open Agent    | Click card       | Navigate to Agent Workshop with agent loaded |
+| Quick Actions | Hover card       | Reveal action bar (start/stop/restart/logs)  |
+| Multi-select  | Cmd/Ctrl + Click | Select multiple for batch operations         |
+| Context Menu  | Right-click card | Full agent options menu                      |
+| View Toggle   | Grid/List icons  | Switch between visual and dense list views   |
+| Filter        | Search bar       | Real-time filtering by name, status, tags    |
 
 #### State Visualization
 
 Each agent card displays:
+
 - **Status indicator:** Illuminated port (green/amber/red/white)
 - **Health bar:** Horizontal progress showing resource utilization
 - **Activity sparkline:** Mini graph of recent activity (last 60s)
@@ -253,12 +258,14 @@ Each agent card displays:
 #### Panel Structure
 
 **Left Panel - Node Palette (200px, collapsible)**
+
 - Categorized node types (Input, Logic, Action, AI)
 - Search/filter nodes
 - Favorites section
 - Drag to canvas to instantiate
 
 **Center - Canvas (Fluid)**
+
 - Infinite canvas with grid snap
 - Zoom: 25% - 400%
 - Mini-map in bottom-right corner
@@ -266,6 +273,7 @@ Each agent card displays:
 - Pan with middle-mouse or Space+drag
 
 **Right Panel - Properties (320px, collapsible)**
+
 - Context-aware based on selection
 - Empty state: Workspace-level properties
 - Single selection: Node properties
@@ -274,18 +282,18 @@ Each agent card displays:
 
 #### Key Interactions
 
-| Action | Shortcut | Description |
-|--------|----------|-------------|
-| Create Node | Double-click canvas | Open node creation palette |
-| Connect Nodes | Drag from port to port | Create data/action flow |
-| Pan Canvas | Space + Drag | Move around workspace |
-| Zoom | Ctrl/Cmd + Scroll | Zoom in/out |
-| Select All | Cmd/Ctrl + A | Select all nodes |
-| Delete | Delete/Backspace | Remove selected |
-| Group | Cmd/Ctrl + G | Create compound node |
-| Ungroup | Cmd/Ctrl + Shift + G | Expand compound node |
-| Debug | F5 | Start debugging session |
-| Breakpoint | F9 | Toggle breakpoint on node |
+| Action        | Shortcut               | Description                |
+| ------------- | ---------------------- | -------------------------- |
+| Create Node   | Double-click canvas    | Open node creation palette |
+| Connect Nodes | Drag from port to port | Create data/action flow    |
+| Pan Canvas    | Space + Drag           | Move around workspace      |
+| Zoom          | Ctrl/Cmd + Scroll      | Zoom in/out                |
+| Select All    | Cmd/Ctrl + A           | Select all nodes           |
+| Delete        | Delete/Backspace       | Remove selected            |
+| Group         | Cmd/Ctrl + G           | Create compound node       |
+| Ungroup       | Cmd/Ctrl + Shift + G   | Expand compound node       |
+| Debug         | F5                     | Start debugging session    |
+| Breakpoint    | F9                     | Toggle breakpoint on node  |
 
 ---
 
@@ -337,14 +345,14 @@ Each agent card displays:
 
 #### Key Interactions
 
-| Action | Method | Result |
-|--------|--------|--------|
-| View Run | Click pipeline run | Load full run details |
-| Stage Details | Click stage card | Expand job breakdown |
-| Job Logs | Click job row | Open log viewer |
-| Rerun Stage | Hover + Rerun icon | Restart from this stage |
-| Cancel Run | Active run menu | Stop current execution |
-| Compare Runs | Multi-select | Side-by-side comparison |
+| Action        | Method             | Result                  |
+| ------------- | ------------------ | ----------------------- |
+| View Run      | Click pipeline run | Load full run details   |
+| Stage Details | Click stage card   | Expand job breakdown    |
+| Job Logs      | Click job row      | Open log viewer         |
+| Rerun Stage   | Hover + Rerun icon | Restart from this stage |
+| Cancel Run    | Active run menu    | Stop current execution  |
+| Compare Runs  | Multi-select       | Side-by-side comparison |
 
 ---
 
@@ -556,15 +564,15 @@ Easing: ease-in-out
 
 ### 4.5 Micro-interactions
 
-| Interaction | Animation | Duration |
-|-------------|-----------|----------|
-| Button Hover | Scale 1.02 + glow intensify | 150ms |
-| Button Press | Scale 0.98 + shadow reduce | 100ms |
-| Toggle Switch | Slide + background color | 200ms |
-| Checkbox | Checkmark draw + scale bounce | 200ms |
-| Tooltip | Fade + translate Y -4px | 150ms |
-| Error Shake | Horizontal wobble (3 cycles) | 300ms |
-| Success Pulse | Scale ripple + color flash | 400ms |
+| Interaction   | Animation                     | Duration |
+| ------------- | ----------------------------- | -------- |
+| Button Hover  | Scale 1.02 + glow intensify   | 150ms    |
+| Button Press  | Scale 0.98 + shadow reduce    | 100ms    |
+| Toggle Switch | Slide + background color      | 200ms    |
+| Checkbox      | Checkmark draw + scale bounce | 200ms    |
+| Tooltip       | Fade + translate Y -4px       | 150ms    |
+| Error Shake   | Horizontal wobble (3 cycles)  | 300ms    |
+| Success Pulse | Scale ripple + color flash    | 400ms    |
 
 ---
 
@@ -574,40 +582,40 @@ Easing: ease-in-out
 
 #### Global Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `g` then `d` | Go to Dashboard |
-| `g` then `a` | Go to Agent Workshop |
+| Key          | Action                    |
+| ------------ | ------------------------- |
+| `g` then `d` | Go to Dashboard           |
+| `g` then `a` | Go to Agent Workshop      |
 | `g` then `p` | Go to Deployment Pipeline |
-| `g` then `s` | Go to System Settings |
-| `g` then `o` | Go to Onboarding/Help |
-| `g` then `h` | Go to Home (Dashboard) |
+| `g` then `s` | Go to System Settings     |
+| `g` then `o` | Go to Onboarding/Help     |
+| `g` then `h` | Go to Home (Dashboard)    |
 
 #### Canvas Navigation (Agent Workshop)
 
-| Key | Action |
-|-----|--------|
-| `h` / `j` / `k` / `l` | Pan left/down/up/right |
-| `Shift + h/j/k/l` | Pan faster |
-| `+` / `-` | Zoom in/out |
-| `0` | Reset zoom to 100% |
-| `Shift + 0` | Fit to screen |
-| `gg` | Go to top-left of canvas |
-| `Shift + g` | Go to bottom-right of canvas |
+| Key                   | Action                       |
+| --------------------- | ---------------------------- |
+| `h` / `j` / `k` / `l` | Pan left/down/up/right       |
+| `Shift + h/j/k/l`     | Pan faster                   |
+| `+` / `-`             | Zoom in/out                  |
+| `0`                   | Reset zoom to 100%           |
+| `Shift + 0`           | Fit to screen                |
+| `gg`                  | Go to top-left of canvas     |
+| `Shift + g`           | Go to bottom-right of canvas |
 
 #### Selection & Editing
 
-| Key | Action |
-|-----|--------|
-| `Tab` | Select next node |
-| `Shift + Tab` | Select previous node |
-| `Esc` | Deselect all / close panel |
-| `d` then `d` | Delete selected node(s) |
-| `y` then `y` | Copy selected node(s) |
-| `p` | Paste |
-| `u` | Undo |
-| `Ctrl + r` | Redo |
-| `>` / `<` | Indent/outdent (if applicable) |
+| Key           | Action                         |
+| ------------- | ------------------------------ |
+| `Tab`         | Select next node               |
+| `Shift + Tab` | Select previous node           |
+| `Esc`         | Deselect all / close panel     |
+| `d` then `d`  | Delete selected node(s)        |
+| `y` then `y`  | Copy selected node(s)          |
+| `p`           | Paste                          |
+| `u`           | Undo                           |
+| `Ctrl + r`    | Redo                           |
+| `>` / `<`     | Indent/outdent (if applicable) |
 
 ### 5.2 Command Palette
 
@@ -651,6 +659,7 @@ Triggered by `Cmd/Ctrl + K` or `Cmd/Ctrl + Shift + P`
 Accessible via `?` or `Cmd/Ctrl + /`
 
 Displays overlay with all shortcuts organized by category:
+
 - Global
 - Navigation
 - Canvas/Editor
@@ -660,14 +669,14 @@ Displays overlay with all shortcuts organized by category:
 
 ### 5.4 Accessibility Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `Tab` | Navigate focusable elements |
-| `Shift + Tab` | Reverse focus navigation |
-| `Enter` / `Space` | Activate focused element |
-| `Esc` | Close modal/overlay/dropdown |
-| `F6` | Cycle through main regions |
-| `Alt + 1-5` | Jump to specific view |
+| Key               | Action                       |
+| ----------------- | ---------------------------- |
+| `Tab`             | Navigate focusable elements  |
+| `Shift + Tab`     | Reverse focus navigation     |
+| `Enter` / `Space` | Activate focused element     |
+| `Esc`             | Close modal/overlay/dropdown |
+| `F6`              | Cycle through main regions   |
+| `Alt + 1-5`       | Jump to specific view        |
 
 ---
 
@@ -675,12 +684,12 @@ Displays overlay with all shortcuts organized by category:
 
 ### 6.1 Responsive Breakpoints
 
-| Breakpoint | Width | Layout Changes |
-|------------|-------|----------------|
-| Compact | < 768px | Sidebar collapses, stack panels |
-| Standard | 768-1440px | Default layout |
-| Wide | 1440-1920px | Expanded context panel |
-| Ultra-wide | > 1920px | Multi-pane support |
+| Breakpoint | Width       | Layout Changes                  |
+| ---------- | ----------- | ------------------------------- |
+| Compact    | < 768px     | Sidebar collapses, stack panels |
+| Standard   | 768-1440px  | Default layout                  |
+| Wide       | 1440-1920px | Expanded context panel          |
+| Ultra-wide | > 1920px    | Multi-pane support              |
 
 ### 6.2 Z-Index Layers
 
@@ -751,6 +760,7 @@ Icon: Search left, ⌘K hint right
 **Problem:** Users lose work context when navigating.
 
 **Solution:**
+
 - URL-based state (deep linking)
 - Session restoration on re-open
 - "Recent contexts" in sidebar
@@ -762,6 +772,7 @@ Icon: Search left, ⌘K hint right
 **Pattern:** Complexity reveals as user demonstrates intent.
 
 **Examples:**
+
 - Basic agent config → Advanced options (collapsed)
 - Simple deployment → Custom pipeline stages
 - Default keyboard shortcuts → Custom bindings
@@ -770,22 +781,24 @@ Icon: Search left, ⌘K hint right
 
 Every action produces visible feedback:
 
-| Action | Feedback |
-|--------|----------|
-| Save | Toast: "Saved" + timestamp |
-| Error | Shake + red highlight + inline message |
-| Long operation | Progress indicator + cancel option |
-| Background task | Status bar indicator |
-| State change | Smooth transition + color change |
+| Action          | Feedback                               |
+| --------------- | -------------------------------------- |
+| Save            | Toast: "Saved" + timestamp             |
+| Error           | Shake + red highlight + inline message |
+| Long operation  | Progress indicator + cancel option     |
+| Background task | Status bar indicator                   |
+| State change    | Smooth transition + color change       |
 
 ### 7.4 Error Recovery
 
 **Graceful Degradation:**
+
 - Network failure → Offline mode indicator + retry queue
 - Canvas error → Fallback to list view
 - Permission denied → Inline upgrade prompt
 
 **Undo/Redo:**
+
 - Global undo stack (Cmd/Ctrl + Z)
 - Critical actions: Confirm dialog
 - Destructive actions: Soft delete (recoverable)
@@ -793,16 +806,19 @@ Every action produces visible feedback:
 ### 7.5 Performance Patterns
 
 **Virtualization:**
+
 - Large agent lists: Virtual scrolling
 - Canvas: LOD (level of detail) for distant nodes
 - Timeline: Temporal virtualization
 
 **Lazy Loading:**
+
 - Images and previews on viewport entry
 - Panel content on first expand
 - Historical data on scroll
 
 **Optimistic Updates:**
+
 - UI updates immediately, syncs in background
 - Rollback on failure with notification
 - Conflict resolution UI

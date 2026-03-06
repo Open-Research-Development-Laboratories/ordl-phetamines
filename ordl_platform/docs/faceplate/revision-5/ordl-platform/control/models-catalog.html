@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Catalog - ORDL Control Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #334155;
+            --accent-primary: #3b82f6;
+            --accent-success: #10b981;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --accent-purple: #8b5cf6;
+            --hover-bg: rgba(59, 130, 246, 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 16px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 81px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .filter-section {
+            margin-bottom: 28px;
+        }
+
+        .filter-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 14px 10px 40px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .filter-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .filter-option:hover {
+            background: var(--hover-bg);
+        }
+
+        .filter-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent-primary);
+            cursor: pointer;
+        }
+
+        .filter-option label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .filter-option:hover label {
+            color: var(--text-primary);
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tag:hover,
+        .tag.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 24px 32px;
+            overflow-y: auto;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .results-count {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .sort-dropdown {
+            position: relative;
+        }
+
+        .sort-select {
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            min-width: 180px;
+        }
+
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        /* Model Grid */
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .model-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .model-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .model-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .model-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .model-icon.base {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent-primary);
+        }
+
+        .model-icon.finetune {
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--accent-purple);
+        }
+
+        .model-icon.checkpoint {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-success);
+        }
+
+        .model-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .model-name {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .version-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .model-type {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: capitalize;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .status-badge.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-success);
+        }
+
+        .status-badge.archived {
+            background: rgba(148, 163, 184, 0.15);
+            color: var(--text-secondary);
+        }
+
+        .status-badge.training {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-warning);
+        }
+
+        .status-badge.failed {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--accent-danger);
+        }
+
+        .card-meta {
+            display: flex;
+            gap: 20px;
+            padding: 12px 0;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .meta-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-value {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 8px 14px;
+            font-size: 13px;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            min-width: 36px;
+            justify-content: center;
+        }
+
+        /* Hover Preview */
+        .hover-preview {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, var(--bg-secondary) 0%, var(--bg-secondary) 90%, transparent 100%);
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .model-card:hover .hover-preview {
+            transform: translateY(0);
+        }
+
+        .preview-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .preview-stat {
+            text-align: center;
+        }
+
+        .preview-stat-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .preview-stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .btn-deploy {
+            width: 100%;
+            background: var(--accent-success);
+            color: white;
+            padding: 10px;
+            font-weight: 500;
+        }
+
+        .btn-deploy:hover {
+            background: #059669;
+        }
+
+        /* Empty States */
+        .empty-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 40px;
+            text-align: center;
+        }
+
+        .empty-state.visible {
+            display: flex;
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--bg-tertiary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-bottom: 24px;
+        }
+
+        .empty-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .empty-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            max-width: 400px;
+            margin-bottom: 24px;
+        }
+
+        /* Icons */
+        .icon::before {
+            display: inline-block;
+            font-style: normal;
+            font-variant: normal;
+            line-height: 1;
+        }
+
+        .icon-search::before { content: "🔍"; }
+        .icon-plus::before { content: "+"; font-weight: bold; }
+        .icon-download::before { content: "↓"; }
+        .icon-upload::before { content: "↑"; }
+        .icon-more::before { content: "⋯"; }
+        .icon-base::before { content: "🧠"; }
+        .icon-finetune::before { content: "⚡"; }
+        .icon-checkpoint::before { content: "💾"; }
+        .icon-model::before { content: "📦"; }
+        .icon-filter::before { content: "🔧"; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .model-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <h1 class="header-title">Model Catalog</h1>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <span class="stat-value">23</span>
+                    <span>models</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">8</span>
+                    <span>base models</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">15</span>
+                    <span>finetunes</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary">
+                <span class="icon icon-download"></span>
+                Export
+            </button>
+            <button class="btn btn-secondary">
+                <span class="icon icon-upload"></span>
+                Import
+            </button>
+            <button class="btn btn-primary">
+                <span class="icon icon-plus"></span>
+                Create Model
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Filter Sidebar -->
+        <aside class="sidebar">
+            <div class="filter-section">
+                <div class="filter-title">Search</div>
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" placeholder="Search models..." id="searchInput">
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-title">Type</div>
+                <div class="filter-options">
+                    <div class="filter-option">
+                        <input type="checkbox" id="type-base" value="base" checked>
+                        <label for="type-base">Base</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="type-finetune" value="finetune" checked>
+                        <label for="type-finetune">Finetune</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="type-checkpoint" value="checkpoint" checked>
+                        <label for="type-checkpoint">Checkpoint</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-title">Status</div>
+                <div class="filter-options">
+                    <div class="filter-option">
+                        <input type="checkbox" id="status-active" value="active" checked>
+                        <label for="status-active">Active</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="status-archived" value="archived">
+                        <label for="status-archived">Archived</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="status-training" value="training" checked>
+                        <label for="status-training">Training</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="status-failed" value="failed">
+                        <label for="status-failed">Failed</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-title">Owner</div>
+                <div class="filter-options">
+                    <div class="filter-option">
+                        <input type="checkbox" id="owner-me" value="me" checked>
+                        <label for="owner-me">My models</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="owner-team" value="team" checked>
+                        <label for="owner-team">Team</label>
+                    </div>
+                    <div class="filter-option">
+                        <input type="checkbox" id="owner-org" value="organization">
+                        <label for="owner-org">Organization</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <div class="filter-title">Tags</div>
+                <div class="tag-list">
+                    <span class="tag" data-tag="computer-vision">computer-vision</span>
+                    <span class="tag" data-tag="nlp">nlp</span>
+                    <span class="tag" data-tag="classification">classification</span>
+                    <span class="tag" data-tag="generation">generation</span>
+                    <span class="tag" data-tag="embedding">embedding</span>
+                    <span class="tag" data-tag="multimodal">multimodal</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="content">
+            <div class="toolbar">
+                <span class="results-count"><span id="resultsCount">18</span> models found</span>
+                <div class="sort-dropdown">
+                    <select class="sort-select" id="sortSelect">
+                        <option value="updated">Recently updated</option>
+                        <option value="name">Name A-Z</option>
+                        <option value="deployed">Most deployed</option>
+                        <option value="size">Size (parameters)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Model Grid -->
+            <div class="model-grid" id="modelGrid">
+                <!-- Model cards will be populated by JavaScript -->
+            </div>
+
+            <!-- Empty State - No Models -->
+            <div class="empty-state" id="emptyNoModels">
+                <div class="empty-icon">📦</div>
+                <h2 class="empty-title">Start by creating your first model</h2>
+                <p class="empty-description">Get started by creating a new model or importing an existing one from your local files or a remote repository.</p>
+                <button class="btn btn-primary">
+                    <span class="icon icon-plus"></span>
+                    Create Model
+                </button>
+            </div>
+
+            <!-- Empty State - No Results -->
+            <div class="empty-state" id="emptyNoResults">
+                <div class="empty-icon">🔍</div>
+                <h2 class="empty-title">No models found</h2>
+                <p class="empty-description">Try adjusting your filters or search terms to find what you're looking for.</p>
+                <button class="btn btn-secondary" onclick="clearFilters()">
+                    Clear Filters
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Model data
+        const models = [
+            {
+                id: 1,
+                name: 'gpt-4-classifier',
+                version: 'v2.1.0',
+                type: 'finetune',
+                status: 'active',
+                owner: 'me',
+                team: 'ML Team',
+                lastUpdated: '2 hours ago',
+                tags: ['nlp', 'classification'],
+                params: '1.2B',
+                size: '4.8 GB',
+                latency: '45ms',
+                deployments: 12
+            },
+            {
+                id: 2,
+                name: 'sentiment-v2',
+                version: 'v2.0.1',
+                type: 'finetune',
+                status: 'active',
+                owner: 'me',
+                team: 'NLP Squad',
+                lastUpdated: '5 hours ago',
+                tags: ['nlp', 'classification'],
+                params: '340M',
+                size: '1.2 GB',
+                latency: '23ms',
+                deployments: 8
+            },
+            {
+                id: 3,
+                name: 'vision-resnet50',
+                version: 'v1.0.0',
+                type: 'base',
+                status: 'active',
+                owner: 'team',
+                team: 'Vision Team',
+                lastUpdated: '1 day ago',
+                tags: ['computer-vision', 'classification'],
+                params: '25M',
+                size: '98 MB',
+                latency: '12ms',
+                deployments: 24
+            },
+            {
+                id: 4,
+                name: 'yolo-detector',
+                version: 'v3.2.0',
+                type: 'finetune',
+                status: 'training',
+                owner: 'me',
+                team: 'Vision Team',
+                lastUpdated: '2 days ago',
+                tags: ['computer-vision', 'detection'],
+                params: '62M',
+                size: '248 MB',
+                latency: '35ms',
+                deployments: 3
+            },
+            {
+                id: 5,
+                name: 'bert-embeddings',
+                version: 'v1.5.0',
+                type: 'base',
+                status: 'active',
+                owner: 'organization',
+                team: 'Platform',
+                lastUpdated: '3 days ago',
+                tags: ['nlp', 'embedding'],
+                params: '110M',
+                size: '440 MB',
+                latency: '18ms',
+                deployments: 45
+            },
+            {
+                id: 6,
+                name: 'code-generator',
+                version: 'v1.0.0-beta',
+                type: 'checkpoint',
+                status: 'archived',
+                owner: 'me',
+                team: 'Dev Tools',
+                lastUpdated: '1 week ago',
+                tags: ['nlp', 'generation'],
+                params: '7B',
+                size: '28 GB',
+                latency: '120ms',
+                deployments: 0
+            },
+            {
+                id: 7,
+                name: 'clip-multimodal',
+                version: 'v2.0.0',
+                type: 'base',
+                status: 'active',
+                owner: 'team',
+                team: 'Research',
+                lastUpdated: '4 days ago',
+                tags: ['multimodal', 'computer-vision', 'nlp'],
+                params: '400M',
+                size: '1.6 GB',
+                latency: '28ms',
+                deployments: 6
+            },
+            {
+                id: 8,
+                name: 't5-summarizer',
+                version: 'v1.3.0',
+                type: 'finetune',
+                status: 'active',
+                owner: 'me',
+                team: 'NLP Squad',
+                lastUpdated: '6 hours ago',
+                tags: ['nlp', 'generation'],
+                params: '770M',
+                size: '3.1 GB',
+                latency: '65ms',
+                deployments: 9
+            },
+            {
+                id: 9,
+                name: 'whisper-asr',
+                version: 'v1.0.0',
+                type: 'base',
+                status: 'active',
+                owner: 'organization',
+                team: 'Audio Team',
+                lastUpdated: '5 days ago',
+                tags: ['audio', 'transcription'],
+                params: '1.5B',
+                size: '6 GB',
+                latency: '85ms',
+                deployments: 15
+            },
+            {
+                id: 10,
+                name: 'stable-diffusion-v2',
+                version: 'v2.1.0',
+                type: 'finetune',
+                status: 'failed',
+                owner: 'me',
+                team: 'Creative AI',
+                lastUpdated: '1 week ago',
+                tags: ['generation', 'computer-vision'],
+                params: '1.4B',
+                size: '5.6 GB',
+                latency: '2.5s',
+                deployments: 0
+            },
+            {
+                id: 11,
+                name: 'roberta-ner',
+                version: 'v1.2.0',
+                type: 'finetune',
+                status: 'active',
+                owner: 'team',
+                team: 'NLP Squad',
+                lastUpdated: '12 hours ago',
+                tags: ['nlp', 'classification'],
+                params: '125M',
+                size: '500 MB',
+                latency: '15ms',
+                deployments: 11
+            },
+            {
+                id: 12,
+                name: 'densenet-vision',
+                version: 'v1.0.0',
+                type: 'base',
+                status: 'active',
+                owner: 'organization',
+                team: 'Vision Team',
+                lastUpdated: '2 weeks ago',
+                tags: ['computer-vision', 'classification'],
+                params: '8M',
+                size: '32 MB',
+                latency: '8ms',
+                deployments: 18
+            }
+        ];
+
+        // State
+        let activeFilters = {
+            search: '',
+            types: ['base', 'finetune', 'checkpoint'],
+            statuses: ['active', 'training'],
+            owners: ['me', 'team'],
+            tags: []
+        };
+
+        let currentSort = 'updated';
+
+        // Render model cards
+        function renderModels() {
+            const grid = document.getElementById('modelGrid');
+            const filtered = filterModels();
+            const sorted = sortModels(filtered);
+
+            document.getElementById('resultsCount').textContent = sorted.length;
+
+            // Show/hide empty states
+            if (models.length === 0) {
+                grid.style.display = 'none';
+                document.getElementById('emptyNoModels').classList.add('visible');
+                document.getElementById('emptyNoResults').classList.remove('visible');
+                return;
+            }
+
+            if (sorted.length === 0) {
+                grid.style.display = 'none';
+                document.getElementById('emptyNoModels').classList.remove('visible');
+                document.getElementById('emptyNoResults').classList.add('visible');
+                return;
+            }
+
+            grid.style.display = 'grid';
+            document.getElementById('emptyNoModels').classList.remove('visible');
+            document.getElementById('emptyNoResults').classList.remove('visible');
+
+            grid.innerHTML = sorted.map(model => `
+                <div class="model-card" data-id="${model.id}">
+                    <div class="card-header">
+                        <div class="model-info">
+                            <div class="model-icon ${model.type}">
+                                ${getTypeIcon(model.type)}
+                            </div>
+                            <div class="model-title-group">
+                                <div class="model-name">
+                                    ${model.name}
+                                    <span class="version-badge">${model.version}</span>
+                                </div>
+                                <div class="model-type">${model.type}</div>
+                            </div>
+                        </div>
+                        <span class="status-badge ${model.status}">${model.status}</span>
+                    </div>
+                    <div class="card-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Owner</span>
+                            <span class="meta-value">${model.team}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Updated</span>
+                            <span class="meta-value">${model.lastUpdated}</span>
+                        </div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary btn-small" onclick="deployModel(${model.id})">
+                            Deploy
+                        </button>
+                        <button class="btn btn-secondary btn-small" onclick="evaluateModel(${model.id})">
+                            Evaluate
+                        </button>
+                        <button class="btn btn-secondary btn-icon">
+                            <span class="icon icon-more"></span>
+                        </button>
+                    </div>
+                    <div class="hover-preview">
+                        <div class="preview-stats">
+                            <div class="preview-stat">
+                                <div class="preview-stat-value">${model.params}</div>
+                                <div class="preview-stat-label">Parameters</div>
+                            </div>
+                            <div class="preview-stat">
+                                <div class="preview-stat-value">${model.size}</div>
+                                <div class="preview-stat-label">Size</div>
+                            </div>
+                            <div class="preview-stat">
+                                <div class="preview-stat-value">${model.latency}</div>
+                                <div class="preview-stat-label">Latency</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-deploy" onclick="quickDeploy(${model.id})">
+                            ⚡ Quick Deploy
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getTypeIcon(type) {
+            const icons = {
+                base: '🧠',
+                finetune: '⚡',
+                checkpoint: '💾'
+            };
+            return icons[type] || '📦';
+        }
+
+        function filterModels() {
+            return models.filter(model => {
+                // Search filter
+                if (activeFilters.search && !model.name.toLowerCase().includes(activeFilters.search.toLowerCase())) {
+                    return false;
+                }
+
+                // Type filter
+                if (!activeFilters.types.includes(model.type)) {
+                    return false;
+                }
+
+                // Status filter
+                if (!activeFilters.statuses.includes(model.status)) {
+                    return false;
+                }
+
+                // Owner filter
+                if (!activeFilters.owners.includes(model.owner)) {
+                    return false;
+                }
+
+                // Tags filter
+                if (activeFilters.tags.length > 0 && !activeFilters.tags.some(tag => model.tags.includes(tag))) {
+                    return false;
+                }
+
+                return true;
+            });
+        }
+
+        function sortModels(modelsToSort) {
+            const sorted = [...modelsToSort];
+            switch (currentSort) {
+                case 'name':
+                    return sorted.sort((a, b) => a.name.localeCompare(b.name));
+                case 'deployed':
+                    return sorted.sort((a, b) => b.deployments - a.deployments);
+                case 'size':
+                    return sorted.sort((a, b) => parseParams(b.params) - parseParams(a.params));
+                case 'updated':
+                default:
+                    return sorted;
+            }
+        }
+
+        function parseParams(paramStr) {
+            const match = paramStr.match(/([\d.]+)\s*([KMGT]?)/);
+            if (!match) return 0;
+            const value = parseFloat(match[1]);
+            const unit = match[2];
+            const multipliers = { '': 1, 'K': 1e3, 'M': 1e6, 'G': 1e9, 'T': 1e12 };
+            return value * (multipliers[unit] || 1);
+        }
+
+        function updateFilters() {
+            activeFilters.types = Array.from(document.querySelectorAll('input[id^="type-"]:checked')).map(cb => cb.value);
+            activeFilters.statuses = Array.from(document.querySelectorAll('input[id^="status-"]:checked')).map(cb => cb.value);
+            activeFilters.owners = Array.from(document.querySelectorAll('input[id^="owner-"]:checked')).map(cb => cb.value);
+            renderModels();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            activeFilters.search = '';
+            
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.checked = ['type-base', 'type-finetune', 'type-checkpoint', 'status-active', 'status-training', 'owner-me', 'owner-team'].includes(cb.id);
+            });
+            
+            document.querySelectorAll('.tag').forEach(tag => tag.classList.remove('active'));
+            activeFilters.tags = [];
+            
+            updateFilters();
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            activeFilters.search = e.target.value;
+            renderModels();
+        });
+
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', updateFilters);
+        });
+
+        document.querySelectorAll('.tag').forEach(tag => {
+            tag.addEventListener('click', () => {
+                tag.classList.toggle('active');
+                activeFilters.tags = Array.from(document.querySelectorAll('.tag.active')).map(t => t.dataset.tag);
+                renderModels();
+            });
+        });
+
+        document.getElementById('sortSelect').addEventListener('change', (e) => {
+            currentSort = e.target.value;
+            renderModels();
+        });
+
+        // Action handlers
+        function deployModel(id) {
+            const model = models.find(m => m.id === id);
+            alert(`Deploying ${model.name}...`);
+        }
+
+        function evaluateModel(id) {
+            const model = models.find(m => m.id === id);
+            alert(`Evaluating ${model.name}...`);
+        }
+
+        function quickDeploy(id) {
+            const model = models.find(m => m.id === id);
+            alert(`Quick deploying ${model.name} to production...`);
+        }
+
+        // Initialize
+        renderModels();
+    </script>
+</body>
+</html>

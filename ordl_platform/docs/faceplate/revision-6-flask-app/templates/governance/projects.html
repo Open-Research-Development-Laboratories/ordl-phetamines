@@ -1,0 +1,245 @@
+{% extends "app_base.html" %}
+
+{% block title %}Projects - ORDL Governance{% endblock %}
+{% block page_id %}projects-page{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/governance/projects.css') }}">
+{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item">Governance</span>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item active">Projects</span>
+{% endblock %}
+
+{% block content_header %}
+<h1>Projects</h1>
+<p>Project metadata management, seat maps, and default clearance/compartment assignments</p>
+{% endblock %}
+
+{% block content %}
+<div class="projects-container">
+    <!-- Projects List -->
+    <div class="projects-section">
+        <div class="section-header">
+            <div class="section-filter">
+                <div class="search-box">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.3-4.3"/>
+                    </svg>
+                    <input type="text" placeholder="Search projects..." id="projectSearch">
+                </div>
+                <select class="filter-select" id="statusFilter">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="planning">Planning</option>
+                    <option value="archived">Archived</option>
+                    <option value="suspended">Suspended</option>
+                </select>
+            </div>
+            <button class="btn btn-amber" data-action="create-project">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                New Project
+            </button>
+        </div>
+        
+        <div class="projects-list">
+            {% for project in projects if projects else [
+                {'id': 'proj_001', 'name': 'Alpha LLM Platform', 'status': 'active', 'owner': 'Dr. Emily Watson', 'team': 'ML Research', 'seats': 12, 'compartments': ['R&D', 'AI-Core'], 'clearance': 'L4', 'created': '2024-01-15'},
+                {'id': 'proj_002', 'name': 'Data Lake Migration', 'status': 'active', 'owner': 'Mike Ross', 'team': 'Data Infrastructure', 'seats': 8, 'compartments': ['Data-Ops'], 'clearance': 'L3', 'created': '2024-02-01'},
+                {'id': 'proj_003', 'name': 'Security Hardening', 'status': 'active', 'owner': 'Sarah Chen', 'team': 'Security Operations', 'seats': 6, 'compartments': ['Sec-Ops', 'Infra'], 'clearance': 'L5', 'created': '2024-01-20'},
+                {'id': 'proj_004', 'name': 'Customer Analytics', 'status': 'planning', 'owner': 'Lisa Wong', 'team': 'Customer Success', 'seats': 4, 'compartments': ['Analytics'], 'clearance': 'L2', 'created': '2024-03-01'},
+                {'id': 'proj_005', 'name': 'Compliance Audit Prep', 'status': 'active', 'owner': 'James Park', 'team': 'Compliance', 'seats': 3, 'compartments': ['Audit', 'Legal'], 'clearance': 'L4', 'created': '2024-02-15'},
+                {'id': 'proj_006', 'name': 'Legacy Migration', 'status': 'archived', 'owner': 'Alex Kim', 'team': 'Platform Engineering', 'seats': 0, 'compartments': [], 'clearance': 'L3', 'created': '2023-06-01'}
+            ] %}
+            <div class="project-row" data-project-id="{{ project.id }}">
+                <div class="project-main">
+                    <div class="project-status-indicator {{ project.status }}"></div>
+                    <div class="project-info">
+                        <div class="project-header-line">
+                            <h4>{{ project.name }}</h4>
+                            <span class="project-id">{{ project.id }}</span>
+                        </div>
+                        <div class="project-meta">
+                            <span class="meta-item">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                                {{ project.owner }}
+                            </span>
+                            <span class="separator">•</span>
+                            <span class="meta-item">{{ project.team }}</span>
+                            <span class="separator">•</span>
+                            <span class="meta-item">Created {{ project.created }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="project-badges">
+                    <span class="status-badge {{ project.status }}">{{ project.status|title }}</span>
+                    <span class="clearance-badge tier-{{ project.clearance[1] }}">{{ project.clearance }}</span>
+                </div>
+                <div class="project-compartments">
+                    {% for comp in project.compartments %}
+                    <span class="compartment-tag">{{ comp }}</span>
+                    {% endfor %}
+                </div>
+                <div class="project-seats">
+                    <div class="seats-indicator">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                        </svg>
+                        <span>{{ project.seats }} seats</span>
+                    </div>
+                </div>
+                <div class="project-actions">
+                    <button class="action-btn" title="View Details" data-action="view-project" data-project="{{ project.id }}">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                    <button class="action-btn" title="Edit Project" data-action="edit-project" data-project="{{ project.id }}">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                    </button>
+                    <button class="action-btn" title="Manage Seats" data-action="manage-seats" data-project="{{ project.id }}">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Seat Map Visualization -->
+    <div class="projects-section">
+        <div class="section-header">
+            <h2>Seat Map: Alpha LLM Platform</h2>
+            <div class="seat-stats">
+                <span class="stat"><strong>12</strong> total seats</span>
+                <span class="stat"><strong>10</strong> assigned</span>
+                <span class="stat"><strong>2</strong> vacant</span>
+            </div>
+        </div>
+        <div class="seat-map-container">
+            <div class="seat-grid">
+                {% for seat in seats if seats else [
+                    {'id': 1, ' occupant': 'Dr. Emily Watson', 'role': 'Principal', 'clearance': 'L5', 'status': 'filled'},
+                    {'id': 2, 'occupant': 'Alex Chen', 'role': 'Senior ML Eng', 'clearance': 'L4', 'status': 'filled'},
+                    {'id': 3, 'occupant': 'Jordan Lee', 'role': 'ML Engineer', 'clearance': 'L3', 'status': 'filled'},
+                    {'id': 4, 'occupant': 'Morgan Smith', 'role': 'Data Scientist', 'clearance': 'L3', 'status': 'filled'},
+                    {'id': 5, 'occupant': None, 'role': None, 'clearance': None, 'status': 'vacant'},
+                    {'id': 6, 'occupant': 'Casey Brown', 'role': 'Researcher', 'clearance': 'L2', 'status': 'filled'},
+                    {'id': 7, 'occupant': 'Riley Davis', 'role': 'DevOps Eng', 'clearance': 'L3', 'status': 'filled'},
+                    {'id': 8, 'occupant': 'Quinn Wilson', 'role': 'Security Analyst', 'clearance': 'L4', 'status': 'filled'},
+                    {'id': 9, 'occupant': 'Avery Johnson', 'role': 'MLE', 'clearance': 'L3', 'status': 'filled'},
+                    {'id': 10, 'occupant': 'Taylor Martinez', 'role': 'Data Eng', 'clearance': 'L2', 'status': 'filled'},
+                    {'id': 11, 'occupant': None, 'role': None, 'clearance': None, 'status': 'vacant'},
+                    {'id': 12, 'occupant': 'Sam Anderson', 'role': 'Product Mgr', 'clearance': 'L2', 'status': 'filled'}
+                ] %}
+                <div class="seat {{ seat.status }}" data-seat-id="{{ seat.id }}">
+                    <div class="seat-number">{{ seat.id }}</div>
+                    {% if seat.status == 'filled' %}
+                    <div class="seat-occupant">
+                        <div class="occupant-avatar">{{ seat.occupant[:2]|upper if seat.occupant else '' }}</div>
+                        <span class="occupant-name">{{ seat.occupant }}</span>
+                        <span class="occupant-role">{{ seat.role }}</span>
+                        <span class="occupant-clearance">{{ seat.clearance }}</span>
+                    </div>
+                    {% else %}
+                    <div class="seat-vacant">
+                        <span>Vacant</span>
+                        <button class="btn btn-sm btn-amber">Assign</button>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Default Clearance/Compartments -->
+    <div class="projects-section">
+        <div class="section-header">
+            <h2>Default Clearance & Compartments</h2>
+            <button class="btn btn-amber" data-action="edit-defaults">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Configure
+            </button>
+        </div>
+        <div class="defaults-config">
+            <div class="config-card">
+                <h4>New Project Defaults</h4>
+                <div class="config-item">
+                    <label>Default Clearance</label>
+                    <div class="config-value">
+                        <span class="clearance-badge tier-2">L2</span>
+                        <span>Standard access level</span>
+                    </div>
+                </div>
+                <div class="config-item">
+                    <label>Auto-Compartments</label>
+                    <div class="config-value">
+                        <span class="compartment-tag">General</span>
+                        <span>Assigned to all new projects</span>
+                    </div>
+                </div>
+                <div class="config-item">
+                    <label>Seat Limit</label>
+                    <div class="config-value">
+                        <strong>25</strong>
+                        <span>Maximum seats per project</span>
+                    </div>
+                </div>
+            </div>
+            <div class="config-card">
+                <h4>Compartment Templates</h4>
+                <div class="template-list">
+                    <div class="template-item">
+                        <span class="template-name">R&D Project</span>
+                        <div class="template-tags">
+                            <span class="compartment-tag">R&D</span>
+                            <span class="compartment-tag">Experimental</span>
+                        </div>
+                    </div>
+                    <div class="template-item">
+                        <span class="template-name">Production Service</span>
+                        <div class="template-tags">
+                            <span class="compartment-tag">Prod</span>
+                            <span class="compartment-tag">Critical</span>
+                        </div>
+                    </div>
+                    <div class="template-item">
+                        <span class="template-name">Security Initiative</span>
+                        <div class="template-tags">
+                            <span class="compartment-tag">Sec-Ops</span>
+                            <span class="compartment-tag">Confidential</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/governance/projects.js') }}"></script>
+{% endblock %}

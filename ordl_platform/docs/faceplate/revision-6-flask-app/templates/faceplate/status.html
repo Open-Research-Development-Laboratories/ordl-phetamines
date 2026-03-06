@@ -1,0 +1,280 @@
+{% extends "app_base.html" %}
+
+{% block title %}System Status | ORDL{% endblock %}
+{% block page_name %}status{% endblock %}
+
+{% block breadcrumb %}
+<nav class="fp-breadcrumb" aria-label="Breadcrumb">
+  <div class="fp-container">
+    <ol class="fp-breadcrumb-list">
+      <li class="fp-breadcrumb-item"><a href="{{ url_for('home') }}">Home</a> <span class="fp-breadcrumb-separator">›</span></li>
+      <li class="fp-breadcrumb-item">System Status</li>
+    </ol>
+  </div>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/faceplate/status.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Status Header -->
+<section class="status-header">
+  <div class="fp-container">
+    <div class="status-summary" data-animate>
+      <div class="status-indicator status-operational">
+        <span class="status-dot"></span>
+        <span class="status-text">All Systems Operational</span>
+      </div>
+      <p class="status-updated">Last updated: Just now</p>
+    </div>
+  </div>
+</section>
+
+<!-- Service Status Cards -->
+<section class="fp-section status-services">
+  <div class="fp-container">
+    <h2 class="section-label">Service Status</h2>
+
+    <div class="services-grid">
+      <div class="service-card" data-animate>
+        <div class="service-header">
+          <div class="service-info">
+            <svg class="service-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            <span class="service-name">API</span>
+          </div>
+          <span class="service-status status-ok">Operational</span>
+        </div>
+        <div class="service-uptime">
+          <span class="uptime-label">Uptime</span>
+          <span class="uptime-value">99.99%</span>
+        </div>
+        <div class="service-chart">
+          <div class="chart-bars">
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+          </div>
+          <span class="chart-label">90 days</span>
+        </div>
+      </div>
+
+      <div class="service-card" data-animate>
+        <div class="service-header">
+          <div class="service-info">
+            <svg class="service-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            <span class="service-name">Inference Engine</span>
+          </div>
+          <span class="service-status status-ok">Operational</span>
+        </div>
+        <div class="service-uptime">
+          <span class="uptime-label">Uptime</span>
+          <span class="uptime-value">99.97%</span>
+        </div>
+        <div class="service-chart">
+          <div class="chart-bars">
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 98%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+          </div>
+          <span class="chart-label">90 days</span>
+        </div>
+      </div>
+
+      <div class="service-card" data-animate>
+        <div class="service-header">
+          <div class="service-info">
+            <svg class="service-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <span class="service-name">Fleet Orchestration</span>
+          </div>
+          <span class="service-status status-ok">Operational</span>
+        </div>
+        <div class="service-uptime">
+          <span class="uptime-label">Uptime</span>
+          <span class="uptime-value">100%</span>
+        </div>
+        <div class="service-chart">
+          <div class="chart-bars">
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+          </div>
+          <span class="chart-label">90 days</span>
+        </div>
+      </div>
+
+      <div class="service-card" data-animate>
+        <div class="service-header">
+          <div class="service-info">
+            <svg class="service-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span class="service-name">IDE / Console</span>
+          </div>
+          <span class="service-status status-ok">Operational</span>
+        </div>
+        <div class="service-uptime">
+          <span class="uptime-label">Uptime</span>
+          <span class="uptime-value">99.95%</span>
+        </div>
+        <div class="service-chart">
+          <div class="chart-bars">
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 95%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+            <span class="bar" style="height: 100%;"></span>
+          </div>
+          <span class="chart-label">90 days</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Incident Timeline -->
+<section class="fp-section fp-section-alt">
+  <div class="fp-container">
+    <h2 class="section-label">Incident History</h2>
+
+    <div class="incidents-list">
+      <div class="incident-item incident-resolved" data-animate>
+        <div class="incident-marker"></div>
+        <div class="incident-content">
+          <div class="incident-header">
+            <h3 class="incident-title">Elevated API Latency</h3>
+            <span class="incident-status">Resolved</span>
+          </div>
+          <p class="incident-desc">Some users experienced elevated latency on API requests to us-east-1 region.</p>
+          <div class="incident-meta">
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 23 min duration</span>
+            <span>Feb 28, 2026 14:32 UTC</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="incident-item incident-resolved" data-animate>
+        <div class="incident-marker"></div>
+        <div class="incident-content">
+          <div class="incident-header">
+            <h3 class="incident-title">Scheduled Maintenance</h3>
+            <span class="incident-status">Completed</span>
+          </div>
+          <p class="incident-desc">Planned database maintenance for performance optimization.</p>
+          <div class="incident-meta">
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 2 hr duration</span>
+            <span>Feb 15, 2026 02:00 UTC</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="incident-item incident-resolved" data-animate>
+        <div class="incident-marker"></div>
+        <div class="incident-content">
+          <div class="incident-header">
+            <h3 class="incident-title">Intermittent Connection Issues</h3>
+            <span class="incident-status">Resolved</span>
+          </div>
+          <p class="incident-desc">Network connectivity issues affecting a subset of users in EU region.</p>
+          <div class="incident-meta">
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 45 min duration</span>
+            <span>Jan 22, 2026 09:15 UTC</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <a href="#" class="view-history">View Full History →</a>
+  </div>
+</section>
+
+<!-- Dependency Status -->
+<section class="fp-section">
+  <div class="fp-container">
+    <h2 class="section-label">External Dependencies</h2>
+
+    <div class="deps-list">
+      <div class="dep-item" data-animate>
+        <div class="dep-info">
+          <span class="dep-name">AWS Infrastructure</span>
+          <span class="dep-provider">Amazon Web Services</span>
+        </div>
+        <span class="dep-status status-ok"><span class="status-dot"></span> Operational</span>
+      </div>
+
+      <div class="dep-item" data-animate>
+        <div class="dep-info">
+          <span class="dep-name">Cloudflare CDN</span>
+          <span class="dep-provider">Cloudflare</span>
+        </div>
+        <span class="dep-status status-ok"><span class="status-dot"></span> Operational</span>
+      </div>
+
+      <div class="dep-item" data-animate>
+        <div class="dep-info">
+          <span class="dep-name">Stripe Payments</span>
+          <span class="dep-provider">Stripe</span>
+        </div>
+        <span class="dep-status status-ok"><span class="status-dot"></span> Operational</span>
+      </div>
+
+      <div class="dep-item" data-animate>
+        <div class="dep-info">
+          <span class="dep-name">Twilio SMS</span>
+          <span class="dep-provider">Twilio</span>
+        </div>
+        <span class="dep-status status-ok"><span class="status-dot"></span> Operational</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Subscribe Widget -->
+<section class="fp-section fp-section-alt status-subscribe">
+  <div class="fp-container">
+    <div class="subscribe-card" data-animate>
+      <div class="subscribe-content">
+        <svg class="subscribe-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        <div>
+          <h3>Subscribe to Updates</h3>
+          <p>Get notified about incidents and maintenance via email, SMS, or webhook.</p>
+        </div>
+      </div>
+      
+      <form class="subscribe-form">
+        <input type="email" class="fp-input" placeholder="Enter your email" required>
+        <button type="submit" class="fp-btn fp-btn-primary">Subscribe</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/faceplate/status.js') }}"></script>
+{% endblock %}

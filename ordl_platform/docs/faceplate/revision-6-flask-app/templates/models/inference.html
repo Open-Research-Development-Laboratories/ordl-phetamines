@@ -1,0 +1,260 @@
+{% extends "layouts/app_base.html" %}
+
+{% block title %}Model Inference - ORDL{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="/app/models">Models</a>
+    <span class="separator">/</span>
+    <span>Inference</span>
+</div>
+{% endblock %}
+
+{% block header_actions %}
+<button class="header-btn">Export Results</button>
+<button class="header-btn">Load Test Suite</button>
+<button class="header-btn primary">Run Batch Test</button>
+{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section">
+    <div class="nav-title">Model Engineering</div>
+    <a href="/app/models/workshop" class="nav-item">
+        <span class="nav-icon">◈</span>
+        <span>Workshop</span>
+    </a>
+    <a href="/app/models/training" class="nav-item">
+        <span class="nav-icon">▶</span>
+        <span>Training</span>
+    </a>
+    <a href="/app/models/inference" class="nav-item active">
+        <span class="nav-icon">⚡</span>
+        <span>Inference</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Data</div>
+    <a href="/app/data/pipelines" class="nav-item">
+        <span class="nav-icon">◆</span>
+        <span>Pipelines</span>
+    </a>
+    <a href="/app/data/datasets" class="nav-item">
+        <span class="nav-icon">◉</span>
+        <span>Datasets</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Platform</div>
+    <a href="/app/nodes/discovery" class="nav-item">
+        <span class="nav-icon">◐</span>
+        <span>Discovery</span>
+    </a>
+    <a href="/app/nodes/autoupdate" class="nav-item">
+        <span class="nav-icon">↻</span>
+        <span>Auto-Update</span>
+    </a>
+    <a href="/app/health" class="nav-item">
+        <span class="nav-icon">♥</span>
+        <span>Health</span>
+    </a>
+    <a href="/app/incidents" class="nav-item">
+        <span class="nav-icon">⚠</span>
+        <span>Incidents</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/models/inference.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="inference-container">
+    <!-- Prompt Test Harness -->
+    <div class="harness-panel">
+        <div class="harness-header">
+            <span class="harness-title">Prompt Test Harness</span>
+            <div class="model-selector">
+                <span style="font-size: 11px; color: var(--text-muted);">Model:</span>
+                <select>
+                    <option>Orchestrator v2.1.0 (stable)</option>
+                    <option>Orchestrator v2.2.0-b1 (beta)</option>
+                    <option>Classifier-A v1.4.2</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="harness-input">
+            <div class="prompt-toolbar">
+                <div class="toolbar-group">
+                    <button class="toolbar-btn">System</button>
+                    <button class="toolbar-btn">User</button>
+                    <button class="toolbar-btn">Assistant</button>
+                </div>
+                <div class="toolbar-divider"></div>
+                <div class="toolbar-group">
+                    <button class="toolbar-btn">Clear</button>
+                    <button class="toolbar-btn">Save</button>
+                </div>
+            </div>
+            
+            <textarea class="prompt-textarea" id="promptInput" placeholder="Enter your test prompt here...">{{ prompt | default('Explain the concept of behavior trees in AI agent architecture. Include advantages over finite state machines.') }}</textarea>
+        </div>
+        
+        <div class="harness-params">
+            <div class="param-field">
+                <label class="param-label">Temperature</label>
+                <input type="number" class="param-input" value="0.7" min="0" max="2" step="0.1">
+            </div>
+            <div class="param-field">
+                <label class="param-label">Max Tokens</label>
+                <input type="number" class="param-input" value="512" min="1" max="8192">
+            </div>
+            <div class="param-field">
+                <label class="param-label">Top P</label>
+                <input type="number" class="param-input" value="0.9" min="0" max="1" step="0.05">
+            </div>
+            <div class="param-field">
+                <label class="param-label">Presence Penalty</label>
+                <input type="number" class="param-input" value="0" min="-2" max="2" step="0.1">
+            </div>
+        </div>
+        
+        <div class="harness-actions">
+            <span style="font-size: 11px; color: var(--text-muted);">Press Ctrl+Enter to run</span>
+            <button class="btn btn-primary" id="runInferenceBtn">▶ Run Inference</button>
+        </div>
+        
+        <div class="response-area" id="responseArea">
+            <div class="response-content" id="responseContent">{{ response | default('Response will appear here...') }}</div>
+            
+            <div class="response-meta">
+                <span>Latency: <span id="latencyValue">--</span></span>
+                <span>Tokens: <span id="tokensValue">--</span></span>
+                <span>TPS: <span id="tpsValue">--</span></span>
+                <span>Cost: <span id="costValue">--</span></span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <!-- Latency/Quality Dashboard -->
+        <div class="dashboard-panel">
+            <div class="panel-header">
+                <span>Performance Dashboard</span>
+                <select style="font-size: 10px; padding: 2px 6px;">
+                    <option>Last Hour</option>
+                    <option>Last 24h</option>
+                    <option>Last 7d</option>
+                </select>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value" id="avgLatency">142</div>
+                    <div class="metric-label">Avg Latency (ms)</div>
+                    <div class="metric-delta positive">↓ 12%</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value" id="p99Latency">387</div>
+                    <div class="metric-label">P99 Latency (ms)</div>
+                    <div class="metric-delta positive">↓ 8%</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value" id="throughput">1,847</div>
+                    <div class="metric-label">Throughput (req/min)</div>
+                    <div class="metric-delta positive">↑ 23%</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-value" id="errorRate">0.2%</div>
+                    <div class="metric-label">Error Rate</div>
+                    <div class="metric-delta neutral">→ 0%</div>
+                </div>
+            </div>
+            
+            <div class="latency-chart">
+                <svg class="chart-line-svg" viewBox="0 0 300 80">
+                    <polyline fill="none" stroke="var(--accent-primary)" stroke-width="1.5"
+                        points="0,60 30,50 60,55 90,35 120,40 150,30 180,35 210,25 240,30 270,20 300,25"></polyline>
+                    <polyline fill="var(--accent-dim)" stroke="none"
+                        points="0,60 30,50 60,55 90,35 120,40 150,30 180,35 210,25 240,30 270,20 300,25 300,80 0,80"></polyline>
+                </svg>
+            </div>
+        </div>
+        
+        <!-- Regression Compare -->
+        <div class="regression-panel">
+            <div class="panel-header">
+                <span>Regression Compare</span>
+                <div class="panel-actions">
+                    <select style="font-size: 10px; padding: 2px 6px;">
+                        <option>v2.1.0 vs v2.0.8</option>
+                        <option>v2.2.0-b1 vs v2.1.0</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="regression-content">
+                <div class="table-container">
+                    <table class="compare-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Baseline</th>
+                                <th>Current</th>
+                                <th>Change</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="metric-name">Perplexity</td>
+                                <td class="baseline">8.42</td>
+                                <td class="current">7.91</td>
+                                <td class="change positive">-6.1% ✓</td>
+                            </tr>
+                            <tr>
+                                <td class="metric-name">BLEU Score</td>
+                                <td class="baseline">34.2</td>
+                                <td class="current">36.8</td>
+                                <td class="change positive">+7.6% ✓</td>
+                            </tr>
+                            <tr>
+                                <td class="metric-name">ROUGE-L</td>
+                                <td class="baseline">41.5</td>
+                                <td class="current">43.2</td>
+                                <td class="change positive">+4.1% ✓</td>
+                            </tr>
+                            <tr>
+                                <td class="metric-name">BERTScore (F1)</td>
+                                <td class="baseline">0.892</td>
+                                <td class="current">0.901</td>
+                                <td class="change positive">+1.0% ✓</td>
+                            </tr>
+                            <tr>
+                                <td class="metric-name">Inference Latency</td>
+                                <td class="baseline">156ms</td>
+                                <td class="current">142ms</td>
+                                <td class="change positive">-9.0% ✓</td>
+                            </tr>
+                            <tr>
+                                <td class="metric-name">Memory Usage</td>
+                                <td class="baseline">42.1GB</td>
+                                <td class="current">44.8GB</td>
+                                <td class="change negative">+6.4% ⚠</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script src="{{ url_for('static', filename='js/models/inference.js') }}"></script>
+{% endblock %}

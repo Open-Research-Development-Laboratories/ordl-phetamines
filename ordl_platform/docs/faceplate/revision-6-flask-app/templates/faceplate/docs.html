@@ -1,0 +1,253 @@
+{% extends "app_base.html" %}
+
+{% block title %}Documentation | ORDL{% endblock %}
+{% block page_name %}docs{% endblock %}
+
+{% block breadcrumb %}
+<nav class="fp-breadcrumb" aria-label="Breadcrumb">
+  <div class="fp-container">
+    <ol class="fp-breadcrumb-list">
+      <li class="fp-breadcrumb-item"><a href="{{ url_for('home') }}">Home</a> <span class="fp-breadcrumb-separator">›</span></li>
+      <li class="fp-breadcrumb-item">Documentation</li>
+    </ol>
+  </div>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/faceplate/docs.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Docs Header with Search -->
+<section class="docs-header">
+  <div class="fp-container">
+    <div class="docs-search" data-animate>
+      <h1 class="docs-title">Documentation</h1>
+      <p class="docs-subtitle">Everything you need to build with ORDL</p>
+      
+      <div class="docs-search-box">
+        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+        <input type="text" class="docs-search-input" placeholder="Search documentation..." id="docsSearch">
+        <kbd class="search-kbd">⌘K</kbd>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quickstart Cards -->
+<section class="fp-section docs-quickstart">
+  <div class="fp-container">
+    <h2 class="section-label">Quickstart</h2>
+    
+    <div class="quickstart-grid">
+      <a href="#getting-started" class="quickstart-card" data-animate>
+        <div class="quickstart-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+        </div>
+        <div class="quickstart-content">
+          <h3>Getting Started</h3>
+          <p>Deploy your first model in under 5 minutes</p>
+          <span class="quickstart-link">Start tutorial →</span>
+        </div>
+      </a>
+
+      <a href="#tutorials" class="quickstart-card" data-animate>
+        <div class="quickstart-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+        </div>
+        <div class="quickstart-content">
+          <h3>Tutorials</h3>
+          <p>Step-by-step guides for common use cases</p>
+          <span class="quickstart-link">Browse tutorials →</span>
+        </div>
+      </a>
+
+      <a href="#samples" class="quickstart-card" data-animate>
+        <div class="quickstart-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        </div>
+        <div class="quickstart-content">
+          <h3>Code Samples</h3>
+          <p>Copy-paste ready examples in multiple languages</p>
+          <span class="quickstart-link">View samples →</span>
+        </div>
+      </a>
+
+      <a href="#architecture" class="quickstart-card" data-animate>
+        <div class="quickstart-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"></rect><rect x="9" y="9" width="6" height="6"></rect><line x1="9" y1="1" x2="9" y2="4"></line><line x1="15" y1="1" x2="15" y2="4"></line><line x1="9" y1="20" x2="9" y2="23"></line><line x1="15" y1="20" x2="15" y2="23"></line></svg>
+        </div>
+        <div class="quickstart-content">
+          <h3>Architecture</h3>
+          <p>Understand the ORDL platform design</p>
+          <span class="quickstart-link">Learn more →</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- SDK/API Paths -->
+<section class="fp-section fp-section-alt" id="api">
+  <div class="fp-container">
+    <h2 class="section-label">SDKs & APIs</h2>
+
+    <div class="sdks-grid">
+      <div class="sdk-card" data-animate>
+        <div class="sdk-header">
+          <div class="sdk-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+          </div>
+          <div class="sdk-meta">
+            <h3 class="sdk-name">Python SDK</h3>
+            <span class="sdk-version">v2.4.1</span>
+          </div>
+        </div>
+        <div class="sdk-code">
+          <pre><code>pip install ordl-python</code></pre>
+        </div>
+        <div class="sdk-links">
+          <a href="#" class="sdk-link">Reference</a>
+          <a href="#" class="sdk-link">GitHub</a>
+        </div>
+      </div>
+
+      <div class="sdk-card" data-animate>
+        <div class="sdk-header">
+          <div class="sdk-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          </div>
+          <div class="sdk-meta">
+            <h3 class="sdk-name">Node.js SDK</h3>
+            <span class="sdk-version">v1.8.3</span>
+          </div>
+        </div>
+        <div class="sdk-code">
+          <pre><code>npm install @ordl/sdk</code></pre>
+        </div>
+        <div class="sdk-links">
+          <a href="#" class="sdk-link">Reference</a>
+          <a href="#" class="sdk-link">GitHub</a>
+        </div>
+      </div>
+
+      <div class="sdk-card" data-animate>
+        <div class="sdk-header">
+          <div class="sdk-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          </div>
+          <div class="sdk-meta">
+            <h3 class="sdk-name">REST API</h3>
+            <span class="sdk-version">v2</span>
+          </div>
+        </div>
+        <div class="sdk-code">
+          <pre><code>https://api.ordl.io/v2</code></pre>
+        </div>
+        <div class="sdk-links">
+          <a href="#" class="sdk-link">OpenAPI</a>
+          <a href="#" class="sdk-link">Postman</a>
+        </div>
+      </div>
+
+      <div class="sdk-card" data-animate>
+        <div class="sdk-header">
+          <div class="sdk-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+          </div>
+          <div class="sdk-meta">
+            <h3 class="sdk-name">gRPC</h3>
+            <span class="sdk-version">v1</span>
+          </div>
+        </div>
+        <div class="sdk-code">
+          <pre><code>grpc.ordl.io:443</code></pre>
+        </div>
+        <div class="sdk-links">
+          <a href="#" class="sdk-link">Proto</a>
+          <a href="#" class="sdk-link">Examples</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Versioning -->
+<section class="fp-section">
+  <div class="fp-container">
+    <h2 class="section-label">Versioning</h2>
+
+    <div class="version-cards">
+      <div class="version-card version-stable" data-animate>
+        <div class="version-badge">Current</div>
+        <h3 class="version-name">ORDL 2.x</h3>
+        <p class="version-desc">Latest stable release with full feature set and long-term support.</p>
+        <div class="version-meta">
+          <span class="version-tag">Stable</span>
+          <span class="version-date">Released Jan 2026</span>
+        </div>
+        <a href="#" class="fp-btn fp-btn-secondary">View Docs</a>
+      </div>
+
+      <div class="version-card" data-animate>
+        <h3 class="version-name">ORDL 3.x Beta</h3>
+        <p class="version-desc">Preview upcoming features including new orchestration engine and enhanced governance.</p>
+        <div class="version-meta">
+          <span class="version-tag version-beta">Beta</span>
+          <span class="version-date">Coming Q2 2026</span>
+        </div>
+        <a href="#" class="fp-btn fp-btn-ghost">Preview</a>
+      </div>
+
+      <div class="version-card" data-animate>
+        <h3 class="version-name">ORDL 1.x LTS</h3>
+        <p class="version-desc">Legacy version in maintenance mode. Security updates only.</p>
+        <div class="version-meta">
+          <span class="version-tag version-legacy">LTS</span>
+          <span class="version-date">Until Dec 2026</span>
+        </div>
+        <a href="#" class="fp-btn fp-btn-ghost">Archive</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Doc Categories -->
+<section class="fp-section fp-section-alt">
+  <div class="fp-container">
+    <h2 class="section-label">Browse by Topic</h2>
+
+    <div class="topics-grid">
+      <a href="#" class="topic-link" data-animate>
+        <span class="topic-name">Models</span>
+        <span class="topic-count">24 articles</span>
+      </a>
+      <a href="#" class="topic-link" data-animate>
+        <span class="topic-name">Fleet Management</span>
+        <span class="topic-count">18 articles</span>
+      </a>
+      <a href="#" class="topic-link" data-animate>
+        <span class="topic-name">Governance</span>
+        <span class="topic-count">15 articles</span>
+      </a>
+      <a href="#" class="topic-link" data-animate>
+        <span class="topic-name">Security</span>
+        <span class="topic-count">12 articles</span>
+      </a>
+      <a href="#" class="topic-link" data-animate>
+        <span class="topic-name">Pipelines</span>
+        <span class="topic-count">10 articles</span>
+      </a>
+      <a href="#" class="topic-link" data-animate>
+        <span class="topic-name">Observability</span>
+        <span class="topic-count">8 articles</span>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/faceplate/docs.js') }}"></script>
+{% endblock %}

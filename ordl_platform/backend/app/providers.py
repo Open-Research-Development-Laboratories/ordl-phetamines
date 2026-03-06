@@ -177,6 +177,100 @@ class BaseProviderAdapter:
 class OpenAICodexAdapter(BaseProviderAdapter):
     provider_name = "openai_codex"
 
+    def _normalize_input(self, *, payload: dict[str, Any], prompt: str) -> Any:
+        if "input" in payload:
+            return payload.get("input")
+        messages = payload.get("messages")
+        if isinstance(messages, list) and messages:
+            return messages
+        return prompt
+
+    def _normalize_text_format(self, *, payload: dict[str, Any]) -> dict[str, Any] | None:
+        text = payload.get("text")
+        if isinstance(text, dict):
+            fmt = text.get("format")
+            if isinstance(fmt, dict) and fmt.get("type") == "json_schema":
+                return {"format": fmt}
+
+        response_format = payload.get("response_format")
+        if not isinstance(response_format, dict):
+            return None
+        if response_format.get("type") != "json_schema":
+            return None
+
+        schema_obj = response_format.get("json_schema")
+        if not isinstance(schema_obj, dict):
+            return None
+        schema_name = str(schema_obj.get("name") or "structured_output").strip() or "structured_output"
+        strict = bool(schema_obj.get("strict", True))
+        schema_body = schema_obj.get("schema")
+        if not isinstance(schema_body, dict):
+            return None
+
+        return {
+            "format": {
+                "type": "json_schema",
+                "name": schema_name,
+                "strict": strict,
+                "schema": schema_body,
+            }
+        }
+
+    def _build_responses_body(
+        self,
+        *,
+        payload: dict[str, Any],
+        model: str,
+        prompt: str,
+        provider_metadata: dict[str, Any],
+    ) -> dict[str, Any]:
+        selected_model = model or str(provider_metadata.get("default_model") or "gpt-5")
+        body: dict[str, Any] = {
+            "model": selected_model,
+            "input": self._normalize_input(payload=payload, prompt=prompt),
+        }
+
+        instructions = payload.get("instructions")
+        if instructions is None:
+            instructions = provider_metadata.get("instructions")
+        if isinstance(instructions, str) and instructions.strip():
+            body["instructions"] = instructions.strip()
+
+        reasoning = payload.get("reasoning")
+        if isinstance(reasoning, dict):
+            body["reasoning"] = reasoning
+        else:
+            reasoning_effort = payload.get("reasoning_effort")
+            if reasoning_effort is None:
+                reasoning_effort = provider_metadata.get("reasoning_effort")
+            if isinstance(reasoning_effort, str) and reasoning_effort.strip():
+                body["reasoning"] = {"effort": reasoning_effort.strip()}
+
+        text_cfg = self._normalize_text_format(payload=payload)
+        if text_cfg is not None:
+            body["text"] = text_cfg
+
+        tools = payload.get("tools")
+        if isinstance(tools, list) and tools:
+            body["tools"] = tools
+        tool_choice = payload.get("tool_choice")
+        if isinstance(tool_choice, (str, dict)):
+            body["tool_choice"] = tool_choice
+
+        metadata = payload.get("metadata")
+        if isinstance(metadata, dict) and metadata:
+            body["metadata"] = metadata
+
+        max_output_tokens = payload.get("max_output_tokens")
+        if isinstance(max_output_tokens, int) and max_output_tokens > 0:
+            body["max_output_tokens"] = max_output_tokens
+
+        temperature = payload.get("temperature")
+        if isinstance(temperature, (int, float)):
+            body["temperature"] = float(temperature)
+
+        return body
+
     def execute(
         self,
         *,
@@ -215,10 +309,12 @@ class OpenAICodexAdapter(BaseProviderAdapter):
             )
 
         endpoint = str(provider_metadata.get("responses_endpoint") or "https://api.openai.com/v1/responses")
-        body = {
-            "model": model or str(provider_metadata.get("default_model") or "gpt-5.4"),
-            "input": prompt,
-        }
+        body = self._build_responses_body(
+            payload=payload,
+            model=model,
+            prompt=prompt,
+            provider_metadata=provider_metadata,
+        )
         try:
             req = request.Request(
                 endpoint,

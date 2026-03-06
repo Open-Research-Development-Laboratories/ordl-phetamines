@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORDL Control Platform - Topology Live View</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-panel: #141414;
+            --bg-panel-hover: #1a1a1a;
+            --border-color: #2a2a2a;
+            --text-primary: #e8e6e1;
+            --text-secondary: #9a9894;
+            --accent-amber: #f59e0b;
+            --accent-amber-glow: rgba(245, 158, 11, 0.4);
+            --accent-cyan: #06b6d4;
+            --accent-cyan-glow: rgba(6, 182, 212, 0.4);
+            --accent-purple: #8b5cf6;
+            --accent-purple-glow: rgba(139, 92, 246, 0.4);
+            --error-red: #ef4444;
+            --error-glow: rgba(239, 68, 68, 0.5);
+            --cream: #f5f5dc;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Main Canvas Area */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: var(--bg-dark);
+            overflow: hidden;
+        }
+
+        #topology-canvas {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+
+        #topology-canvas:active {
+            cursor: grabbing;
+        }
+
+        /* Grid Background */
+        .grid-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: 
+                linear-gradient(rgba(245, 158, 11, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(245, 158, 11, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Sidebar */
+        .control-sidebar {
+            width: 320px;
+            background: var(--bg-panel);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-header h1 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-amber);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-header .subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 3px;
+            height: 12px;
+            background: var(--accent-amber);
+            border-radius: 1px;
+        }
+
+        /* View Controls */
+        .view-controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .btn {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background: var(--bg-panel-hover);
+            border-color: var(--accent-amber);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* Filters */
+        .filter-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .filter-item:last-child {
+            border-bottom: none;
+        }
+
+        .filter-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .filter-icon {
+            width: 10px;
+            height: 10px;
+        }
+
+        .filter-icon.coordinator { background: var(--accent-amber); transform: rotate(45deg); }
+        .filter-icon.worker { background: var(--accent-cyan); border-radius: 50%; }
+        .filter-icon.gateway { background: var(--accent-purple); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+
+        /* Toggle Switch */
+        .toggle {
+            position: relative;
+            width: 40px;
+            height: 20px;
+            background: var(--bg-dark);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: 1px solid var(--border-color);
+        }
+
+        .toggle.active {
+            background: var(--accent-amber);
+        }
+
+        .toggle-knob {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 14px;
+            height: 14px;
+            background: var(--text-primary);
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle.active .toggle-knob {
+            transform: translateX(20px);
+        }
+
+        /* Sliders */
+        .slider-control {
+            margin-bottom: 16px;
+        }
+
+        .slider-control:last-child {
+            margin-bottom: 0;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .slider-label {
+            color: var(--text-secondary);
+        }
+
+        .slider-value {
+            color: var(--accent-amber);
+            font-family: 'SF Mono', monospace;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-dark);
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--accent-amber);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Selection Info */
+        .selection-info {
+            background: var(--bg-dark);
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .selection-empty {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            padding: 20px;
+        }
+
+        .node-details {
+            display: none;
+        }
+
+        .node-details.active {
+            display: block;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 12px;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            font-family: 'SF Mono', monospace;
+        }
+
+        .detail-value.status-active { color: #22c55e; }
+        .detail-value.status-idle { color: var(--text-secondary); }
+        .detail-value.status-error { color: var(--error-red); }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 16px;
+            padding: 12px 20px;
+            background: var(--bg-dark);
+            border-top: 1px solid var(--border-color);
+            font-size: 11px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .stat-indicator.coordinator { background: var(--accent-amber); }
+        .stat-indicator.worker { background: var(--accent-cyan); }
+        .stat-indicator.gateway { background: var(--accent-purple); }
+
+        /* Context Menu */
+        .context-menu {
+            position: absolute;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px;
+            min-width: 140px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 1000;
+        }
+
+        .context-menu.active {
+            display: block;
+        }
+
+        .context-item {
+            padding: 8px 12px;
+            font-size: 12px;
+            color: var(--text-primary);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .context-item:hover {
+            background: var(--bg-panel-hover);
+            color: var(--accent-amber);
+        }
+
+        .context-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 6px 0;
+        }
+
+        /* Legend */
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(20, 20, 20, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+        }
+
+        .legend-title {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-shape {
+            width: 12px;
+            height: 12px;
+        }
+
+        /* SVG Styles */
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover {
+            filter: brightness(1.2);
+        }
+
+        .link {
+            stroke: #2a2a2a;
+            stroke-width: 1.5;
+            transition: stroke-width 0.3s;
+        }
+
+        .packet {
+            fill: var(--cream);
+            filter: drop-shadow(0 0 4px var(--accent-amber));
+        }
+
+        .node-label {
+            fill: var(--text-secondary);
+            font-size: 10px;
+            font-family: 'SF Mono', monospace;
+            pointer-events: none;
+            text-anchor: middle;
+        }
+
+        /* Glow Effects */
+        .glow-coordinator {
+            filter: drop-shadow(0 0 8px var(--accent-amber-glow));
+        }
+
+        .glow-worker {
+            filter: drop-shadow(0 0 8px var(--accent-cyan-glow));
+        }
+
+        .glow-gateway {
+            filter: drop-shadow(0 0 8px var(--accent-purple-glow));
+        }
+
+        .glow-error {
+            filter: drop-shadow(0 0 12px var(--error-glow));
+            animation: pulse-error 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-error {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .pulse-active {
+            animation: pulse-node 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-node {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Isolation Mode */
+        .isolated .node:not(.isolated-node),
+        .isolated .link:not(.isolated-link) {
+            opacity: 0.15;
+        }
+
+        .isolated-node {
+            opacity: 1 !important;
+        }
+
+        .isolated-link {
+            opacity: 1 !important;
+            stroke: var(--accent-amber) !important;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-amber);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Canvas -->
+        <div class="canvas-container">
+            <div class="grid-bg"></div>
+            <svg id="topology-canvas"></svg>
+            
+            <!-- Legend -->
+            <div class="legend">
+                <div class="legend-title">Node Types</div>
+                <div class="legend-item">
+                    <div class="legend-shape" style="background: var(--accent-amber); transform: rotate(45deg);"></div>
+                    <span>Coordinator</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-shape" style="background: var(--accent-cyan); border-radius: 50%;"></div>
+                    <span>Worker</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-shape" style="background: var(--accent-purple); clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);"></div>
+                    <span>Gateway</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Sidebar -->
+        <aside class="control-sidebar">
+            <div class="sidebar-header">
+                <h1>Topology Control</h1>
+                <div class="subtitle">Live Network View</div>
+            </div>
+
+            <!-- View Controls -->
+            <div class="sidebar-section">
+                <div class="section-title">View Controls</div>
+                <div class="view-controls">
+                    <button class="btn" id="btn-zoom-in">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                            <path d="M11 8v6M8 11h6"/>
+                        </svg>
+                        Zoom In
+                    </button>
+                    <button class="btn" id="btn-zoom-out">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                            <path d="M8 11h6"/>
+                        </svg>
+                        Zoom Out
+                    </button>
+                    <button class="btn" id="btn-reset">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
+                        Reset
+                    </button>
+                    <button class="btn" id="btn-fullscreen">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                        </svg>
+                        Fullscreen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="sidebar-section">
+                <div class="section-title">Filters</div>
+                <div class="filter-item">
+                    <div class="filter-label">
+                        <div class="filter-icon coordinator"></div>
+                        Coordinators
+                    </div>
+                    <div class="toggle active" data-filter="coordinator">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <div class="filter-label">
+                        <div class="filter-icon worker"></div>
+                        Workers
+                    </div>
+                    <div class="toggle active" data-filter="worker">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <div class="filter-item">
+                    <div class="filter-label">
+                        <div class="filter-icon gateway"></div>
+                        Gateways
+                    </div>
+                    <div class="toggle active" data-filter="gateway">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Physics Controls -->
+            <div class="sidebar-section">
+                <div class="section-title">Physics</div>
+                <div class="slider-control">
+                    <div class="slider-header">
+                        <span class="slider-label">Gravity</span>
+                        <span class="slider-value" id="gravity-value">0.05</span>
+                    </div>
+                    <input type="range" id="gravity" min="0" max="0.2" step="0.01" value="0.05">
+                </div>
+                <div class="slider-control">
+                    <div class="slider-header">
+                        <span class="slider-label">Charge</span>
+                        <span class="slider-value" id="charge-value">-300</span>
+                    </div>
+                    <input type="range" id="charge" min="-1000" max="-50" step="50" value="-300">
+                </div>
+                <div class="slider-control">
+                    <div class="slider-header">
+                        <span class="slider-label">Link Distance</span>
+                        <span class="slider-value" id="distance-value">100</span>
+                    </div>
+                    <input type="range" id="distance" min="50" max="300" step="10" value="100">
+                </div>
+            </div>
+
+            <!-- Selection Info -->
+            <div class="sidebar-section">
+                <div class="section-title">Selection</div>
+                <div class="selection-info">
+                    <div class="selection-empty" id="selection-empty">
+                        Click a node to view details
+                    </div>
+                    <div class="node-details" id="node-details">
+                        <div class="detail-row">
+                            <span class="detail-label">ID</span>
+                            <span class="detail-value" id="detail-id">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Role</span>
+                            <span class="detail-value" id="detail-role">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value" id="detail-status">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Uptime</span>
+                            <span class="detail-value" id="detail-uptime">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Connections</span>
+                            <span class="detail-value" id="detail-connections">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Throughput</span>
+                            <span class="detail-value" id="detail-throughput">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-indicator coordinator"></div>
+                    <span id="count-coordinator">0</span>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-indicator worker"></div>
+                    <span id="count-worker">0</span>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-indicator gateway"></div>
+                    <span id="count-gateway">0</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="context-menu">
+        <div class="context-item" id="ctx-inspect">🔍 Inspect</div>
+        <div class="context-item" id="ctx-isolate">🔎 Isolate</div>
+        <div class="context-divider"></div>
+        <div class="context-item" id="ctx-reroute">🔄 Reroute</div>
+    </div>
+
+    <script>
+        // ============================================
+        // ORDL Topology Live View - D3.js Implementation
+        // ============================================
+
+        // Configuration
+        const CONFIG = {
+            nodeSize: { coordinator: 18, worker: 14, gateway: 16 },
+            colors: {
+                coordinator: '#f59e0b',
+                worker: '#06b6d4',
+                gateway: '#8b5cf6',
+                cream: '#f5f5dc',
+                error: '#ef4444'
+            },
+            packetSpeed: 2000,
+            refreshRate: 50
+        };
+
+        // State
+        let simulation;
+        let svg, g, link, node, packet;
+        let zoom;
+        let selectedNode = null;
+        let isolatedNode = null;
+        let filters = { coordinator: true, worker: true, gateway: true };
+        let packets = [];
+        let contextMenuTarget = null;
+
+        // Generate sample data
+        function generateData() {
+            const nodes = [];
+            const links = [];
+            
+            // Coordinators
+            for (let i = 0; i < 2; i++) {
+                nodes.push({
+                    id: `coord-${i}`,
+                    role: 'coordinator',
+                    status: Math.random() > 0.1 ? 'active' : (Math.random() > 0.5 ? 'idle' : 'error'),
+                    uptime: Math.floor(Math.random() * 86400 * 30),
+                    throughput: Math.floor(Math.random() * 10000),
+                    x: 400 + i * 200,
+                    y: 300
+                });
+            }
+            
+            // Gateways
+            for (let i = 0; i < 4; i++) {
+                nodes.push({
+                    id: `gw-${i}`,
+                    role: 'gateway',
+                    status: Math.random() > 0.15 ? 'active' : 'idle',
+                    uptime: Math.floor(Math.random() * 86400 * 14),
+                    throughput: Math.floor(Math.random() * 5000),
+                    x: 200 + (i % 2) * 400,
+                    y: 150 + Math.floor(i / 2) * 300
+                });
+            }
+            
+            // Workers
+            for (let i = 0; i < 12; i++) {
+                nodes.push({
+                    id: `worker-${i}`,
+                    role: 'worker',
+                    status: Math.random() > 0.1 ? 'active' : (Math.random() > 0.5 ? 'idle' : 'error'),
+                    uptime: Math.floor(Math.random() * 86400 * 7),
+                    throughput: Math.floor(Math.random() * 2000),
+                    x: 100 + Math.random() * 600,
+                    y: 100 + Math.random() * 400
+                });
+            }
+            
+            // Create connections
+            const coordinators = nodes.filter(n => n.role === 'coordinator');
+            const gateways = nodes.filter(n => n.role === 'gateway');
+            const workers = nodes.filter(n => n.role === 'worker');
+            
+            // Connect coordinators to gateways
+            coordinators.forEach((coord, ci) => {
+                gateways.forEach((gw, gi) => {
+                    if (Math.random() > 0.3) {
+                        links.push({
+                            source: coord.id,
+                            target: gw.id,
+                            throughput: Math.floor(Math.random() * 1000)
+                        });
+                    }
+                });
+            });
+            
+            // Connect gateways to workers
+            gateways.forEach((gw, gi) => {
+                workers.forEach((worker, wi) => {
+                    if (Math.random() > 0.6) {
+                        links.push({
+                            source: gw.id,
+                            target: worker.id,
+                            throughput: Math.floor(Math.random() * 500)
+                        });
+                    }
+                });
+            });
+            
+            // Some worker-to-worker connections
+            for (let i = 0; i < workers.length; i++) {
+                const targetIdx = Math.floor(Math.random() * workers.length);
+                if (targetIdx !== i && Math.random() > 0.8) {
+                    links.push({
+                        source: workers[i].id,
+                        target: workers[targetIdx].id,
+                        throughput: Math.floor(Math.random() * 200)
+                    });
+                }
+            }
+            
+            return { nodes, links };
+        }
+
+        // Initialize D3 visualization
+        function initVisualization() {
+            const container = document.querySelector('.canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            svg = d3.select('#topology-canvas')
+                .attr('width', width)
+                .attr('height', height);
+            
+            // Zoom behavior
+            zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on('zoom', (event) => {
+                    g.attr('transform', event.transform);
+                });
+            
+            svg.call(zoom);
+            
+            // Main group
+            g = svg.append('g');
+            
+            const data = generateData();
+            
+            // Force simulation
+            simulation = d3.forceSimulation(data.nodes)
+                .force('link', d3.forceLink(data.links).id(d => d.id).distance(100))
+                .force('charge', d3.forceManyBody().strength(-300))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collision', d3.forceCollide().radius(40));
+            
+            // Links
+            link = g.append('g')
+                .attr('class', 'links')
+                .selectAll('line')
+                .data(data.links)
+                .enter().append('line')
+                .attr('class', 'link')
+                .attr('stroke-width', d => Math.max(1, Math.log(d.throughput + 1) / 2));
+            
+            // Packets group
+            const packetGroup = g.append('g').attr('class', 'packets');
+            
+            // Nodes
+            node = g.append('g')
+                .attr('class', 'nodes')
+                .selectAll('g')
+                .data(data.nodes)
+                .enter().append('g')
+                .attr('class', 'node')
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+            
+            // Node shapes based on role
+            node.each(function(d) {
+                const el = d3.select(this);
+                const size = CONFIG.nodeSize[d.role];
+                
+                if (d.role === 'coordinator') {
+                    // Diamond
+                    el.append('rect')
+                        .attr('width', size * 1.5)
+                        .attr('height', size * 1.5)
+                        .attr('x', -size * 0.75)
+                        .attr('y', -size * 0.75)
+                        .attr('transform', 'rotate(45)')
+                        .attr('fill', CONFIG.colors.coordinator)
+                        .attr('class', d.status === 'error' ? 'glow-error' : 
+                              d.status === 'active' ? 'glow-coordinator pulse-active' : 'glow-coordinator');
+                } else if (d.role === 'gateway') {
+                    // Hexagon
+                    const hexPath = [];
+                    for (let i = 0; i < 6; i++) {
+                        const angle = (i * 60 - 30) * Math.PI / 180;
+                        const x = size * Math.cos(angle);
+                        const y = size * Math.sin(angle);
+                        hexPath.push(`${i === 0 ? 'M' : 'L'} ${x} ${y}`);
+                    }
+                    hexPath.push('Z');
+                    
+                    el.append('path')
+                        .attr('d', hexPath.join(' '))
+                        .attr('fill', CONFIG.colors.gateway)
+                        .attr('class', d.status === 'error' ? 'glow-error' : 
+                              d.status === 'active' ? 'glow-gateway pulse-active' : 'glow-gateway');
+                } else {
+                    // Circle (worker)
+                    el.append('circle')
+                        .attr('r', size)
+                        .attr('fill', CONFIG.colors.worker)
+                        .attr('class', d.status === 'error' ? 'glow-error' : 
+                              d.status === 'active' ? 'glow-worker pulse-active' : 'glow-worker');
+                }
+                
+                // Label
+                el.append('text')
+                    .attr('class', 'node-label')
+                    .attr('dy', size + 15)
+                    .text(d.id);
+            });
+            
+            // Node interactions
+            node.on('click', (event, d) => {
+                event.stopPropagation();
+                selectNode(d);
+            });
+            
+            node.on('dblclick', (event, d) => {
+                event.stopPropagation();
+                isolateNode(d);
+            });
+            
+            node.on('contextmenu', (event, d) => {
+                event.preventDefault();
+                showContextMenu(event, d);
+            });
+            
+            // Background click to clear selection
+            svg.on('click', () => {
+                clearSelection();
+            });
+            
+            // Simulation tick
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+                
+                node.attr('transform', d => `translate(${d.x},${d.y})`);
+                
+                // Update packet positions
+                updatePackets();
+            });
+            
+            // Start packet animation
+            setInterval(spawnPacket, 300);
+            setInterval(updateStats, 1000);
+            
+            updateStats();
+        }
+
+        // Packet animation
+        function spawnPacket() {
+            if (link.empty()) return;
+            
+            const activeLinks = link.nodes().map(d => d.__data__).filter(l => {
+                return filters[l.source.role] && filters[l.target.role];
+            });
+            
+            if (activeLinks.length === 0) return;
+            
+            const randomLink = activeLinks[Math.floor(Math.random() * activeLinks.length)];
+            const packetId = `packet-${Date.now()}-${Math.random()}`;
+            
+            const packetData = {
+                id: packetId,
+                link: randomLink,
+                progress: 0,
+                speed: 0.01 + Math.random() * 0.02
+            };
+            
+            packets.push(packetData);
+            
+            // Create packet element
+            g.select('.packets').append('circle')
+                .attr('class', 'packet')
+                .attr('id', packetId)
+                .attr('r', 3);
+        }
+
+        function updatePackets() {
+            packets = packets.filter(p => {
+                p.progress += p.speed;
+                
+                if (p.progress >= 1) {
+                    d3.select(`#${p.id}`).remove();
+                    return false;
+                }
+                
+                const x = p.link.source.x + (p.link.target.x - p.link.source.x) * p.progress;
+                const y = p.link.source.y + (p.link.target.y - p.link.source.y) * p.progress;
+                
+                d3.select(`#${p.id}`)
+                    .attr('cx', x)
+                    .attr('cy', y);
+                
+                return true;
+            });
+        }
+
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // Selection
+        function selectNode(d) {
+            selectedNode = d;
+            
+            // Update UI
+            document.getElementById('selection-empty').style.display = 'none';
+            document.getElementById('node-details').classList.add('active');
+            
+            document.getElementById('detail-id').textContent = d.id;
+            document.getElementById('detail-role').textContent = d.role;
+            
+            const statusEl = document.getElementById('detail-status');
+            statusEl.textContent = d.status;
+            statusEl.className = `detail-value status-${d.status}`;
+            
+            document.getElementById('detail-uptime').textContent = formatUptime(d.uptime);
+            document.getElementById('detail-connections').textContent = countConnections(d);
+            document.getElementById('detail-throughput').textContent = `${d.throughput} req/s`;
+            
+            // Highlight node
+            node.style('opacity', n => n.id === d.id ? 1 : 0.3);
+            link.style('opacity', l => (l.source.id === d.id || l.target.id === d.id) ? 1 : 0.1);
+        }
+
+        function clearSelection() {
+            selectedNode = null;
+            
+            document.getElementById('selection-empty').style.display = 'block';
+            document.getElementById('node-details').classList.remove('active');
+            
+            if (!isolatedNode) {
+                node.style('opacity', 1);
+                link.style('opacity', 1);
+            }
+        }
+
+        // Isolation mode
+        function isolateNode(d) {
+            if (isolatedNode === d) {
+                // Clear isolation
+                isolatedNode = null;
+                document.querySelector('.canvas-container').classList.remove('isolated');
+                node.classed('isolated-node', false);
+                link.classed('isolated-link', false);
+                return;
+            }
+            
+            isolatedNode = d;
+            document.querySelector('.canvas-container').classList.add('isolated');
+            
+            // Find connected nodes
+            const connectedIds = new Set([d.id]);
+            link.each(function(l) {
+                if (l.source.id === d.id) connectedIds.add(l.target.id);
+                if (l.target.id === d.id) connectedIds.add(l.source.id);
+            });
+            
+            // Apply isolation classes
+            node.classed('isolated-node', n => connectedIds.has(n.id));
+            link.classed('isolated-link', l => 
+                l.source.id === d.id || l.target.id === d.id
+            );
+        }
+
+        // Context menu
+        function showContextMenu(event, d) {
+            contextMenuTarget = d;
+            const menu = document.getElementById('context-menu');
+            
+            menu.style.left = `${event.pageX}px`;
+            menu.style.top = `${event.pageY}px`;
+            menu.classList.add('active');
+        }
+
+        function hideContextMenu() {
+            document.getElementById('context-menu').classList.remove('active');
+            contextMenuTarget = null;
+        }
+
+        // Utility functions
+        function formatUptime(seconds) {
+            const days = Math.floor(seconds / 86400);
+            const hours = Math.floor((seconds % 86400) / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            
+            if (days > 0) return `${days}d ${hours}h`;
+            if (hours > 0) return `${hours}h ${mins}m`;
+            return `${mins}m`;
+        }
+
+        function countConnections(d) {
+            return link.nodes().filter(l => 
+                l.__data__.source.id === d.id || l.__data__.target.id === d.id
+            ).length;
+        }
+
+        function updateStats() {
+            const nodes = node.nodes().map(n => n.__data__);
+            document.getElementById('count-coordinator').textContent = 
+                nodes.filter(n => n.role === 'coordinator').length;
+            document.getElementById('count-worker').textContent = 
+                nodes.filter(n => n.role === 'worker').length;
+            document.getElementById('count-gateway').textContent = 
+                nodes.filter(n => n.role === 'gateway').length;
+        }
+
+        // View controls
+        document.getElementById('btn-zoom-in').addEventListener('click', () => {
+            svg.transition().call(zoom.scaleBy, 1.3);
+        });
+
+        document.getElementById('btn-zoom-out').addEventListener('click', () => {
+            svg.transition().call(zoom.scaleBy, 0.7);
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            svg.transition().call(zoom.transform, d3.zoomIdentity);
+            clearSelection();
+            if (isolatedNode) isolateNode(isolatedNode); // toggle off
+        });
+
+        document.getElementById('btn-fullscreen').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        // Filters
+        document.querySelectorAll('.toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const filter = toggle.dataset.filter;
+                filters[filter] = !filters[filter];
+                toggle.classList.toggle('active');
+                
+                // Update visibility
+                node.style('display', d => filters[d.role] ? 'block' : 'none');
+                link.style('display', l => 
+                    filters[l.source.role] && filters[l.target.role] ? 'block' : 'none'
+                );
+            });
+        });
+
+        // Physics sliders
+        document.getElementById('gravity').addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            document.getElementById('gravity-value').textContent = val.toFixed(2);
+            simulation.force('center', d3.forceCenter(
+                svg.attr('width') / 2, 
+                svg.attr('height') / 2
+            ).strength(val * 10));
+            simulation.alpha(0.3).restart();
+        });
+
+        document.getElementById('charge').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            document.getElementById('charge-value').textContent = val;
+            simulation.force('charge', d3.forceManyBody().strength(val));
+            simulation.alpha(0.3).restart();
+        });
+
+        document.getElementById('distance').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            document.getElementById('distance-value').textContent = val;
+            simulation.force('link').distance(val);
+            simulation.alpha(0.3).restart();
+        });
+
+        // Context menu actions
+        document.getElementById('ctx-inspect').addEventListener('click', () => {
+            if (contextMenuTarget) selectNode(contextMenuTarget);
+            hideContextMenu();
+        });
+
+        document.getElementById('ctx-isolate').addEventListener('click', () => {
+            if (contextMenuTarget) isolateNode(contextMenuTarget);
+            hideContextMenu();
+        });
+
+        document.getElementById('ctx-reroute').addEventListener('click', () => {
+            if (contextMenuTarget) {
+                // Simulate reroute by briefly changing status
+                contextMenuTarget.status = 'active';
+                // Trigger visual update
+                selectNode(contextMenuTarget);
+            }
+            hideContextMenu();
+        });
+
+        // Hide context menu on click elsewhere
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.context-menu')) {
+                hideContextMenu();
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const container = document.querySelector('.canvas-container');
+            svg.attr('width', container.clientWidth)
+               .attr('height', container.clientHeight);
+            simulation.force('center', d3.forceCenter(
+                container.clientWidth / 2, 
+                container.clientHeight / 2
+            ));
+            simulation.alpha(0.3).restart();
+        });
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initVisualization);
+    </script>
+</body>
+</html>

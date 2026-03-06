@@ -1,0 +1,290 @@
+{% extends "layouts/app_base.html" %}
+
+{% block title %}Model Workshop - ORDL{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="/app/models">Models</a>
+    <span class="separator">/</span>
+    <span>Workshop</span>
+</div>
+{% endblock %}
+
+{% block header_actions %}
+<button class="header-btn">Validate</button>
+<button class="header-btn">Test</button>
+<button class="header-btn primary">Deploy</button>
+{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section">
+    <div class="nav-title">Model Engineering</div>
+    <a href="/app/models/workshop" class="nav-item active">
+        <span class="nav-icon">◈</span>
+        <span>Workshop</span>
+    </a>
+    <a href="/app/models/training" class="nav-item">
+        <span class="nav-icon">▶</span>
+        <span>Training</span>
+    </a>
+    <a href="/app/models/inference" class="nav-item">
+        <span class="nav-icon">⚡</span>
+        <span>Inference</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Data</div>
+    <a href="/app/data/pipelines" class="nav-item">
+        <span class="nav-icon">◆</span>
+        <span>Pipelines</span>
+    </a>
+    <a href="/app/data/datasets" class="nav-item">
+        <span class="nav-icon">◉</span>
+        <span>Datasets</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Platform</div>
+    <a href="/app/nodes/discovery" class="nav-item">
+        <span class="nav-icon">◐</span>
+        <span>Discovery</span>
+    </a>
+    <a href="/app/nodes/autoupdate" class="nav-item">
+        <span class="nav-icon">↻</span>
+        <span>Auto-Update</span>
+    </a>
+    <a href="/app/health" class="nav-item">
+        <span class="nav-icon">♥</span>
+        <span>Health</span>
+    </a>
+    <a href="/app/incidents" class="nav-item">
+        <span class="nav-icon">⚠</span>
+        <span>Incidents</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/models/workshop.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="workshop-container">
+    <!-- Editor Panel -->
+    <div class="editor-panel">
+        <div class="editor-tabs">
+            <div class="editor-tab active">
+                <span>Orchestrator.model</span>
+                <span style="margin-left: 8px; opacity: 0.5;">×</span>
+            </div>
+            <div class="editor-tab">
+                <span>Config.yaml</span>
+            </div>
+        </div>
+        
+        <div class="editor-toolbar">
+            <button class="btn">▶ Run</button>
+            <button class="btn">⏸ Pause</button>
+            <button class="btn">◉ Debug</button>
+            <button class="btn">↩ Undo</button>
+        </div>
+        
+        <div class="editor-area">
+            <div class="line-numbers" id="lineNumbers"></div>
+            <textarea class="code-editor" id="codeEditor" spellcheck="false">{{ model_code | default('
+@model: "Orchestrator"
+@version: "2.1.0"
+@channel: "stable"
+
+architecture:
+  type: transformer
+  layers: 32
+  heads: 16
+  dim: 2048
+
+training:
+  batch_size: 512
+  learning_rate: 1e-4
+  warmup_steps: 1000
+  max_steps: 100000
+
+datasets:
+  - customer_interactions_v2
+  - support_tickets_processed
+  - documentation_corpus
+
+checkpoints:
+  save_every: 1000
+  keep_last: 5
+') }}</textarea>
+        </div>
+        
+        <div class="editor-status">
+            <span>YAML | UTF-8 | Ln 24, Col 12</span>
+            <span>Ready</span>
+        </div>
+    </div>
+    
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <!-- Model Inventory -->
+        <div class="inventory-panel">
+            <div class="panel-header">
+                <span>Model Inventory</span>
+                <div class="panel-actions">
+                    <button class="panel-btn">+ New</button>
+                </div>
+            </div>
+            <div class="inventory-list" id="inventoryList">
+                <div class="model-item selected">
+                    <div class="model-icon">◈</div>
+                    <div class="model-info">
+                        <div class="model-name">Orchestrator</div>
+                        <div class="model-meta">v2.1.0 · Stable</div>
+                    </div>
+                    <span class="status-dot online"></span>
+                </div>
+                <div class="model-item">
+                    <div class="model-icon">◉</div>
+                    <div class="model-info">
+                        <div class="model-name">Classifier-A</div>
+                        <div class="model-meta">v1.4.2 · Beta</div>
+                    </div>
+                    <span class="status-dot warning"></span>
+                </div>
+                <div class="model-item">
+                    <div class="model-icon">◆</div>
+                    <div class="model-info">
+                        <div class="model-name">Summarizer-Pro</div>
+                        <div class="model-meta">v3.0.0 · Alpha</div>
+                    </div>
+                    <span class="status-dot offline"></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Fine-tune Jobs -->
+        <div class="jobs-panel">
+            <div class="panel-header">
+                <span>Fine-tune Jobs</span>
+                <div class="panel-actions">
+                    <button class="panel-btn">+ Queue</button>
+                </div>
+            </div>
+            <div id="jobsList">
+                <div class="job-item">
+                    <div class="job-info">
+                        <div class="job-name">Orchestrator-v2.1.1-finetune</div>
+                        <div class="job-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 78%"></div>
+                            </div>
+                            <span style="font-size: 10px; color: var(--text-muted);">78%</span>
+                        </div>
+                    </div>
+                    <span class="tag">GPU-8xA100</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">2h 14m</span>
+                </div>
+                
+                <div class="job-item">
+                    <div class="job-info">
+                        <div class="job-name">Classifier-A-v1.5.0-RLHF</div>
+                        <div class="job-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 34%"></div>
+                            </div>
+                            <span style="font-size: 10px; color: var(--text-muted);">34%</span>
+                        </div>
+                    </div>
+                    <span class="tag">GPU-4xA100</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">5h 42m</span>
+                </div>
+                
+                <div class="job-item">
+                    <div class="job-info">
+                        <div class="job-name">Summarizer-Pro-v3.0.0-pretrain</div>
+                        <div class="job-progress">
+                            <span class="tag warning">Queued</span>
+                        </div>
+                    </div>
+                    <span class="tag">GPU-8xH100</span>
+                    <span style="font-size: 11px; color: var(--text-muted);">--</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Artifact Lineage -->
+        <div class="lineage-panel">
+            <div class="panel-header">
+                <span>Artifact Lineage</span>
+                <div class="panel-actions">
+                    <button class="panel-btn">Export</button>
+                </div>
+            </div>
+            <div class="lineage-canvas">
+                <div class="lineage-graph">
+                    <div class="lineage-node">
+                        <div class="lineage-box">Raw Data</div>
+                        <span style="font-size: 10px; color: var(--text-muted);">3 datasets</span>
+                    </div>
+                    <span class="lineage-arrow">→</span>
+                    
+                    <div class="lineage-node">
+                        <div class="lineage-box">Preprocess</div>
+                        <span style="font-size: 10px; color: var(--text-muted);">pipeline-v2</span>
+                    </div>
+                    
+                    <span class="lineage-arrow">→</span>
+                    
+                    <div class="lineage-node">
+                        <div class="lineage-box">Training</div>
+                        <span style="font-size: 10px; color: var(--text-muted);">job-8821</span>
+                    </div>
+                    
+                    <span class="lineage-arrow">→</span>
+                    
+                    <div class="lineage-node">
+                        <div class="lineage-box">Checkpoint</div>
+                        <span style="font-size: 10px; color: var(--text-muted);">v2.1.0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Release Channels -->
+        <div class="channels-panel">
+            <div class="panel-header">
+                <span>Release Channels</span>
+                <div class="panel-actions">
+                    <button class="panel-btn">Manage</button>
+                </div>
+            </div>
+            <div class="channel-item">
+                <div class="channel-name">
+                    <span class="status-dot online"></span>
+                    <span>Stable</span>
+                </div>
+                <span class="channel-badge stable">v2.1.0</span>
+            </div>
+            <div class="channel-item">
+                <div class="channel-name">
+                    <span class="status-dot warning"></span>
+                    <span>Beta</span>
+                </div>
+                <span class="channel-badge beta">v2.2.0-b1</span>
+            </div>
+            <div class="channel-item">
+                <div class="channel-name">
+                    <span class="status-dot offline"></span>
+                    <span>Alpha</span>
+                </div>
+                <span class="channel-badge alpha">--</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script src="{{ url_for('static', filename='js/models/workshop.js') }}"></script>
+{% endblock %}

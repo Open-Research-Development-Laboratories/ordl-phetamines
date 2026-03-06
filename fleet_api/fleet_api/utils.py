@@ -40,6 +40,8 @@ def run_local(
             command,
             cwd=str(cwd) if cwd else None,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             capture_output=True,
             timeout=timeout,
             shell=isinstance(command, str),

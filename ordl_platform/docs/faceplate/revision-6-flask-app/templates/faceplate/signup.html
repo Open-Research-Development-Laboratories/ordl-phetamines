@@ -1,0 +1,193 @@
+{% extends "app_base.html" %}
+
+{% block title %}Get Started | ORDL{% endblock %}
+{% block page_name %}signup{% endblock %}
+
+{% block breadcrumb %}
+<nav class="fp-breadcrumb" aria-label="Breadcrumb">
+  <div class="fp-container">
+    <ol class="fp-breadcrumb-list">
+      <li class="fp-breadcrumb-item"><a href="{{ url_for('home') }}">Home</a> <span class="fp-breadcrumb-separator">›</span></li>
+      <li class="fp-breadcrumb-item">Get Started</li>
+    </ol>
+  </div>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/faceplate/signup.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+  <div class="fp-container">
+    <div class="auth-layout">
+      <!-- Signup Form -->
+      <div class="auth-card" data-animate>
+        <div class="auth-header">
+          <h1>Create your account</h1>
+          <p>Start your 14-day free trial. No credit card required.</p>
+        </div>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+          <div class="step active" data-step="1">
+            <span class="step-number">1</span>
+            <span class="step-label">Account</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" data-step="2">
+            <span class="step-number">2</span>
+            <span class="step-label">Verify</span>
+          </div>
+          <div class="step-line"></div>
+          <div class="step" data-step="3">
+            <span class="step-number">3</span>
+            <span class="step-label">Plan</span>
+          </div>
+        </div>
+
+        <!-- Step 1: Account Info -->
+        <form class="auth-form" id="signupForm" data-validate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName" class="fp-label">First Name</label>
+              <input type="text" id="firstName" name="firstName" class="fp-input" placeholder="John" required>
+            </div>
+
+            <div class="form-group">
+              <label for="lastName" class="fp-label">Last Name</label>
+              <input type="text" id="lastName" name="lastName" class="fp-input" placeholder="Doe" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="fp-label">Work Email</label>
+            <input type="email" id="email" name="email" class="fp-input" placeholder="you@organization.gov" required>
+          </div>
+
+          <div class="form-group">
+            <label for="organization" class="fp-label">Organization</label>
+            <input type="text" id="organization" name="organization" class="fp-input" placeholder="Department/Company name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="fp-label">Password</label>
+            <input type="password" id="password" name="password" class="fp-input" placeholder="••••••••" required>
+            
+            <div class="password-strength" id="passwordStrength">
+              <div class="strength-bar"></div>
+              <span class="strength-text">Password strength</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" name="terms" required>
+              <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
+            </label>
+          </div>
+
+          <button type="submit" class="fp-btn fp-btn-primary fp-btn-block fp-btn-lg">Create Account</button>
+        </form>
+
+        <div class="auth-divider">
+          <span>or sign up with</span>
+        </div>
+
+        <div class="sso-options">
+          <button type="button" class="sso-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path><path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path><path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path><path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path></svg>
+            Google
+          </button>
+        </div>
+
+        <div class="auth-footer">
+          <p>Already have an account? <a href="{{ url_for('login') }}">Sign in</a></p>
+        </div>
+      </div>
+
+      <!-- Plan Selection (Hidden initially) -->
+      <div class="plan-selection" id="planSelection" style="display: none;">
+        <div class="auth-header">
+          <h1>Choose your plan</h1>
+          <p>Select the plan that fits your needs. You can change anytime.</p>
+        </div>
+
+        <div class="plans-compare">
+          <div class="plan-option" data-plan="starter">
+            <input type="radio" name="plan" value="starter" id="planStarter">
+            <label for="planStarter">
+              <span class="plan-name">Starter</span>
+              <span class="plan-price">Free</span>
+              <span class="plan-desc">For small teams</span>
+            </label>
+          </div>
+
+          <div class="plan-option recommended" data-plan="pro">
+            <span class="recommended-badge">Recommended</span>
+            <input type="radio" name="plan" value="pro" id="planPro" checked>
+            <label for="planPro">
+              <span class="plan-name">Professional</span>
+              <span class="plan-price">$499/mo</span>
+              <span class="plan-desc">For growing teams</span>
+            </label>
+          </div>
+
+          <div class="plan-option" data-plan="enterprise">
+            <input type="radio" name="plan" value="enterprise" id="planEnterprise">
+            <label for="planEnterprise">
+              <span class="plan-name">Enterprise</span>
+              <span class="plan-price">Custom</span>
+              <span class="plan-desc">Contact sales</span>
+            </label>
+          </div>
+        </div>
+
+        <button type="button" class="fp-btn fp-btn-primary fp-btn-block fp-btn-lg" id="completeSignup">Complete Setup</button>
+      </div>
+
+      <!-- Benefits -->
+      <div class="benefits-panel" data-animate>
+        <h3>What's included</h3>
+
+        <div class="benefits-list">
+          <div class="benefit-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>14-day free trial</span>
+          </div>
+
+          <div class="benefit-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>No credit card required</span>
+          </div>
+
+          <div class="benefit-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Cancel anytime</span>
+          </div>
+
+          <div class="benefit-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>SOC 2 Type II compliant</span>
+          </div>
+
+          <div class="benefit-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>99.9% uptime SLA</span>
+          </div>
+
+          <div class="benefit-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>24/7 support</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/faceplate/signup.js') }}"></script>
+{% endblock %}

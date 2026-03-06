@@ -1,19 +1,42 @@
 from __future__ import annotations
 
 import json
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.audit import append_audit_event, build_actor_snapshot
-from app.common import ensure_project_scope, ensure_tenant_scope
+from app.common import ensure_project_scope, ensure_tenant_scope, get_config_state, upsert_config_state
 from app.db import get_db
 from app.models import Org, Project, SeatAssignment, Team
-from app.schemas import OrgCreate, OrgOut, ProjectCreate, ProjectOut, TeamCreate, TeamOut
+from app.schemas import (
+    OrgBoardMemberCreate,
+    OrgBoardMemberUpdate,
+    OrgCreate,
+    OrgCurrentUpdate,
+    OrgOut,
+    OrgPolicyDefaultsUpdate,
+    OrgRegionCreate,
+    OrgRegionUpdate,
+    ProjectCreate,
+    ProjectDefaultsUpdate,
+    ProjectOut,
+    TeamCreate,
+    TeamOut,
+    TeamScopeMatrixUpdate,
+)
 from app.security import Principal, get_current_principal
 
 router = APIRouter(tags=['governance'])
+
+
+def _first_org_for_tenant(db: Session, tenant_id: str) -> Org:
+    org = db.scalar(select(Org).where(Org.tenant_id == tenant_id).order_by(Org.created_at.asc()).limit(1))
+    if org is None:
+        raise HTTPException(status_code=404, detail='org not found for tenant')
+    return org
 
 
 @router.post('/orgs', response_model=OrgOut)
@@ -65,6 +88,346 @@ def list_orgs(principal: Principal = Depends(get_current_principal), db: Session
         )
         for row in rows
     ]
+
+
+@router.get('/orgs/current', response_model=OrgOut)
+def get_current_org(
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> OrgOut:
+    org = _first_org_for_tenant(db, principal.tenant_id)
+    return OrgOut(
+        id=org.id,
+        tenant_id=org.tenant_id,
+        name=org.name,
+        owner_user_id=org.owner_user_id,
+        board_scope_mode=org.board_scope_mode,
+    )
+
+
+@router.patch('/orgs/current', response_model=OrgOut)
+def patch_current_org(
+    payload: OrgCurrentUpdate,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> OrgOut:
+    org = _first_org_for_tenant(db, principal.tenant_id)
+    if payload.name is not None:
+        org.name = payload.name
+    if payload.board_scope_mode is not None:
+        org.board_scope_mode = payload.board_scope_mode
+    append_audit_event(
+        db,
+        tenant_id=principal.tenant_id,
+        project_id=None,
+        event_type='org.updated',
+        payload={'org_id': org.id, 'name': org.name, 'board_scope_mode': org.board_scope_mode},
+        actor=build_actor_snapshot(db, principal),
+        resource={'resource_type': 'org', 'resource_id': org.id},
+    )
+    db.commit()
+    return OrgOut(
+        id=org.id,
+        tenant_id=org.tenant_id,
+        name=org.name,
+        owner_user_id=org.owner_user_id,
+        board_scope_mode=org.board_scope_mode,
+    )
+
+
+@router.get('/orgs/board')
+def list_org_board(
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> list[dict]:
+    members = get_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='board_members',
+        default=[],
+    )
+    return members
+
+
+@router.post('/orgs/board')
+def add_org_board_member(
+    payload: OrgBoardMemberCreate,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> dict:
+    members = get_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='board_members',
+        default=[],
+    )
+    record = {
+        'id': str(uuid.uuid4()),
+        'name': payload.name,
+        'role': payload.role,
+        'clearance': payload.clearance,
+        'appointed': payload.appointed,
+        'expires': payload.expires,
+        'status': payload.status,
+    }
+    members.append(record)
+    upsert_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='board_members',
+        value=members,
+        updated_by_user_id=principal.user_id,
+    )
+    append_audit_event(
+        db,
+        tenant_id=principal.tenant_id,
+        project_id=None,
+        event_type='org.board_member.added',
+        payload=record,
+        actor=build_actor_snapshot(db, principal),
+        resource={'resource_type': 'org_board_member', 'resource_id': record['id']},
+    )
+    db.commit()
+    return record
+
+
+@router.patch('/orgs/board/{member_id}')
+def patch_org_board_member(
+    member_id: str,
+    payload: OrgBoardMemberUpdate,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> dict:
+    members = get_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='board_members',
+        default=[],
+    )
+    target = next((item for item in members if item.get('id') == member_id), None)
+    if target is None:
+        raise HTTPException(status_code=404, detail='board member not found')
+    patch = payload.model_dump(exclude_none=True)
+    target.update(patch)
+    upsert_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='board_members',
+        value=members,
+        updated_by_user_id=principal.user_id,
+    )
+    append_audit_event(
+        db,
+        tenant_id=principal.tenant_id,
+        project_id=None,
+        event_type='org.board_member.updated',
+        payload={'member_id': member_id, 'patch': patch},
+        actor=build_actor_snapshot(db, principal),
+        resource={'resource_type': 'org_board_member', 'resource_id': member_id},
+    )
+    db.commit()
+    return target
+
+
+@router.delete('/orgs/board/{member_id}')
+def delete_org_board_member(
+    member_id: str,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> dict:
+    members = get_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='board_members',
+        default=[],
+    )
+    filtered = [item for item in members if item.get('id') != member_id]
+    if len(filtered) == len(members):
+        raise HTTPException(status_code=404, detail='board member not found')
+    upsert_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='board_members',
+        value=filtered,
+        updated_by_user_id=principal.user_id,
+    )
+    append_audit_event(
+        db,
+        tenant_id=principal.tenant_id,
+        project_id=None,
+        event_type='org.board_member.removed',
+        payload={'member_id': member_id},
+        actor=build_actor_snapshot(db, principal),
+        resource={'resource_type': 'org_board_member', 'resource_id': member_id},
+    )
+    db.commit()
+    return {'status': 'removed', 'member_id': member_id}
+
+
+@router.get('/orgs/board/{member_id}/history')
+def org_board_member_history(
+    member_id: str,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> list[dict]:
+    rows = db.execute(
+        select(Project.id)  # cheap no-op scope check path through tenant context
+        .join(Team, Team.id == Project.team_id)
+        .join(Org, Org.id == Team.org_id)
+        .where(Org.tenant_id == principal.tenant_id)
+        .limit(1)
+    ).all()
+    _ = rows  # explicitly consume scope check query
+
+    from app.models import AuditEvent
+
+    events = db.scalars(
+        select(AuditEvent)
+        .where(
+            AuditEvent.tenant_id == principal.tenant_id,
+            AuditEvent.event_type.like('org.board_member.%'),
+        )
+        .order_by(AuditEvent.created_at.desc())
+        .limit(200)
+    ).all()
+    history: list[dict] = []
+    for event in events:
+        payload = json.loads(event.payload_json or '{}')
+        if payload.get('member_id') == member_id or payload.get('id') == member_id:
+            history.append(
+                {
+                    'event_type': event.event_type,
+                    'payload': payload,
+                    'created_at': event.created_at.isoformat(),
+                }
+            )
+    return history
+
+
+@router.get('/orgs/regions')
+def list_org_regions(
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> list[dict]:
+    return get_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='regions',
+        default=[],
+    )
+
+
+@router.post('/orgs/regions')
+def add_org_region(
+    payload: OrgRegionCreate,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> dict:
+    regions = get_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='regions',
+        default=[],
+    )
+    if any(item.get('code') == payload.code for item in regions):
+        raise HTTPException(status_code=409, detail='region already exists')
+    record = payload.model_dump()
+    regions.append(record)
+    upsert_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='regions',
+        value=regions,
+        updated_by_user_id=principal.user_id,
+    )
+    db.commit()
+    return record
+
+
+@router.patch('/orgs/regions/{code}')
+def patch_org_region(
+    code: str,
+    payload: OrgRegionUpdate,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> dict:
+    regions = get_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='regions',
+        default=[],
+    )
+    target = next((item for item in regions if item.get('code') == code), None)
+    if target is None:
+        raise HTTPException(status_code=404, detail='region not found')
+    target.update(payload.model_dump(exclude_none=True))
+    upsert_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='regions',
+        value=regions,
+        updated_by_user_id=principal.user_id,
+    )
+    db.commit()
+    return target
+
+
+@router.get('/orgs/policy-defaults')
+def get_org_policy_defaults(
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> dict:
+    return get_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='policy_defaults',
+        default={},
+    )
+
+
+@router.put('/orgs/policy-defaults')
+def put_org_policy_defaults(
+    payload: OrgPolicyDefaultsUpdate,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> dict:
+    upsert_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='org',
+        scope_id='current',
+        config_key='policy_defaults',
+        value=payload.defaults,
+        updated_by_user_id=principal.user_id,
+    )
+    db.commit()
+    return payload.defaults
 
 
 @router.post('/teams', response_model=TeamOut)
@@ -203,3 +566,50 @@ def get_project(project_id: str, principal: Principal = Depends(get_current_prin
         ingress_mode=project.ingress_mode,
         visibility_mode=project.visibility_mode,
     )
+
+
+@router.put('/projects/{project_id}/defaults')
+def put_project_defaults(
+    project_id: str,
+    payload: ProjectDefaultsUpdate,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> dict:
+    ensure_project_scope(db, principal, project_id)
+    upsert_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='project',
+        scope_id=project_id,
+        config_key='defaults',
+        value=payload.defaults,
+        updated_by_user_id=principal.user_id,
+    )
+    db.commit()
+    return payload.defaults
+
+
+@router.put('/teams/{team_id}/scope')
+def put_team_scope_matrix(
+    team_id: str,
+    payload: TeamScopeMatrixUpdate,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> dict:
+    team = db.get(Team, team_id)
+    if team is None:
+        raise HTTPException(status_code=404, detail='team not found')
+    org = db.get(Org, team.org_id)
+    if org is None or org.tenant_id != principal.tenant_id:
+        raise HTTPException(status_code=403, detail='tenant scope denied')
+    upsert_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type='team',
+        scope_id=team_id,
+        config_key='scope_matrix',
+        value=payload.scope_matrix,
+        updated_by_user_id=principal.user_id,
+    )
+    db.commit()
+    return payload.scope_matrix

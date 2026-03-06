@@ -1,0 +1,344 @@
+/* templates/nodes/autoupdate.html - Node Auto-Update Styles */
+
+.autoupdate-container {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 16px;
+}
+
+/* Update Rings */
+.rings-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+}
+
+.ring-item {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.ring-item:last-child {
+    border-bottom: none;
+}
+
+.ring-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.ring-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ring-badge {
+    padding: 2px 10px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ring-badge.canary {
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.ring-badge.staging {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid var(--info);
+    color: var(--info);
+}
+
+.ring-badge.production {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+.ring-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.ring-nodes {
+    margin-top: 12px;
+}
+
+.ring-node {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    background: var(--bg-tertiary);
+    margin-bottom: 4px;
+    font-size: 11px;
+}
+
+.ring-node:last-child {
+    margin-bottom: 0;
+}
+
+.node-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.node-status.updated { background: var(--success); }
+.node-status.pending { background: var(--warning); }
+.node-status.updating { background: var(--accent-primary); }
+
+.node-info {
+    flex: 1;
+}
+
+.node-version {
+    font-family: var(--font-mono);
+}
+
+/* Maintenance Windows */
+.windows-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    margin-bottom: 16px;
+}
+
+.window-item {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.window-item:last-child {
+    border-bottom: none;
+}
+
+.window-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.window-name {
+    font-size: 12px;
+    color: var(--text-primary);
+}
+
+.window-status {
+    padding: 2px 8px;
+    font-size: 9px;
+    text-transform: uppercase;
+}
+
+.window-status.active {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+.window-status.scheduled {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    color: var(--text-muted);
+}
+
+.window-time {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.window-zones {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+/* Regression Checks */
+.regression-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    margin-bottom: 16px;
+}
+
+.check-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.check-item:last-child {
+    border-bottom: none;
+}
+
+.check-status {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 12px;
+}
+
+.check-status.pass {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+.check-status.fail {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--error);
+    color: var(--error);
+}
+
+.check-status.pending {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    color: var(--text-muted);
+}
+
+.check-info {
+    flex: 1;
+}
+
+.check-name {
+    font-size: 12px;
+    color: var(--text-primary);
+}
+
+.check-desc {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* Rollback Safety */
+.rollback-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+}
+
+.rollback-status {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.rollback-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.rollback-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 10px var(--success);
+}
+
+.rollback-title {
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.rollback-info {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.snapshot-list {
+    padding: 12px;
+}
+
+.snapshot-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: var(--bg-tertiary);
+    margin-bottom: 6px;
+}
+
+.snapshot-item:last-child {
+    margin-bottom: 0;
+}
+
+.snapshot-version {
+    font-size: 12px;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+.snapshot-time {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+/* Update Progress */
+.update-progress {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.update-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.update-title {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.update-status {
+    font-size: 11px;
+    color: var(--accent-primary);
+}
+
+.update-stages {
+    display: flex;
+    gap: 8px;
+}
+
+.update-stage {
+    flex: 1;
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    text-align: center;
+}
+
+.update-stage.active {
+    border-color: var(--accent-primary);
+    background: var(--accent-dim);
+}
+
+.update-stage.completed {
+    border-color: var(--success);
+}
+
+.stage-icon {
+    font-size: 16px;
+    margin-bottom: 6px;
+}
+
+.stage-name {
+    font-size: 10px;
+    color: var(--text-secondary);
+}

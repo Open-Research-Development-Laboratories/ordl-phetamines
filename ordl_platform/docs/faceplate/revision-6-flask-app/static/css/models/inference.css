@@ -1,0 +1,331 @@
+/* templates/models/inference.html - Model Inference Styles */
+
+.inference-container {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 16px;
+    height: calc(100vh - 120px);
+}
+
+/* Prompt Test Harness */
+.harness-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    display: flex;
+    flex-direction: column;
+}
+
+.harness-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-default);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.harness-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+}
+
+.model-selector {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.model-selector select {
+    min-width: 180px;
+}
+
+.harness-input {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.prompt-toolbar {
+    padding: 8px 16px;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-default);
+    display: flex;
+    gap: 12px;
+}
+
+.toolbar-group {
+    display: flex;
+    gap: 6px;
+}
+
+.toolbar-divider {
+    width: 1px;
+    background: var(--border-default);
+}
+
+.toolbar-btn {
+    padding: 4px 10px;
+    background: transparent;
+    border: 1px solid var(--border-default);
+    color: var(--text-secondary);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.toolbar-btn:hover {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.prompt-textarea {
+    flex: 1;
+    padding: 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+}
+
+.prompt-textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.harness-params {
+    padding: 12px 16px;
+    background: var(--bg-tertiary);
+    border-top: 1px solid var(--border-default);
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.param-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.param-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.param-input {
+    width: 70px;
+    padding: 4px 8px;
+    font-size: 11px;
+}
+
+.harness-actions {
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-default);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.response-area {
+    flex: 1;
+    padding: 16px;
+    background: var(--bg-tertiary);
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.response-content {
+    color: var(--text-primary);
+    white-space: pre-wrap;
+}
+
+.response-meta {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-default);
+    display: flex;
+    gap: 20px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+/* Latency/Quality Dashboard */
+.dashboard-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    height: 280px;
+    display: flex;
+    flex-direction: column;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 12px;
+}
+
+.metric-card {
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+.metric-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.metric-delta {
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+.metric-delta.positive { color: var(--success); }
+.metric-delta.negative { color: var(--error); }
+
+.latency-chart {
+    flex: 1;
+    padding: 12px;
+    position: relative;
+}
+
+.chart-line {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--bg-tertiary) 0%, transparent 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.chart-line-svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Regression Compare */
+.regression-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.regression-toolbar {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-default);
+    display: flex;
+    gap: 8px;
+}
+
+.regression-content {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.compare-table th,
+.compare-table td {
+    padding: 10px 12px;
+    font-size: 11px;
+}
+
+.compare-table .metric-name {
+    color: var(--text-primary);
+}
+
+.compare-table .baseline {
+    color: var(--text-secondary);
+}
+
+.compare-table .current {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.compare-table .change {
+    font-family: var(--font-mono);
+}
+
+.change.positive { color: var(--success); }
+.change.negative { color: var(--error); }
+.change.neutral { color: var(--text-muted); }
+
+/* Test History */
+.history-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    padding: 12px;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    border-bottom: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.history-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.history-item:last-child {
+    border-bottom: none;
+}
+
+.history-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.history-status.success { background: var(--success); }
+.history-status.error { background: var(--error); }
+.history-status.warning { background: var(--warning); }
+
+.history-info {
+    flex: 1;
+}
+
+.history-prompt {
+    font-size: 12px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.history-meta {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.history-latency {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+}

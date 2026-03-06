@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Model | ORDL Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1a1a1a;
+            --bg-elevated: #1f1f1f;
+            --bg-hover: #262626;
+            --bg-active: #2e2e2e;
+            --text-primary: #faf8f5;
+            --text-secondary: #d4cfc7;
+            --text-tertiary: #a8a39c;
+            --text-muted: #6b6660;
+            --text-disabled: #4a4743;
+            --accent-primary: #f59e0b;
+            --accent-secondary: #d97706;
+            --accent-hover: #fbbf24;
+            --accent-dim: rgba(245, 158, 11, 0.15);
+            --accent-glow: rgba(245, 158, 11, 0.4);
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-default: rgba(255, 255, 255, 0.1);
+            --border-strong: rgba(255, 255, 255, 0.15);
+            --border-accent: rgba(245, 158, 11, 0.5);
+            --topbar-height: 48px;
+            --sidebar-collapsed: 64px;
+            --sidebar-expanded: 240px;
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; overflow: hidden; }
+        body {
+            font-family: var(--font-sans);
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-shell {
+            display: grid;
+            grid-template-areas: "topbar topbar" "sidebar main";
+            grid-template-rows: var(--topbar-height) 1fr;
+            grid-template-columns: var(--sidebar-collapsed) 1fr;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        /* Topbar */
+        .topbar {
+            grid-area: topbar;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: var(--topbar-height);
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-default);
+            padding: 0 16px;
+            z-index: 400;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 24px; }
+        .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text-primary); }
+        .brand-logo {
+            width: 28px; height: 28px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: var(--font-mono); font-weight: 700; font-size: 14px;
+            color: var(--bg-primary);
+        }
+        .brand-wordmark { font-family: var(--font-mono); font-size: 16px; font-weight: 600; letter-spacing: 0.05em; }
+        .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+        .breadcrumb-item { color: var(--text-tertiary); }
+        .breadcrumb-item:last-child { color: var(--text-primary); font-weight: 500; }
+        .breadcrumb-separator { color: var(--text-muted); font-size: 11px; margin: 0 4px; }
+
+        /* Sidebar */
+        .sidebar {
+            grid-area: sidebar;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-default);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        .sidebar-header {
+            height: 48px;
+            display: flex; align-items: center; justify-content: center;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+        .nav-section { margin-bottom: 8px; }
+        .nav-section-title {
+            padding: 8px 16px;
+            font-size: 10px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.1em; color: var(--text-muted);
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 16px; margin: 2px 8px;
+            border-radius: 6px;
+            color: var(--text-secondary); text-decoration: none;
+            font-size: 13px; font-weight: 500;
+            transition: all var(--transition-fast);
+            position: relative;
+        }
+        .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+        .nav-item.active { background: var(--accent-dim); color: var(--accent-primary); }
+        .nav-item.active::before {
+            content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+            width: 3px; height: 20px; background: var(--accent-primary);
+            border-radius: 0 2px 2px 0; box-shadow: 0 0 8px var(--accent-glow);
+        }
+        .nav-icon { width: 20px; height: 20px; }
+
+        /* Main Content */
+        .main-content {
+            grid-area: main;
+            background: var(--bg-primary);
+            overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .content-header {
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .content-header h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+        .content-header p { font-size: 14px; color: var(--text-tertiary); }
+
+        .content-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+        }
+
+        /* Wizard Container */
+        .wizard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Step Indicator */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 40px;
+            gap: 8px;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 600;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-default);
+            color: var(--text-muted);
+            transition: all var(--transition-fast);
+        }
+        .step.active .step-circle {
+            background: var(--accent-dim);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+        .step.completed .step-circle {
+            background: var(--success);
+            border-color: var(--success);
+            color: var(--bg-primary);
+        }
+        .step-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-tertiary);
+        }
+        .step.active .step-label { color: var(--text-primary); }
+        .step.completed .step-label { color: var(--success); }
+        .step-connector {
+            width: 60px;
+            height: 2px;
+            background: var(--border-default);
+            margin: 0 8px;
+        }
+        .step-connector.completed { background: var(--success); }
+
+        /* Wizard Content */
+        .wizard-content {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 32px;
+        }
+
+        /* Form Panel */
+        .form-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 12px;
+            padding: 32px;
+        }
+        .step-content { display: none; }
+        .step-content.active { display: block; }
+
+        .form-section { margin-bottom: 28px; }
+        .form-section:last-child { margin-bottom: 0; }
+        .form-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-section-title .icon {
+            width: 18px; height: 18px;
+            color: var(--accent-primary);
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group:last-child { margin-bottom: 0; }
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .form-label .required { color: var(--error); margin-left: 4px; }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            font-size: 14px;
+            transition: all var(--transition-fast);
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+        .form-input.error { border-color: var(--error); }
+        .form-input::placeholder { color: var(--text-muted); }
+        .form-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+        .form-error {
+            font-size: 12px;
+            color: var(--error);
+            margin-top: 6px;
+            display: none;
+        }
+        .form-error.visible { display: block; }
+
+        /* Base Model Grid */
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .model-card {
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-default);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .model-card:hover { border-color: var(--border-strong); }
+        .model-card.selected {
+            border-color: var(--accent-primary);
+            background: var(--accent-dim);
+        }
+        .model-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .model-icon {
+            width: 32px; height: 32px;
+            background: var(--bg-hover);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+        }
+        .model-card.selected .model-icon { background: var(--accent-primary); color: var(--bg-primary); }
+        .model-name { font-weight: 600; font-size: 14px; }
+        .model-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+        .model-meta {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+        .model-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Hyperparameter Grid */
+        .param-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .param-control {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .param-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+        }
+        .param-value {
+            font-family: var(--font-mono);
+            color: var(--accent-primary);
+        }
+        .param-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: var(--bg-hover);
+            border-radius: 3px;
+            outline: none;
+        }
+        .param-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        /* Architecture Options */
+        .arch-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .arch-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-default);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .arch-option:hover { border-color: var(--border-strong); }
+        .arch-option.selected {
+            border-color: var(--accent-primary);
+            background: var(--accent-dim);
+        }
+        .arch-radio {
+            width: 18px; height: 18px;
+            border: 2px solid var(--border-strong);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .arch-option.selected .arch-radio {
+            border-color: var(--accent-primary);
+            background: var(--accent-primary);
+        }
+        .arch-radio::after {
+            content: '';
+            width: 6px; height: 6px;
+            background: var(--bg-primary);
+            border-radius: 50%;
+            opacity: 0;
+        }
+        .arch-option.selected .arch-radio::after { opacity: 1; }
+        .arch-info { flex: 1; }
+        .arch-name { font-weight: 500; font-size: 13px; }
+        .arch-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+        /* Preview Panel */
+        .preview-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-default);
+            border-radius: 12px;
+            overflow: hidden;
+            position: sticky;
+            top: 0;
+        }
+        .preview-header {
+            padding: 16px 20px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-default);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .preview-header .icon {
+            width: 18px; height: 18px;
+            color: var(--accent-primary);
+        }
+        .preview-title { font-weight: 600; font-size: 14px; }
+        .preview-body { padding: 20px; }
+        .preview-section { margin-bottom: 20px; }
+        .preview-section:last-child { margin-bottom: 0; }
+        .preview-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .preview-value {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--text-primary);
+            padding: 10px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            border: 1px solid var(--border-subtle);
+        }
+        .preview-value.empty { color: var(--text-muted); font-style: italic; }
+        .preview-config {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            line-height: 1.6;
+            border: 1px solid var(--border-subtle);
+        }
+        .preview-config .key { color: var(--accent-primary); }
+        .preview-config .string { color: var(--success); }
+        .preview-config .number { color: var(--info); }
+        .preview-config .boolean { color: var(--warning); }
+
+        /* Resource Estimate */
+        .resource-bar {
+            margin-bottom: 16px;
+        }
+        .resource-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+        .resource-label { color: var(--text-secondary); }
+        .resource-value { color: var(--text-primary); font-weight: 500; }
+        .resource-track {
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .resource-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width var(--transition-normal);
+        }
+        .resource-fill.gpu { background: linear-gradient(90deg, var(--accent-primary), var(--accent-hover)); }
+        .resource-fill.memory { background: linear-gradient(90deg, var(--info), #60a5fa); }
+        .resource-fill.storage { background: linear-gradient(90deg, var(--success), #4ade80); }
+
+        /* Cost Estimate */
+        .cost-estimate {
+            background: var(--accent-dim);
+            border: 1px solid var(--border-accent);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+        }
+        .cost-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .cost-header .icon { color: var(--accent-primary); }
+        .cost-title { font-weight: 600; font-size: 13px; }
+        .cost-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .cost-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+        .cost-item-name { color: var(--text-secondary); }
+        .cost-item-value { font-family: var(--font-mono); color: var(--text-primary); }
+        .cost-total {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 12px;
+            margin-top: 12px;
+            border-top: 1px solid var(--border-default);
+            font-weight: 600;
+        }
+        .cost-total-value { font-family: var(--font-mono); color: var(--accent-primary); font-size: 16px; }
+
+        /* Wizard Actions */
+        .wizard-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-default);
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            font-family: var(--font-sans);
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .btn-primary {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--border-default);
+        }
+        .btn-secondary:hover { background: var(--bg-hover); border-color: var(--border-strong); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <!-- Topbar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <a href="#" class="brand">
+                    <div class="brand-logo">O</div>
+                    <span class="brand-wordmark">ORDL</span>
+                </a>
+                <nav class="breadcrumb">
+                    <span class="breadcrumb-item">Models</span>
+                    <span class="breadcrumb-separator">›</span>
+                    <span class="breadcrumb-item">Create</span>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header"></div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Core</div>
+                    <a href="#" class="nav-item">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect width="7" height="7" x="3" y="3" rx="1"></rect>
+                            <rect width="7" height="7" x="14" y="3" rx="1"></rect>
+                            <rect width="7" height="7" x="14" y="14" rx="1"></rect>
+                            <rect width="7" height="7" x="3" y="14" rx="1"></rect>
+                        </svg>
+                    </a>
+                    <a href="#" class="nav-item">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                    </a>
+                    <a href="#" class="nav-item active">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                            <path d="M2 17l10 5 10-5"></path>
+                            <path d="M2 12l10 5 10-5"></path>
+                        </svg>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-header">
+                <h1>Create New Model</h1>
+                <p>Configure and initialize a new model training run</p>
+            </div>
+            <div class="content-body">
+                <div class="wizard-container">
+                    <!-- Step Indicator -->
+                    <div class="step-indicator">
+                        <div class="step active" data-step="1">
+                            <div class="step-circle">1</div>
+                            <span class="step-label">Base Model</span>
+                        </div>
+                        <div class="step-connector"></div>
+                        <div class="step" data-step="2">
+                            <div class="step-circle">2</div>
+                            <span class="step-label">Architecture</span>
+                        </div>
+                        <div class="step-connector"></div>
+                        <div class="step" data-step="3">
+                            <div class="step-circle">3</div>
+                            <span class="step-label">Hyperparameters</span>
+                        </div>
+                    </div>
+
+                    <div class="wizard-content">
+                        <!-- Form Panel -->
+                        <div class="form-panel">
+                            <!-- Step 1: Base Model -->
+                            <div class="step-content active" data-step="1">
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                            <path d="M2 17l10 5 10-5"></path>
+                                            <path d="M2 12l10 5 10-5"></path>
+                                        </svg>
+                                        Select Base Model
+                                    </div>
+                                    <div class="model-grid">
+                                        <div class="model-card selected" data-model="llama-3-8b">
+                                            <div class="model-card-header">
+                                                <div class="model-icon">🦙</div>
+                                                <span class="model-name">Llama 3 8B</span>
+                                            </div>
+                                            <div class="model-desc">Meta's open foundation model, 8B parameters. Optimized for chat and instruction following.</div>
+                                            <div class="model-meta">
+                                                <span>⚡ 8B params</span>
+                                                <span>📄 8k ctx</span>
+                                            </div>
+                                        </div>
+                                        <div class="model-card" data-model="llama-3-70b">
+                                            <div class="model-card-header">
+                                                <div class="model-icon">🦙</div>
+                                                <span class="model-name">Llama 3 70B</span>
+                                            </div>
+                                            <div class="model-desc">Large-scale foundation model with superior reasoning and coding capabilities.</div>
+                                            <div class="model-meta">
+                                                <span>⚡ 70B params</span>
+                                                <span>📄 8k ctx</span>
+                                            </div>
+                                        </div>
+                                        <div class="model-card" data-model="mistral-7b">
+                                            <div class="model-card-header">
+                                                <div class="model-icon">🌪️</div>
+                                                <span class="model-name">Mistral 7B</span>
+                                            </div>
+                                            <div class="model-desc">High performance 7B parameter model with grouped-query attention.</div>
+                                            <div class="model-meta">
+                                                <span>⚡ 7B params</span>
+                                                <span>📄 32k ctx</span>
+                                            </div>
+                                        </div>
+                                        <div class="model-card" data-model="mixtral-8x7b">
+                                            <div class="model-card-header">
+                                                <div class="model-icon">🌪️</div>
+                                                <span class="model-name">Mixtral 8x7B</span>
+                                            </div>
+                                            <div class="model-desc">Sparse mixture-of-experts model. Only 12B active params per token.</div>
+                                            <div class="model-meta">
+                                                <span>⚡ 47B params</span>
+                                                <span>📄 32k ctx</span>
+                                            </div>
+                                        </div>
+                                        <div class="model-card" data-model="qwen-2-72b">
+                                            <div class="model-card-header">
+                                                <div class="model-icon">🌐</div>
+                                                <span class="model-name">Qwen2 72B</span>
+                                            </div>
+                                            <div class="model-desc">Alibaba's large multilingual model with strong coding abilities.</div>
+                                            <div class="model-meta">
+                                                <span>⚡ 72B params</span>
+                                                <span>📄 128k ctx</span>
+                                            </div>
+                                        </div>
+                                        <div class="model-card" data-model="custom">
+                                            <div class="model-card-header">
+                                                <div class="model-icon">⚙️</div>
+                                                <span class="model-name">Custom Import</span>
+                                            </div>
+                                            <div class="model-desc">Import your own model from HuggingFace or a custom checkpoint.</div>
+                                            <div class="model-meta">
+                                                <span>🔗 External</span>
+                                                <span>📄 Variable</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                            <polyline points="14 2 14 8 20 8"></polyline>
+                                        </svg>
+                                        Model Configuration
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Model Name <span class="required">*</span></label>
+                                        <input type="text" class="form-input" placeholder="e.g., my-custom-llama-v1" id="modelName">
+                                        <div class="form-hint">Unique identifier for this model variant</div>
+                                        <div class="form-error">Model name is required</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-textarea" rows="3" placeholder="Brief description of the model's purpose..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Architecture -->
+                            <div class="step-content" data-step="2">
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                                            <polyline points="2 17 12 22 22 17"></polyline>
+                                            <polyline points="2 12 12 17 22 12"></polyline>
+                                        </svg>
+                                        Fine-tuning Method
+                                    </div>
+                                    <div class="arch-options">
+                                        <div class="arch-option selected">
+                                            <div class="arch-radio"></div>
+                                            <div class="arch-info">
+                                                <div class="arch-name">Full Fine-tuning</div>
+                                                <div class="arch-desc">Update all model parameters. Best quality but requires most compute.</div>
+                                            </div>
+                                        </div>
+                                        <div class="arch-option">
+                                            <div class="arch-radio"></div>
+                                            <div class="arch-info">
+                                                <div class="arch-name">LoRA (Low-Rank Adaptation)</div>
+                                                <div class="arch-desc">Train low-rank matrices only. 100x fewer parameters, faster training.</div>
+                                            </div>
+                                        </div>
+                                        <div class="arch-option">
+                                            <div class="arch-radio"></div>
+                                            <div class="arch-info">
+                                                <div class="arch-name">QLoRA (Quantized LoRA)</div>
+                                                <div class="arch-desc">4-bit quantized base model with LoRA. Train large models on single GPU.</div>
+                                            </div>
+                                        </div>
+                                        <div class="arch-option">
+                                            <div class="arch-radio"></div>
+                                            <div class="arch-info">
+                                                <div class="arch-name">DoRA (Weight-Decomposed LoRA)</div>
+                                                <div class="arch-desc">Decomposes weights into magnitude and direction. Better stability than LoRA.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                                        </svg>
+                                        Quantization
+                                    </div>
+                                    <div class="arch-options">
+                                        <div class="arch-option selected">
+                                            <div class="arch-radio"></div>
+                                            <div class="arch-info">
+                                                <div class="arch-name">FP16 (No Quantization)</div>
+                                                <div class="arch-desc">Full precision training. Best accuracy, highest memory usage.</div>
+                                            </div>
+                                        </div>
+                                        <div class="arch-option">
+                                            <div class="arch-radio"></div>
+                                            <div class="arch-info">
+                                                <div class="arch-name">BF16 (Brain Float 16)</div>
+                                                <div class="arch-desc">Better dynamic range than FP16. Recommended for modern GPUs.</div>
+                                            </div>
+                                        </div>
+                                        <div class="arch-option">
+                                            <div class="arch-radio"></div>
+                                            <div class="arch-info">
+                                                <div class="arch-name">INT8 (8-bit)</div>
+                                                <div class="arch-desc">50% memory reduction. Good for inference, limited for training.</div>
+                                            </div>
+                                        </div>
+                                        <div class="arch-option">
+                                            <div class="arch-radio"></div>
+                                            <div class="arch-info">
+                                                <div class="arch-name">NF4 (4-bit Normal Float)</div>
+                                                <div class="arch-desc">75% memory reduction. Used with QLoRA for extreme efficiency.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: Hyperparameters -->
+                            <div class="step-content" data-step="3">
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                            <path d="M12 1v6m0 6v6m4.22-10.22l4.24-4.24M6.34 6.34L2.1 2.1m20.8 9.9h-6m-6 0H2.1m16.12 4.24l4.24 4.24M6.34 17.66l-4.24 4.24"></path>
+                                        </svg>
+                                        Training Parameters
+                                    </div>
+                                    <div class="param-grid">
+                                        <div class="param-control">
+                                            <div class="param-label">
+                                                <span>Learning Rate</span>
+                                                <span class="param-value" id="lrValue">2e-4</span>
+                                            </div>
+                                            <input type="range" class="param-slider" min="1" max="6" step="1" value="3" id="lrSlider">
+                                        </div>
+                                        <div class="param-control">
+                                            <div class="param-label">
+                                                <span>Batch Size</span>
+                                                <span class="param-value" id="batchValue">32</span>
+                                            </div>
+                                            <input type="range" class="param-slider" min="8" max="128" step="8" value="32" id="batchSlider">
+                                        </div>
+                                        <div class="param-control">
+                                            <div class="param-label">
+                                                <span>Epochs</span>
+                                                <span class="param-value" id="epochValue">3</span>
+                                            </div>
+                                            <input type="range" class="param-slider" min="1" max="10" step="1" value="3" id="epochSlider">
+                                        </div>
+                                        <div class="param-control">
+                                            <div class="param-label">
+                                                <span>Warmup Steps</span>
+                                                <span class="param-value" id="warmupValue">100</span>
+                                            </div>
+                                            <input type="range" class="param-slider" min="0" max="1000" step="50" value="100" id="warmupSlider">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M12 20h9"></path>
+                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                                        </svg>
+                                        Optimization Settings
+                                    </div>
+                                    <div class="param-grid">
+                                        <div class="param-control">
+                                            <div class="param-label">
+                                                <span>LoRA Rank (r)</span>
+                                                <span class="param-value" id="rankValue">64</span>
+                                            </div>
+                                            <input type="range" class="param-slider" min="8" max="256" step="8" value="64" id="rankSlider">
+                                        </div>
+                                        <div class="param-control">
+                                            <div class="param-label">
+                                                <span>LoRA Alpha</span>
+                                                <span class="param-value" id="alphaValue">16</span>
+                                            </div>
+                                            <input type="range" class="param-slider" min="8" max="128" step="8" value="16" id="alphaSlider">
+                                        </div>
+                                        <div class="param-control">
+                                            <div class="param-label">
+                                                <span>Dropout</span>
+                                                <span class="param-value" id="dropoutValue">0.05</span>
+                                            </div>
+                                            <input type="range" class="param-slider" min="0" max="0.5" step="0.01" value="0.05" id="dropoutSlider">
+                                        </div>
+                                        <div class="param-control">
+                                            <div class="param-label">
+                                                <span>Weight Decay</span>
+                                                <span class="param-value" id="decayValue">0.01</span>
+                                            </div>
+                                            <input type="range" class="param-slider" min="0" max="0.1" step="0.001" value="0.01" id="decaySlider">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-section">
+                                    <div class="form-section-title">
+                                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                            <line x1="8" y1="21" x2="16" y2="21"></line>
+                                            <line x1="12" y1="17" x2="12" y2="21"></line>
+                                        </svg>
+                                        Sequence Configuration
+                                    </div>
+                                    <div class="param-grid">
+                                        <div class="param-control">
+                                            <div class="param-label">
+                                                <span>Max Sequence Length</span>
+                                                <span class="param-value" id="seqValue">2048</span>
+                                            </div>
+                                            <input type="range" class="param-slider" min="512" max="8192" step="512" value="2048" id="seqSlider">
+                                        </div>
+                                        <div class="param-control">
+                                            <div class="param-label">
+                                                <span>Gradient Accumulation</span>
+                                                <span class="param-value" id="gradValue">4</span>
+                                            </div>
+                                            <input type="range" class="param-slider" min="1" max="16" step="1" value="4" id="gradSlider">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Wizard Actions -->
+                            <div class="wizard-actions">
+                                <button class="btn btn-secondary" id="prevBtn" style="visibility: hidden;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="15 18 9 12 15 6"></polyline>
+                                    </svg>
+                                    Previous
+                                </button>
+                                <button class="btn btn-primary" id="nextBtn">
+                                    Next
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Preview Panel -->
+                        <div class="preview-panel">
+                            <div class="preview-header">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <span class="preview-title">Configuration Preview</span>
+                            </div>
+                            <div class="preview-body">
+                                <div class="preview-section">
+                                    <div class="preview-label">Model ID</div>
+                                    <div class="preview-value" id="previewModelId">my-custom-llama-v1</div>
+                                </div>
+                                <div class="preview-section">
+                                    <div class="preview-label">Base Model</div>
+                                    <div class="preview-value" id="previewBaseModel">meta-llama/Meta-Llama-3-8B-Instruct</div>
+                                </div>
+                                <div class="preview-section">
+                                    <div class="preview-label">Training Config</div>
+                                    <div class="preview-config" id="previewConfig">
+                                        <span class="key">"method"</span>: <span class="string">"full"</span>,<br>
+                                        <span class="key">"precision"</span>: <span class="string">"fp16"</span>,<br>
+                                        <span class="key">"learning_rate"</span>: <span class="number">2e-4</span>,<br>
+                                        <span class="key">"batch_size"</span>: <span class="number">32</span>,<br>
+                                        <span class="key">"epochs"</span>: <span class="number">3</span>,<br>
+                                        <span class="key">"lora_r"</span>: <span class="number">64</span>,<br>
+                                        <span class="key">"lora_alpha"</span>: <span class="number">16</span>,<br>
+                                        <span class="key">"max_seq_length"</span>: <span class="number">2048</span>
+                                    </div>
+                                </div>
+                                <div class="preview-section">
+                                    <div class="preview-label">Estimated Resources</div>
+                                    <div class="resource-bar">
+                                        <div class="resource-header">
+                                            <span class="resource-label">GPU Memory</span>
+                                            <span class="resource-value">~48 GB</span>
+                                        </div>
+                                        <div class="resource-track">
+                                            <div class="resource-fill gpu" style="width: 60%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="resource-bar">
+                                        <div class="resource-header">
+                                            <span class="resource-label">System RAM</span>
+                                            <span class="resource-value">~128 GB</span>
+                                        </div>
+                                        <div class="resource-track">
+                                            <div class="resource-fill memory" style="width: 40%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="resource-bar">
+                                        <div class="resource-header">
+                                            <span class="resource-label">Storage</span>
+                                            <span class="resource-value">~25 GB</span>
+                                        </div>
+                                        <div class="resource-track">
+                                            <div class="resource-fill storage" style="width: 25%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="cost-estimate">
+                                    <div class="cost-header">
+                                        <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="12" y1="1" x2="12" y2="23"></line>
+                                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                        </svg>
+                                        <span class="cost-title">Estimated Cost</span>
+                                    </div>
+                                    <div class="cost-breakdown">
+                                        <div class="cost-item">
+                                            <span class="cost-item-name">Compute (A100×4)</span>
+                                            <span class="cost-item-value">$12.40/hr</span>
+                                        </div>
+                                        <div class="cost-item">
+                                            <span class="cost-item-name">Training Duration</span>
+                                            <span class="cost-item-value">~4.5 hours</span>
+                                        </div>
+                                        <div class="cost-total">
+                                            <span class="cost-item-name">Total Estimate</span>
+                                            <span class="cost-total-value">~$55.80</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Wizard State
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        // DOM Elements
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stepContents = document.querySelectorAll('.step-content');
+        const steps = document.querySelectorAll('.step');
+        const connectors = document.querySelectorAll('.step-connector');
+
+        // Update Wizard State
+        function updateWizard() {
+            // Update step indicators
+            steps.forEach((step, index) => {
+                const stepNum = index + 1;
+                step.classList.remove('active', 'completed');
+                if (stepNum === currentStep) {
+                    step.classList.add('active');
+                } else if (stepNum < currentStep) {
+                    step.classList.add('completed');
+                    step.querySelector('.step-circle').innerHTML = '✓';
+                } else {
+                    step.querySelector('.step-circle').innerHTML = stepNum;
+                }
+            });
+
+            // Update connectors
+            connectors.forEach((conn, index) => {
+                conn.classList.toggle('completed', index < currentStep - 1);
+            });
+
+            // Show/hide step content
+            stepContents.forEach(content => {
+                content.classList.toggle('active', parseInt(content.dataset.step) === currentStep);
+            });
+
+            // Update buttons
+            prevBtn.style.visibility = currentStep === 1 ? 'hidden' : 'visible';
+            nextBtn.innerHTML = currentStep === totalSteps 
+                ? 'Create Model <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+                : 'Next <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+        }
+
+        // Navigation
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateWizard();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateWizard();
+            } else {
+                alert('Model creation initiated! Redirecting to training dashboard...');
+            }
+        });
+
+        // Model Card Selection
+        document.querySelectorAll('.model-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.model-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                updatePreview();
+            });
+        });
+
+        // Architecture Option Selection
+        document.querySelectorAll('.arch-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const parent = option.parentElement;
+                parent.querySelectorAll('.arch-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                updatePreview();
+            });
+        });
+
+        // Slider Updates
+        const sliderConfigs = [
+            { id: 'lrSlider', display: 'lrValue', values: ['1e-4', '2e-4', '5e-4', '1e-3', '2e-3', '5e-3'] },
+            { id: 'batchSlider', display: 'batchValue', suffix: '' },
+            { id: 'epochSlider', display: 'epochValue', suffix: '' },
+            { id: 'warmupSlider', display: 'warmupValue', suffix: '' },
+            { id: 'rankSlider', display: 'rankValue', suffix: '' },
+            { id: 'alphaSlider', display: 'alphaValue', suffix: '' },
+            { id: 'dropoutSlider', display: 'dropoutValue', suffix: '' },
+            { id: 'decaySlider', display: 'decayValue', suffix: '' },
+            { id: 'seqSlider', display: 'seqValue', suffix: '' },
+            { id: 'gradSlider', display: 'gradValue', suffix: '' }
+        ];
+
+        sliderConfigs.forEach(config => {
+            const slider = document.getElementById(config.id);
+            const display = document.getElementById(config.display);
+            if (!slider || !display) return;
+
+            slider.addEventListener('input', () => {
+                if (config.values) {
+                    display.textContent = config.values[slider.value - 1];
+                } else {
+                    display.textContent = slider.value + (config.suffix || '');
+                }
+                updatePreview();
+            });
+        });
+
+        // Model Name Update
+        document.getElementById('modelName')?.addEventListener('input', (e) => {
+            document.getElementById('previewModelId').textContent = e.target.value || 'untitled-model';
+        });
+
+        // Update Preview Configuration
+        function updatePreview() {
+            const selectedModel = document.querySelector('.model-card.selected');
+            const baseModelName = selectedModel?.querySelector('.model-name')?.textContent || 'Llama 3 8B';
+            const modelMap = {
+                'Llama 3 8B': 'meta-llama/Meta-Llama-3-8B-Instruct',
+                'Llama 3 70B': 'meta-llama/Meta-Llama-3-70B-Instruct',
+                'Mistral 7B': 'mistralai/Mistral-7B-Instruct-v0.3',
+                'Mixtral 8x7B': 'mistralai/Mixtral-8x7B-Instruct-v0.1',
+                'Qwen2 72B': 'Qwen/Qwen2-72B-Instruct',
+                'Custom Import': 'custom/import-path'
+            };
+            document.getElementById('previewBaseModel').textContent = modelMap[baseModelName] || modelMap['Llama 3 8B'];
+
+            // Get method and precision
+            const selectedMethod = document.querySelector('.arch-option.selected .arch-name')?.textContent || 'Full Fine-tuning';
+            const methodMap = {
+                'Full Fine-tuning': 'full',
+                'LoRA (Low-Rank Adaptation)': 'lora',
+                'QLoRA (Quantized LoRA)': 'qlora',
+                'DoRA (Weight-Decomposed LoRA)': 'dora'
+            };
+
+            const configHTML = `
+                <span class="key">"method"</span>: <span class="string">"${methodMap[selectedMethod] || 'full'}"</span>,<br>
+                <span class="key">"precision"</span>: <span class="string">"${document.getElementById('lrValue')?.textContent?.includes('e') ? 'fp16' : 'bf16'}"</span>,<br>
+                <span class="key">"learning_rate"</span>: <span class="number">${document.getElementById('lrValue')?.textContent || '2e-4'}</span>,<br>
+                <span class="key">"batch_size"</span>: <span class="number">${document.getElementById('batchValue')?.textContent || '32'}</span>,<br>
+                <span class="key">"epochs"</span>: <span class="number">${document.getElementById('epochValue')?.textContent || '3'}</span>,<br>
+                <span class="key">"lora_r"</span>: <span class="number">${document.getElementById('rankValue')?.textContent || '64'}</span>,<br>
+                <span class="key">"lora_alpha"</span>: <span class="number">${document.getElementById('alphaValue')?.textContent || '16'}</span>,<br>
+                <span class="key">"max_seq_length"</span>: <span class="number">${document.getElementById('seqValue')?.textContent || '2048'}</span>
+            `;
+            document.getElementById('previewConfig').innerHTML = configHTML;
+        }
+
+        // Initialize
+        updateWizard();
+    </script>
+</body>
+</html>

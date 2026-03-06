@@ -1,0 +1,340 @@
+{% extends "app_base.html" %}
+
+{% block title %}Audit - ORDL Security{% endblock %}
+{% block page_id %}audit-page{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/security/audit.css') }}">
+{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item">Security</span>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item active">Audit</span>
+{% endblock %}
+
+{% block content_header %}
+<h1>Audit Stream</h1>
+<p>Immutable audit log with filters, export jobs, and evidence package management</p>
+{% endblock %}
+
+{% block content %}
+<div class="audit-container">
+    
+    <!-- Audit Stats -->
+    <div class="audit-section">
+        <div class="audit-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-value">2.4M</span>
+                    <span class="stat-label">Events (24h)</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon success">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-value">99.97%</span>
+                    <span class="stat-label">Integrity Verified</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-value">847</span>
+                    <span class="stat-label">Exports</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-value">156</span>
+                    <span class="stat-label">Evidence Packages</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Stream with Filters -->
+    <div class="audit-section">
+        <div class="section-header">
+            <div class="audit-filters">
+                <div class="filter-group">
+                    <div class="search-box">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.3-4.3"/>
+                        </svg>
+                        <input type="text" placeholder="Search events..." id="auditSearch">
+                    </div>
+                    <select class="filter-select" id="severityFilter">
+                        <option value="">All Severity</option>
+                        <option value="critical">Critical</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                        <option value="info">Info</option>
+                    </select>
+                    <select class="filter-select" id="categoryFilter">
+                        <option value="">All Categories</option>
+                        <option value="auth">Authentication</option>
+                        <option value="access">Access Control</option>
+                        <option value="data">Data Operations</option>
+                        <option value="model">Model Operations</option>
+                        <option value="admin">Administrative</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <input type="datetime-local" class="filter-date" id="startDate" placeholder="Start">
+                    <span class="date-separator">to</span>
+                    <input type="datetime-local" class="filter-date" id="endDate" placeholder="End">
+                </div>
+            </div>
+            <div class="section-actions">
+                <button class="btn" data-action="export-filtered">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Export
+                </button>
+                <button class="btn btn-amber" data-action="create-evidence">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                    Create Evidence
+                </button>
+            </div>        </div>
+
+        <div class="audit-stream">
+            <div class="stream-header">
+                <div class="stream-info">
+                    <span class="stream-status">
+                        <span class="status-dot live"></span>
+                        Live Stream
+                    </span>
+                    <span class="stream-stats">Showing 50 of 2,423,891 events</span>
+                </div>
+                <div class="stream-controls">
+                    <button class="btn btn-sm" data-action="pause-stream">Pause</button>
+                    <button class="btn btn-sm" data-action="jump-now">Jump to Now</button>
+                </div>
+            </div>
+            <div class="stream-content" id="auditStream">
+                {% for event in events if events else [
+                    {'timestamp': '2024-03-07 00:33:42.123', 'severity': 'info', 'category': 'auth', 'actor': 'user_8xK2mN', 'action': 'LOGIN_SUCCESS', 'resource': 'session_9a4f', 'details': 'MFA verified from 10.0.1.42'},
+                    {'timestamp': '2024-03-07 00:33:38.456', 'severity': 'high', 'category': 'access', 'actor': 'user_9pL4qR', 'action': 'ACCESS_DENIED', 'resource': 'dataset_42', 'details': 'Insufficient clearance: L2 < L4 required'},
+                    {'timestamp': '2024-03-07 00:33:35.789', 'severity': 'info', 'category': 'model', 'actor': 'svc_inference_api', 'action': 'INFERENCE_REQUEST', 'resource': 'model_gpt4_01', 'details': 'Tokens: 1,247 input, 342 output'},
+                    {'timestamp': '2024-03-07 00:33:32.012', 'severity': 'medium', 'category': 'admin', 'actor': 'user_admin_001', 'action': 'POLICY_MODIFIED', 'resource': 'policy_clearance_003', 'details': 'Changed default clearance from L2 to L3'},
+                    {'timestamp': '2024-03-07 00:33:28.345', 'severity': 'critical', 'category': 'auth', 'actor': 'unknown', 'action': 'BRUTE_FORCE_ATTEMPT', 'resource': 'user_7mN3pQ', 'details': '5 failed attempts from 192.168.1.100'},
+                    {'timestamp': '2024-03-07 00:33:25.678', 'severity': 'info', 'category': 'data', 'actor': 'seat_127', 'action': 'DATA_READ', 'resource': 'dataset_analytics_05', 'details': 'Rows accessed: 10,247'},
+                    {'timestamp': '2024-03-07 00:33:22.901', 'severity': 'low', 'category': 'access', 'actor': 'user_8xK2mN', 'action': 'SEAT_SWITCHED', 'resource': 'seat_045', 'details': 'Switched from seat_127'},
+                    {'timestamp': '2024-03-07 00:33:19.234', 'severity': 'info', 'category': 'model', 'actor': 'svc_training_pipeline', 'action': 'TRAINING_STARTED', 'resource': 'model_fine_tune_12', 'details': 'Dataset: training_data_v3, Epochs: 5'}
+                ] %}
+                <div class="audit-event {{ event.severity }}">
+                    <div class="event-timestamp">
+                        <span class="time">{{ event.timestamp.split(' ')[1] }}</span>
+                        <span class="date">{{ event.timestamp.split(' ')[0] }}</span>
+                    </div>
+                    <div class="event-severity">
+                        <span class="severity-badge {{ event.severity }}">{{ event.severity|upper }}</span>
+                    </div>
+                    <div class="event-category">
+                        <span class="category-badge">{{ event.category|upper }}</span>
+                    </div>
+                    <div class="event-actor">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <span class="actor-id" title="{{ event.actor }}">{{ event.actor[:12] }}...</span>
+                    </div>
+                    <div class="event-action">
+                        <span class="action-name">{{ event.action }}</span>
+                    </div>
+                    <div class="event-resource">
+                        <span class="resource-label">on</span>
+                        <span class="resource-id" title="{{ event.resource }}">{{ event.resource }}</span>
+                    </div>
+                    <div class="event-details">
+                        <span>{{ event.details }}</span>
+                    </div>
+                    <div class="event-hash">
+                        <span class="hash-prefix">#</span>
+                        <span class="hash-value">{{ loop.index|string|hash|default('a1b2c3')[:6] }}</span>
+                    </div>
+                    <div class="event-actions">
+                        <button class="action-btn" title="View Details">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="stream-footer">
+                <button class="btn btn-load-more" data-action="load-more">Load More Events</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Jobs -->
+    <div class="audit-section">
+        <div class="section-header">
+            <h2>Export Jobs</h2>
+            <button class="btn btn-amber" data-action="new-export">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                New Export
+            </button>
+        </div>
+        <div class="exports-table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Job ID</th>
+                        <th>Date Range</th>
+                        <th>Filters</th>
+                        <th>Events</th>
+                        <th>Size</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in exports if exports else [
+                        {'id': 'exp_847', 'start': '2024-03-01', 'end': '2024-03-07', 'filters': 'severity=high,critical', 'events': 15234, 'size': '24.5 MB', 'status': 'completed', 'created': '2024-03-07 00:15'},
+                        {'id': 'exp_846', 'start': '2024-02-01', 'end': '2024-02-29', 'filters': 'category=auth', 'events': 892341, 'size': '1.2 GB', 'status': 'completed', 'created': '2024-03-01 09:30'},
+                        {'id': 'exp_845', 'start': '2024-03-06', 'end': '2024-03-06', 'filters': 'none', 'events': 2456789, 'size': '3.4 GB', 'status': 'processing', 'created': '2024-03-07 00:00'},
+                        {'id': 'exp_844', 'start': '2024-01-01', 'end': '2024-01-31', 'filters': 'actor=user_admin_001', 'events': 5234, 'size': '8.2 MB', 'status': 'completed', 'created': '2024-02-01 10:00'}
+                    ] %}
+                    <tr>
+                        <td><code>{{ job.id }}</code></td>
+                        <td>{{ job.start }} → {{ job.end }}</td>
+                        <td><span class="filter-tag">{{ job.filters[:30] }}{% if job.filters|length > 30 %}...{% endif %}</span></td>
+                        <td>{{ job.events|number_format }}</td>
+                        <td>{{ job.size }}</td>
+                        <td><span class="status-badge {{ job.status }}">{{ job.status|title }}</span></td>
+                        <td>{{ job.created }}</td>
+                        <td>
+                            <div class="actions">
+                                {% if job.status == 'completed' %}
+                                <button class="btn btn-sm" data-action="download" data-job="{{ job.id }}">Download</button>
+                                <button class="btn btn-sm" data-action="verify" data-job="{{ job.id }}">Verify</button>
+                                {% endif %}
+                                <button class="action-btn" data-action="delete-job" data-job="{{ job.id }}">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6"/>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Evidence Packages -->
+    <div class="audit-section">
+        <div class="section-header">
+            <h2>Evidence Packages</h2>
+            <button class="btn btn-amber" data-action="package-evidence">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                New Package
+            </button>
+        </div>
+        <div class="evidence-grid">
+            {% for pkg in evidence if evidence else [
+                {'id': 'evp_156', 'name': 'Security Incident #2024-001', 'case': 'CASE-2024-001', 'events': 342, 'size': '2.1 MB', 'created': '2024-03-05', 'expires': '2027-03-05', 'custodian': 'Security Team'},
+                {'id': 'evp_155', 'name': 'Compliance Audit Q1', 'case': 'AUDIT-2024-Q1', 'events': 12567, 'size': '45.3 MB', 'created': '2024-03-01', 'expires': '2029-03-01', 'custodian': 'Compliance'},
+                {'id': 'evp_154', 'name': 'Access Review - Finance', 'case': 'REVIEW-2024-003', 'events': 892, 'size': '5.7 MB', 'created': '2024-02-28', 'expires': '2026-02-28', 'custodian': 'Internal Audit'},
+                {'id': 'evp_153', 'name': 'Data Exfiltration Investigation', 'case': 'INC-2024-042', 'events': 5673, 'size': '28.9 MB', 'created': '2024-02-15', 'expires': '2027-02-15', 'custodian': 'Security Team'}
+            ] %}
+            <div class="evidence-card">
+                <div class="evidence-header">
+                    <div class="evidence-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <div class="evidence-info">
+                        <h4>{{ pkg.name }}</h4>
+                        <span class="evidence-id">{{ pkg.id }} | {{ pkg.case }}</span>
+                    </div>
+                </div>
+                <div class="evidence-stats">
+                    <div class="stat">
+                        <span class="stat-label">Events</span>
+                        <span class="stat-value">{{ pkg.events|number_format }}</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Size</span>
+                        <span class="stat-value">{{ pkg.size }}</span>
+                    </div>
+                </div>
+                <div class="evidence-meta">
+                    <div class="meta-row">
+                        <span class="meta-label">Created</span>
+                        <span class="meta-value">{{ pkg.created }}</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">Retention</span>
+                        <span class="meta-value">until {{ pkg.expires }}</span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label">Custodian</span>
+                        <span class="meta-value">{{ pkg.custodian }}</span>
+                    </div>
+                </div>
+                <div class="evidence-footer">
+                    <div class="integrity-check">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Integrity Verified
+                    </div>
+                    <div class="evidence-actions">
+                        <button class="btn btn-sm" data-action="download-pkg" data-pkg="{{ pkg.id }}">Download</button>
+                        <button class="btn btn-sm" data-action="chain-pkg" data-pkg="{{ pkg.id }}">View Chain</button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/security/audit.js') }}"></script>
+{% endblock %}

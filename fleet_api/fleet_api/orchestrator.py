@@ -1088,12 +1088,14 @@ class FleetOrchestrator:
         return fallback or self._read_ordlctl_json_key(key)
 
     def _run_ordlctl(self, args: list[str], timeout: int = 60) -> dict[str, Any]:
-        candidates = ["ordlctl", "ordlctl.cmd"]
+        candidates = ["ordlctl", "ordlctl.cmd", "openclaw", "openclaw.cmd"]
         roaming = Path.home() / "AppData" / "Roaming" / "npm"
         candidates.append(str(roaming / "ordlctl.cmd"))
         candidates.append(str(roaming / "ordlctl"))
+        candidates.append(str(roaming / "openclaw.cmd"))
+        candidates.append(str(roaming / "openclaw"))
 
-        last = {"ok": False, "stdout": "", "stderr": "ordlctl executable not found", "returncode": -1}
+        last = {"ok": False, "stdout": "", "stderr": "cli executable not found (tried ordlctl/openclaw)", "returncode": -1}
         for bin_path in candidates:
             res = run_local([bin_path, *args], timeout=timeout)
             if res["ok"]:
@@ -1144,8 +1146,8 @@ class FleetOrchestrator:
         return client
 
     def _remote_run(self, client: paramiko.SSHClient, command: str, timeout: int = 120) -> dict[str, Any]:
-        try:
-            payload = base64.b64encode(command.encode("utf-8")).decode("ascii")
+        def _exec(raw_command: str) -> dict[str, Any]:
+            payload = base64.b64encode(raw_command.encode("utf-8")).decode("ascii")
             wrapped = (
                 "python3 - <<'PY'\n"
                 "import base64\n"
@@ -1167,8 +1169,23 @@ class FleetOrchestrator:
                 "returncode": rc,
                 "stdout": out.strip(),
                 "stderr": err.strip(),
-                "command": command,
+                "command": raw_command,
             }
+
+        try:
+            result = _exec(command)
+            if result["ok"]:
+                return result
+            stderr = (result.get("stderr") or "").lower()
+            if "ordlctl: command not found" in stderr and "ordlctl" in command:
+                fallback_command = command.replace("ordlctl", "openclaw")
+                fallback = _exec(fallback_command)
+                if fallback["ok"]:
+                    return fallback
+                # Keep the original command visible but append fallback diagnostics.
+                fallback_err = fallback.get("stderr", "")
+                result["stderr"] = f"{result.get('stderr', '')}\nfallback(openclaw): {fallback_err}".strip()
+            return result
         except Exception as exc:  # noqa: BLE001
             return {
                 "ok": False,

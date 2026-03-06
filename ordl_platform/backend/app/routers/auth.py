@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.common import ensure_user_scope
-from app.db import get_db
+from app.db import enable_rls_bypass, get_db
 from app.models import Tenant, User
 from app.schemas import TokenRequest, TokenResponse
 from app.security import Principal, create_access_token, get_current_principal
@@ -22,6 +22,9 @@ def issue_token(payload: TokenRequest, db: Session = Depends(get_db)) -> TokenRe
     settings = get_settings()
     if settings.oidc_required and not settings.allow_local_token_issuer:
         raise HTTPException(status_code=403, detail="local token issuance disabled in oidc-required mode")
+
+    # Token issuance runs before a tenant-scoped identity exists.
+    enable_rls_bypass(db)
 
     tenant = db.scalar(select(Tenant).where(Tenant.name == payload.tenant_name))
     if tenant is None:

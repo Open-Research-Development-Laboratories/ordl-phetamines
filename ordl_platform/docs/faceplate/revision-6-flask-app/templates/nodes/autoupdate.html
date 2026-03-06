@@ -1,0 +1,290 @@
+{% extends "layouts/app_base.html" %}
+
+{% block title %}Node Auto-Update - ORDL{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="/app/nodes">Nodes</a>
+    <span class="separator">/</span>
+    <span>Auto-Update</span>
+</div>
+{% endblock %}
+
+{% block header_actions %}
+<button class="header-btn">View History</button>
+<button class="header-btn">Emergency Stop</button>
+<button class="header-btn primary">Trigger Update</button>
+{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section">
+    <div class="nav-title">Platform</div>
+    <a href="/app/nodes/discovery" class="nav-item">
+        <span class="nav-icon">◐</span>
+        <span>Discovery</span>
+    </a>
+    <a href="/app/nodes/autoupdate" class="nav-item active">
+        <span class="nav-icon">↻</span>
+        <span>Auto-Update</span>
+    </a>
+    <a href="/app/health" class="nav-item">
+        <span class="nav-icon">♥</span>
+        <span>Health</span>
+    </a>
+    <a href="/app/incidents" class="nav-item">
+        <span class="nav-icon">⚠</span>
+        <span>Incidents</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Model Engineering</div>
+    <a href="/app/models/workshop" class="nav-item">
+        <span class="nav-icon">◈</span>
+        <span>Workshop</span>
+    </a>
+    <a href="/app/models/training" class="nav-item">
+        <span class="nav-icon">▶</span>
+        <span>Training</span>
+    </a>
+    <a href="/app/models/inference" class="nav-item">
+        <span class="nav-icon">⚡</span>
+        <span>Inference</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Data</div>
+    <a href="/app/data/pipelines" class="nav-item">
+        <span class="nav-icon">◆</span>
+        <span>Pipelines</span>
+    </a>
+    <a href="/app/data/datasets" class="nav-item">
+        <span class="nav-icon">◉</span>
+        <span>Datasets</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/nodes/autoupdate.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="autoupdate-container">
+    <!-- Update Rings -->
+    <div class="rings-panel">
+        <div class="card-header">Update Rings</div>
+        
+        <div class="ring-item">
+            <div class="ring-header">
+                <div class="ring-name">
+                    <span class="ring-badge canary">Canary</span>
+                    <span style="font-size: 13px; color: var(--text-primary);">2.4.1-rc1</span>
+                </div>
+                
+                <div class="ring-stats">
+                    <span>3 nodes</span>
+                    <span>Started 2h ago</span>
+                </div>
+            </div>
+            
+            <div class="ring-nodes">
+                <div class="ring-node">
+                    <span class="node-status updated"></span>
+                    <span class="node-info">canary-01.prod</span>
+                    <span class="node-version">2.4.1-rc1</span>
+                </div>
+                
+                <div class="ring-node">
+                    <span class="node-status updated"></span>
+                    <span class="node-info">canary-02.prod</span>
+                    <span class="node-version">2.4.1-rc1</span>
+                </div>
+                
+                <div class="ring-node">
+                    <span class="node-status updating"></span>
+                    <span class="node-info">canary-03.prod</span>
+                    <span class="node-version">2.4.0 → 2.4.1-rc1</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="ring-item">
+            <div class="ring-header">
+                <div class="ring-name">
+                    <span class="ring-badge staging">Staging</span>
+                    <span style="font-size: 13px; color: var(--text-primary);">2.4.0</span>
+                </div>
+                
+                <div class="ring-stats">
+                    <span>12 nodes</span>
+                    <span>Scheduled in 4h</span>
+                </div>
+            </div>
+            
+            <div class="ring-nodes">
+                <div class="ring-node">
+                    <span class="node-status pending"></span>
+                    <span class="node-info">staging-01.prod</span>
+                    <span class="node-version">2.3.8 → 2.4.0</span>
+                </div>
+                
+                <div class="ring-node">
+                    <span class="node-status pending"></span>
+                    <span class="node-info">staging-02.prod</span>
+                    <span class="node-version">2.3.8 → 2.4.0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="ring-item">
+            <div class="ring-header">
+                <div class="ring-name">
+                    <span class="ring-badge production">Production</span>
+                    <span style="font-size: 13px; color: var(--text-primary);">2.3.8</span>
+                </div>
+                
+                <div class="ring-stats">
+                    <span>156 nodes</span>
+                    <span>Pending approval</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <!-- Maintenance Windows -->
+        <div class="windows-panel">
+            <div class="panel-header">
+                <span>Maintenance Windows</span>
+                <button class="panel-btn">+ Add</button>
+            </div>
+            
+            <div class="window-item">
+                <div class="window-header">
+                    <span class="window-name">Staging Update Window</span>
+                    <span class="window-status active">Active</span>
+                </div>
+                
+                <div class="window-time">Tue, Thu 02:00-04:00 UTC</div>
+                <div class="window-zones">Zones: us-east-1, eu-west-1</div>
+            </div>
+            
+            <div class="window-item">
+                <div class="window-header">
+                    <span class="window-name">Production Update Window</span>
+                    <span class="window-status scheduled">Scheduled</span>
+                </div>
+                
+                <div class="window-time">Sat 02:00-06:00 UTC</div>
+                <div class="window-zones">Zones: all regions</div>
+            </div>
+        </div>
+        
+        <!-- No-Regression Checks -->
+        <div class="regression-panel">
+            <div class="panel-header">No-Regression Checks</div>
+            
+            <div class="check-item">
+                <span class="check-status pass">✓</span>
+                <div class="check-info">
+                    <div class="check-name">Unit Tests</div>
+                    <div class="check-desc">1,247 tests passed</div>
+                </div>
+            </div>
+            
+            <div class="check-item">
+                <span class="check-status pass">✓</span>
+                <div class="check-info">
+                    <div class="check-name">Integration Tests</div>
+                    <div class="check-desc">89 scenarios passed</div>
+                </div>
+            </div>
+            
+            <div class="check-item">
+                <span class="check-status pass">✓</span>
+                <div class="check-info">
+                    <div class="check-name">Performance Benchmarks</div>
+                    <div class="check-desc">Latency within 5% threshold</div>
+                </div>
+            </div>
+            
+            <div class="check-item">
+                <span class="check-status pending">○</span>
+                <div class="check-info">
+                    <div class="check-name">Smoke Tests (Canary)</div>
+                    <div class="check-desc">Waiting for 24h bake time</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rollback Safety -->
+        <div class="rollback-panel">
+            <div class="panel-header">Rollback Safety</div>
+            
+            <div class="rollback-status">
+                <div class="rollback-header">
+                    <span class="rollback-indicator"></span>
+                    <span class="rollback-title">Safe to Rollback</span>
+                </div>
+                
+                <div class="rollback-info">
+                    Snapshots retained for 7 days. Automatic rollback triggers 
+                    configured for error rate > 1% or latency > 200ms.
+                </div>
+            </div>
+            
+            <div class="snapshot-list">
+                <div class="snapshot-item">
+                    <span class="snapshot-version">v2.4.0</span>
+                    <span class="snapshot-time">2 days ago</span>
+                </div>
+                
+                <div class="snapshot-item">
+                    <span class="snapshot-version">v2.3.8</span>
+                    <span class="snapshot-time">2 weeks ago</span>
+                </div>
+                
+                <div class="snapshot-item">
+                    <span class="snapshot-version">v2.3.5</span>
+                    <span class="snapshot-time">1 month ago</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Progress -->
+<div class="update-progress">
+    <div class="update-header">
+        <span class="update-title">Current Update: 2.4.0 → 2.4.1-rc1</span>
+        <span class="update-status">● In Progress</span>
+    </div>
+    
+    <div class="update-stages">
+        <div class="update-stage completed">
+            <div class="stage-icon">✓</div>
+            <div class="stage-name">Validation</div>
+        </div>
+        
+        <div class="update-stage completed">
+            <div class="stage-icon">✓</div>
+            <div class="stage-name">Canary</div>
+        </div>
+        
+        <div class="update-stage active">
+            <div class="stage-icon">↻</div>
+            <div class="stage-name">Staging</div>
+        </div>
+        
+        <div class="update-stage">
+            <div class="stage-icon">○</div>
+            <div class="stage-name">Production</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script src="{{ url_for('static', filename='js/nodes/autoupdate.js') }}"></script>
+{% endblock %}

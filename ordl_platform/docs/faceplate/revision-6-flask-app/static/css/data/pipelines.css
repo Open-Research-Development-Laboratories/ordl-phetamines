@@ -1,0 +1,344 @@
+/* templates/data/pipelines.html - Data Pipelines Styles */
+
+.pipelines-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Stats Bar */
+.pipelines-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.pipelines-content {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 16px;
+}
+
+/* Jobs List */
+.jobs-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+}
+
+.jobs-toolbar {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-default);
+    display: flex;
+    gap: 12px;
+}
+
+.jobs-filter {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+}
+
+.job-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 80px;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    align-items: center;
+}
+
+.job-row:hover {
+    background: var(--bg-hover);
+}
+
+.job-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.job-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.job-icon.ingest { border-color: var(--info); color: var(--info); }
+.job-icon.clean { border-color: var(--success); color: var(--success); }
+.job-icon.label { border-color: var(--warning); color: var(--warning); }
+.job-icon.transform { border-color: var(--accent-primary); color: var(--accent-primary); }
+
+.job-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.job-name {
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.job-id {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+.job-type {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.job-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-badge {
+    padding: 2px 8px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-badge.running {
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-primary);
+    color: var(--accent-primary);
+}
+
+.status-badge.completed {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+.status-badge.failed {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--error);
+    color: var(--error);
+}
+
+.status-badge.queued {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    color: var(--text-muted);
+}
+
+.job-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.job-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--bg-tertiary);
+    overflow: hidden;
+}
+
+.job-progress-fill {
+    height: 100%;
+    background: var(--accent-primary);
+    transition: width 0.3s ease;
+}
+
+.job-progress-text {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+.job-time {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+}
+
+.job-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.job-btn {
+    padding: 4px 8px;
+    background: transparent;
+    border: 1px solid var(--border-default);
+    color: var(--text-muted);
+    font-size: 10px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.job-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* Quality Gates */
+.quality-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    margin-bottom: 16px;
+}
+
+.quality-gate {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.quality-gate:last-child {
+    border-bottom: none;
+}
+
+.gate-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.gate-name {
+    font-size: 12px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gate-status {
+    padding: 2px 8px;
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+.gate-status.pass {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+.gate-status.fail {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--error);
+    color: var(--error);
+}
+
+.gate-metrics {
+    display: flex;
+    gap: 16px;
+}
+
+.gate-metric {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.gate-metric span {
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+/* Retention Policies */
+.retention-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+}
+
+.retention-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.retention-item:last-child {
+    border-bottom: none;
+}
+
+.retention-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.retention-name {
+    font-size: 12px;
+    color: var(--text-primary);
+}
+
+.retention-desc {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.retention-value {
+    font-size: 12px;
+    color: var(--accent-primary);
+    font-family: var(--font-mono);
+}
+
+/* Pipeline DAG Preview */
+.dag-preview {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.dag-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.dag-canvas {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 20px;
+}
+
+.dag-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.dag-box {
+    padding: 12px 20px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    font-size: 12px;
+    text-align: center;
+    min-width: 100px;
+}
+
+.dag-box.active {
+    border-color: var(--accent-primary);
+    background: var(--accent-dim);
+}
+
+.dag-status {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.dag-arrow {
+    color: var(--text-muted);
+    font-size: 16px;
+}

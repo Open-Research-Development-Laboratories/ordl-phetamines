@@ -1,0 +1,579 @@
+{% extends "app_base.html" %}
+
+{% block title %}Dashboard — ORDL Control{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item">Control</span>
+<span class="breadcrumb-separator">›</span>
+<span class="breadcrumb-item">Dashboard</span>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+    /* Dashboard specific styles */
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .metric-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 8px;
+        padding: 20px;
+        transition: all var(--transition-fast);
+    }
+
+    .metric-card:hover {
+        border-color: var(--border-strong);
+        transform: translateY(-2px);
+    }
+
+    .metric-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 8px;
+    }
+
+    .metric-value {
+        font-family: var(--font-mono);
+        font-size: 32px;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .metric-value.healthy { color: var(--success); }
+    .metric-value.warning { color: var(--warning); }
+    .metric-value.error { color: var(--error); }
+
+    .metric-detail {
+        font-size: 13px;
+        color: var(--text-tertiary);
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .dashboard-widget {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .widget-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 16px;
+        background: var(--bg-tertiary);
+        border-bottom: 1px solid var(--border-default);
+    }
+
+    .widget-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .widget-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .widget-btn {
+        padding: 4px 8px;
+        background: var(--bg-hover);
+        border: 1px solid var(--border-default);
+        border-radius: 4px;
+        color: var(--text-secondary);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .widget-btn:hover {
+        background: var(--bg-active);
+        color: var(--text-primary);
+    }
+
+    .widget-content {
+        padding: 16px;
+        min-height: 200px;
+    }
+
+    /* Mini Topology */
+    .mini-topology {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        position: relative;
+    }
+
+    .topology-node {
+        position: absolute;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: 700;
+        font-family: var(--font-mono);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .topology-node:hover {
+        transform: scale(1.1);
+    }
+
+    .topology-node.coordinator {
+        background: var(--accent-primary);
+        color: var(--bg-primary);
+        box-shadow: 0 0 20px var(--accent-glow);
+        clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    }
+
+    .topology-node.worker {
+        background: var(--bg-tertiary);
+        border: 2px solid var(--cyan);
+        color: var(--cyan);
+        box-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    .topology-node.gateway {
+        background: var(--bg-tertiary);
+        border: 2px solid var(--purple);
+        color: var(--purple);
+        clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        box-shadow: 0 0 10px var(--purple-glow);
+    }
+
+    .topology-edge {
+        position: absolute;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--border-strong), transparent);
+        transform-origin: left center;
+    }
+
+    /* Incident List */
+    .incident-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .incident-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .incident-item:last-child {
+        border-bottom: none;
+    }
+
+    .incident-severity {
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .incident-severity.critical {
+        background: var(--error);
+        color: #fff;
+    }
+
+    .incident-severity.major {
+        background: var(--warning);
+        color: #000;
+    }
+
+    .incident-severity.minor {
+        background: var(--text-muted);
+        color: var(--text-primary);
+    }
+
+    .incident-content {
+        flex: 1;
+    }
+
+    .incident-title {
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 2px;
+        color: var(--text-primary);
+    }
+
+    .incident-meta {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    /* Activity Feed */
+    .activity-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .activity-item {
+        display: flex;
+        gap: 12px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        background: var(--bg-tertiary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .activity-content {
+        flex: 1;
+    }
+
+    .activity-text {
+        font-size: 13px;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+    }
+
+    .activity-time {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    /* Quick Actions */
+    .quick-actions-bar {
+        display: flex;
+        gap: 8px;
+        padding: 24px 0;
+        border-top: 1px solid var(--border-subtle);
+    }
+
+    .quick-actions-bar .btn {
+        padding: 12px 20px;
+    }
+
+    /* Approval Queue */
+    .approval-queue {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .approval-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-default);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .approval-item:hover {
+        border-color: var(--border-strong);
+        background: var(--bg-hover);
+    }
+
+    .approval-priority {
+        width: 4px;
+        height: 40px;
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+
+    .approval-priority.high { background: var(--error); }
+    .approval-priority.medium { background: var(--warning); }
+    .approval-priority.low { background: var(--success); }
+
+    .approval-info {
+        flex: 1;
+    }
+
+    .approval-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+    }
+
+    .approval-meta {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .approval-status {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .approval-status.pending {
+        background: var(--accent-dim);
+        color: var(--accent-primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .metrics-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div class="content-header-left">
+        <h1>Command Center</h1>
+        <p>Global fleet overview, active incidents, and deployment health</p>
+    </div>
+    <div class="time-selector btn-group">
+        <button class="btn">1h</button>
+        <button class="btn">6h</button>
+        <button class="btn active">24h</button>
+        <button class="btn">7d</button>
+    </div>
+</div>
+
+<div class="content-body">
+    <!-- Metrics Grid -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-label">Fleet Health</div>
+            <div class="metric-value healthy" id="fleetHealth">47/50</div>
+            <div class="metric-detail">3 degraded • 99.97% uptime</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Active Deployments</div>
+            <div class="metric-value warning" id="activeDeployments">12</div>
+            <div class="metric-detail">4 pending approval</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Policy Holds</div>
+            <div class="metric-value error" id="policyHolds">2</div>
+            <div class="metric-detail">Blocked for review</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-label">Agent Activity</div>
+            <div class="metric-value" id="agentActivity">23.4k</div>
+            <div class="metric-detail">messages/min • 23ms avg latency</div>
+        </div>
+    </div>
+
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+        <div class="dashboard-widget">
+            <div class="widget-header">
+                <span class="widget-title">Fleet Topology</span>
+                <div class="widget-actions">
+                    <button class="widget-btn" onclick="zoomTopology()">Zoom</button>
+                    <button class="widget-btn" onclick="refreshTopology()">Refresh</button>
+                </div>
+            </div>
+            <div class="widget-content">
+                <div class="mini-topology" id="miniTopology">
+                    <div class="topology-node coordinator" style="top: 50%; left: 50%; transform: translate(-50%, -50%);" title="Coordinator">C</div>
+                    <div class="topology-node worker" style="top: 20%; left: 25%;" title="Worker 1">W1</div>
+                    <div class="topology-node worker" style="top: 20%; left: 75%;" title="Worker 2">W2</div>
+                    <div class="topology-node worker" style="top: 70%; left: 25%;" title="Worker 3">W3</div>
+                    <div class="topology-node worker" style="top: 70%; left: 50%;" title="Worker 4">W4</div>
+                    <div class="topology-node gateway" style="top: 70%; left: 75%;" title="Gateway">G</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-widget">
+            <div class="widget-header">
+                <span class="widget-title">Active Incidents</span>
+                <div class="widget-actions">
+                    <button class="widget-btn" onclick="viewAllIncidents()">View All</button>
+                </div>
+            </div>
+            <div class="widget-content">
+                <div class="incident-list" id="incidentList">
+                    <div class="incident-item">
+                        <span class="incident-severity major">Major</span>
+                        <div class="incident-content">
+                            <div class="incident-title">Elevated latency in us-east-1</div>
+                            <div class="incident-meta">Started 12m ago • Investigating</div>
+                        </div>
+                    </div>
+                    <div class="incident-item">
+                        <span class="incident-severity minor">Minor</span>
+                        <div class="incident-content">
+                            <div class="incident-title">Node gamma-03 intermittent disconnect</div>
+                            <div class="incident-meta">Started 45m ago • Auto-recovery in progress</div>
+                        </div>
+                    </div>
+                    <div class="incident-item">
+                        <span class="incident-severity minor">Minor</span>
+                        <div class="incident-content">
+                            <div class="incident-title">Gateway latency spike detected</div>
+                            <div class="incident-meta">Started 1h ago • Monitoring</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row -->
+    <div class="dashboard-grid">
+        <div class="dashboard-widget">
+            <div class="widget-header">
+                <span class="widget-title">Approval Queue</span>
+                <div class="widget-actions">
+                    <button class="widget-btn" onclick="viewAllApprovals()">View All</button>
+                </div>
+            </div>
+            <div class="widget-content">
+                <div class="approval-queue" id="approvalQueue">
+                    <div class="approval-item" onclick="openApproval('dep-001')">
+                        <div class="approval-priority high"></div>
+                        <div class="approval-info">
+                            <div class="approval-title">Production Deployment v2.5.0</div>
+                            <div class="approval-meta">Requested by Sarah Chen • 15m ago</div>
+                        </div>
+                        <span class="approval-status pending">Pending</span>
+                    </div>
+                    <div class="approval-item" onclick="openApproval('dep-002')">
+                        <div class="approval-priority medium"></div>
+                        <div class="approval-info">
+                            <div class="approval-title">Model Update - Llama-3-70B</div>
+                            <div class="approval-meta">Requested by Mike Rodriguez • 1h ago</div>
+                        </div>
+                        <span class="approval-status pending">Pending</span>
+                    </div>
+                    <div class="approval-item" onclick="openApproval('dep-003')">
+                        <div class="approval-priority low"></div>
+                        <div class="approval-info">
+                            <div class="approval-title">Policy Change - Data Retention</div>
+                            <div class="approval-meta">Requested by Emily Taylor • 2h ago</div>
+                        </div>
+                        <span class="approval-status pending">Pending</span>
+                    </div>
+                    <div class="approval-item" onclick="openApproval('dep-004')">
+                        <div class="approval-priority medium"></div>
+                        <div class="approval-info">
+                            <div class="approval-title">Infrastructure Scaling Request</div>
+                            <div class="approval-meta">Requested by Auto-scaler • 3h ago</div>
+                        </div>
+                        <span class="approval-status pending">Pending</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-widget">
+            <div class="widget-header">
+                <span class="widget-title">Recent Activity</span>
+            </div>
+            <div class="widget-content">
+                <div class="activity-list" id="activityList">
+                    <div class="activity-item">
+                        <div class="activity-icon">🚀</div>
+                        <div class="activity-content">
+                            <div class="activity-text">Deployment v2.4.1 completed successfully to production</div>
+                            <div class="activity-time">2 minutes ago</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">⚠️</div>
+                        <div class="activity-content">
+                            <div class="activity-text">Policy hold triggered: Model deployment requires review</div>
+                            <div class="activity-time">15 minutes ago</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">✓</div>
+                        <div class="activity-content">
+                            <div class="activity-text">Auto-scaling: Added 3 worker nodes to handle load</div>
+                            <div class="activity-time">32 minutes ago</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon">🔧</div>
+                        <div class="activity-content">
+                            <div class="activity-text">Maintenance completed on gateway-us-east-1</div>
+                            <div class="activity-time">1 hour ago</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions-bar">
+        <button class="btn btn-danger" onclick="emergencyStop()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="6" y="6" width="12" height="12" rx="2"/>
+            </svg>
+            Emergency Stop
+        </button>
+        <button class="btn btn-primary" onclick="freezeDeployments()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="14" y="4" width="4" height="16"/>
+                <rect x="6" y="4" width="4" height="16"/>
+            </svg>
+            Freeze Deployments
+        </button>
+        <button class="btn" onclick="escalateIncident()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+            </svg>
+            Escalate Incident
+        </button>
+        <button class="btn" onclick="triggerReview()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/>
+                <path d="M3 3v9h9"/>
+            </svg>
+            Trigger Review
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/control/dashboard.js') }}"></script>
+{% endblock %}

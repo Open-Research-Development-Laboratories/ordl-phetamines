@@ -462,6 +462,21 @@ class ProviderCredential(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+class ConfigState(Base):
+    __tablename__ = "config_states"
+    __table_args__ = (UniqueConstraint("tenant_id", "scope_type", "scope_id", "config_key", name="uq_config_state_scope"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    tenant_id: Mapped[str] = mapped_column(String(36), ForeignKey("tenants.id"), index=True)
+    scope_type: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    scope_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True, default="global")
+    config_key: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
+    value_json: Mapped[str] = mapped_column(Text, default="{}")
+    updated_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 class ProtocolStandard(Base):
     __tablename__ = "protocol_standards"
     __table_args__ = (UniqueConstraint("tenant_id", "code", name="uq_protocol_standard_tenant_code"),)

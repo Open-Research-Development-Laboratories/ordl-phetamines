@@ -1,0 +1,394 @@
+{% extends "layouts/app_base.html" %}
+
+{% block title %}Data Pipelines - ORDL{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="/app/data">Data</a>
+    <span class="separator">/</span>
+    <span>Pipelines</span>
+</div>
+{% endblock %}
+
+{% block header_actions %}
+<button class="header-btn">Import Pipeline</button>
+<button class="header-btn primary">+ Create Pipeline</button>
+{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section">
+    <div class="nav-title">Data</div>
+    <a href="/app/data/pipelines" class="nav-item active">
+        <span class="nav-icon">◆</span>
+        <span>Pipelines</span>
+    </a>
+    <a href="/app/data/datasets" class="nav-item">
+        <span class="nav-icon">◉</span>
+        <span>Datasets</span>
+    </a>
+    <a href="/app/data/ingestion" class="nav-item">
+        <span class="nav-icon">▼</span>
+        <span>Ingestion</span>
+    </a>
+    <a href="/app/data/feature-store" class="nav-item">
+        <span class="nav-icon">◈</span>
+        <span>Feature Store</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Model Engineering</div>
+    <a href="/app/models/workshop" class="nav-item">
+        <span class="nav-icon">◈</span>
+        <span>Workshop</span>
+    </a>
+    <a href="/app/models/training" class="nav-item">
+        <span class="nav-icon">▶</span>
+        <span>Training</span>
+    </a>
+    <a href="/app/models/inference" class="nav-item">
+        <span class="nav-icon">⚡</span>
+        <span>Inference</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Platform</div>
+    <a href="/app/nodes/discovery" class="nav-item">
+        <span class="nav-icon">◐</span>
+        <span>Discovery</span>
+    </a>
+    <a href="/app/nodes/autoupdate" class="nav-item">
+        <span class="nav-icon">↻</span>
+        <span>Auto-Update</span>
+    </a>
+    <a href="/app/health" class="nav-item">
+        <span class="nav-icon">♥</span>
+        <span>Health</span>
+    </a>
+    <a href="/app/incidents" class="nav-item">
+        <span class="nav-icon">⚠</span>
+        <span>Incidents</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/data/pipelines.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="pipelines-container">
+    <!-- Stats Bar -->
+    <div class="pipelines-stats">
+        <div class="stat-box">
+            <span class="stat-value">42</span>
+            <span class="stat-label">Active Jobs</span>
+        </div>
+        
+        <div class="stat-box">
+            <span class="stat-value">8</span>
+            <span class="stat-label">Running</span>
+        </div>
+        
+        <div class="stat-box">
+            <span class="stat-value">1.2PB</span>
+            <span class="stat-label">Processed Today</span>
+        </div>
+        
+        <div class="stat-box">
+            <span class="stat-value">99.8%</span>
+            <span class="stat-label">Quality Gate Pass</span>
+        </div>
+    </div>
+    
+    <div class="pipelines-content">
+        <!-- Jobs List -->
+        <div class="jobs-panel">
+            <div class="jobs-toolbar">
+                <div class="jobs-filter">
+                    <select>
+                        <option>All Types</option>
+                        <option>Ingest</option>
+                        <option>Clean</option>
+                        <option>Label</option>
+                        <option>Transform</option>
+                    </select>
+                    
+                    <select>
+                        <option>All Status</option>
+                        <option>Running</option>
+                        <option>Completed</option>
+                        <option>Failed</option>
+                        <option>Queued</option>
+                    </select>
+                    
+                    <input type="search" placeholder="Search jobs..." style="flex: 1;">
+                </div>
+                
+                <button class="btn">Refresh</button>
+            </div>
+            
+            <div id="jobsList">
+                <!-- Ingest Job -->
+                <div class="job-row">
+                    <div class="job-info">
+                        <div class="job-icon ingest">▼</div>
+                        <div class="job-details">
+                            <span class="job-name">customer_stream_ingest</span>
+                            <span class="job-id">#pipe-8821</span>
+                        </div>
+                    </div>
+                    
+                    <span class="job-type">Ingest</span>
+                    
+                    <div class="job-status">
+                        <span class="status-badge running">● Running</span>
+                    </div>
+                    
+                    <div class="job-progress">
+                        <div class="job-progress-bar">
+                            <div class="job-progress-fill" style="width: 78%"></div>
+                        </div>
+                        <span class="job-progress-text">78% (45.2TB / 58TB)</span>
+                    </div>
+                    
+                    <span class="job-time">2h 14m</span>
+                    
+                    <div class="job-actions">
+                        <button class="job-btn">Logs</button>
+                        <button class="job-btn">Pause</button>
+                    </div>
+                </div>
+                
+                <!-- Clean Job -->
+                <div class="job-row">
+                    <div class="job-info">
+                        <div class="job-icon clean">✓</div>
+                        <div class="job-details">
+                            <span class="job-name">support_tickets_dedupe</span>
+                            <span class="job-id">#pipe-8820</span>
+                        </div>
+                    </div>
+                    
+                    <span class="job-type">Clean</span>
+                    
+                    <div class="job-status">
+                        <span class="status-badge completed">✓ Completed</span>
+                    </div>
+                    
+                    <div class="job-progress">
+                        <div class="job-progress-bar">
+                            <div class="job-progress-fill" style="width: 100%"></div>
+                        </div>
+                        <span class="job-progress-text">5.6TB processed</span>
+                    </div>
+                    
+                    <span class="job-time">45m</span>
+                    
+                    <div class="job-actions">
+                        <button class="job-btn">Logs</button>
+                        <button class="job-btn">Rerun</button>
+                    </div>
+                </div>
+                
+                <!-- Label Job -->
+                <div class="job-row">
+                    <div class="job-info">
+                        <div class="job-icon label">🏷</div>
+                        <div class="job-details">
+                            <span class="job-name">conversation_sentiment_label</span>
+                            <span class="job-id">#pipe-8819</span>
+                        </div>
+                    </div>
+                    
+                    <span class="job-type">Label</span>
+                    
+                    <div class="job-status">
+                        <span class="status-badge queued">○ Queued</span>
+                    </div>
+                    
+                    <div class="job-progress">
+                        <span class="job-progress-text">Waiting for resources...</span>
+                    </div>
+                    
+                    <span class="job-time">--</span>
+                    
+                    <div class="job-actions">
+                        <button class="job-btn">Edit</button>
+                        <button class="job-btn">Cancel</button>
+                    </div>
+                </div>
+                
+                <!-- Transform Job -->
+                <div class="job-row">
+                    <div class="job-info">
+                        <div class="job-icon transform">⚡</div>
+                        <div class="job-details">
+                            <span class="job-name">feature_vector_transform</span>
+                            <span class="job-id">#pipe-8818</span>
+                        </div>
+                    </div>
+                    
+                    <span class="job-type">Transform</span>
+                    
+                    <div class="job-status">
+                        <span class="status-badge failed">✕ Failed</span>
+                    </div>
+                    
+                    <div class="job-progress">
+                        <div class="job-progress-bar">
+                            <div class="job-progress-fill" style="width: 34%; background: var(--error)"></div>
+                        </div>
+                        <span class="job-progress-text">34% - Memory error</span>
+                    </div>
+                    
+                    <span class="job-time">12m</span>
+                    
+                    <div class="job-actions">
+                        <button class="job-btn">Logs</button>
+                        <button class="job-btn">Retry</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <!-- Quality Gates -->
+            <div class="quality-panel">
+                <div class="card-header">Quality Gates</div>
+                
+                <div class="quality-gate">
+                    <div class="gate-header">
+                        <span class="gate-name">
+                            <span class="status-dot online"></span>
+                            Schema Validation
+                        </span>
+                        <span class="gate-status pass">Pass</span>
+                    </div>
+                    
+                    <div class="gate-metrics">
+                        <span class="gate-metric">Errors: <span>0</span></span>
+                        <span class="gate-metric">Warnings: <span>12</span></span>
+                    </div>
+                </div>
+                
+                <div class="quality-gate">
+                    <div class="gate-header">
+                        <span class="gate-name">
+                            <span class="status-dot online"></span>
+                            Completeness Check
+                        </span>
+                        <span class="gate-status pass">Pass</span>
+                    </div>
+                    
+                    <div class="gate-metrics">
+                        <span class="gate-metric">Coverage: <span>99.8%</span></span>
+                        <span class="gate-metric">Nulls: <span>0.02%</span></span>
+                    </div>
+                </div>
+                
+                <div class="quality-gate">
+                    <div class="gate-header">
+                        <span class="gate-name">
+                            <span class="status-dot warning"></span>
+                            Anomaly Detection
+                        </span>
+                        <span class="gate-status fail">Fail</span>
+                    </div>
+                    
+                    <div class="gate-metrics">
+                        <span class="gate-metric">Anomalies: <span style="color: var(--error)">234</span></span>
+                        <span class="gate-metric">Threshold: <span><100</span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Retention Policies -->
+            <div class="retention-panel">
+                <div class="card-header">Retention Policies</div>
+                
+                <div class="retention-item">
+                    <div class="retention-info">
+                        <span class="retention-name">Raw Data</span>
+                        <span class="retention-desc">Delete after processing</span>
+                    </div>
+                    <span class="retention-value">7 days</span>
+                </div>
+                
+                <div class="retention-item">
+                    <div class="retention-info">
+                        <span class="retention-name">Processed Data</span>
+                        <span class="retention-desc">Archive to cold storage</span>
+                    </div>
+                    <span class="retention-value">90 days</span>
+                </div>
+                
+                <div class="retention-item">
+                    <div class="retention-info">
+                        <span class="retention-name">Labeled Data</span>
+                        <span class="retention-desc">Keep indefinitely</span>
+                    </div>
+                    <span class="retention-value">Forever</span>
+                </div>
+                
+                <div class="retention-item">
+                    <div class="retention-info">
+                        <span class="retention-name">Logs</span>
+                        <span class="retention-desc">Compliance retention</span>
+                    </div>
+                    <span class="retention-value">1 year</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pipeline DAG Preview -->
+    <div class="dag-preview">
+        <div class="dag-title">Pipeline Flow Preview: customer_data_pipeline</div>
+        
+        <div class="dag-canvas">
+            <div class="dag-node">
+                <div class="dag-box">
+                    <div style="font-size: 16px; margin-bottom: 4px;">▼</div>
+                    <div>Kafka Ingest</div>
+                </div>
+                <span class="dag-status">Running</span>
+            </div>
+            
+            <span class="dag-arrow">→</span>
+            
+            <div class="dag-node">
+                <div class="dag-box">
+                    <div style="font-size: 16px; margin-bottom: 4px;">✓</div>
+                    <div>Validation</div>
+                </div>
+                <span class="dag-status">Pass</span>
+            </div>
+            
+            <span class="dag-arrow">→</span>
+            
+            <div class="dag-node">
+                <div class="dag-box active">
+                    <div style="font-size: 16px; margin-bottom: 4px;">⚡</div>
+                    <div>Transform</div>
+                </div>
+                <span class="dag-status" style="color: var(--accent-primary)">Active</span>
+            </div>
+            
+            <span class="dag-arrow">→</span>
+            
+            <div class="dag-node">
+                <div class="dag-box">
+                    <div style="font-size: 16px; margin-bottom: 4px;">◉</div>
+                    <div>Data Lake</div>
+                </div>
+                <span class="dag-status">Pending</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script src="{{ url_for('static', filename='js/data/pipelines.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,668 @@
+/**
+ * ORDL Ultimate Platform - Design Tokens
+ * ======================================
+ * A comprehensive design system for monochrome machinery aesthetic
+ * Version: 1.0.0
+ */
+
+/* ============================================
+   1. COLOR PALETTE - Monochrome Machinery Theme
+   ============================================ */
+
+:root {
+  /* --------------------
+     Deep Charcoal Scale
+     From deepest to surface
+     -------------------- */
+  --color-charcoal-deepest: #0a0a0a;
+  --color-charcoal-900: #0f0f0f;
+  --color-charcoal-800: #141414;
+  --color-charcoal-700: #1a1a1a;
+  --color-charcoal-600: #1f1f1f;
+  --color-charcoal-500: #242424;
+  --color-charcoal-400: #2a2a2a;
+  --color-charcoal-300: #2f2f2f;
+  --color-charcoal-200: #353535;
+  --color-charcoal-100: #3a3a3a;
+
+  /* Short aliases for charcoal */
+  --color-bg-deepest: var(--color-charcoal-deepest);
+  --color-bg-darker: var(--color-charcoal-800);
+  --color-bg-dark: var(--color-charcoal-600);
+  --color-bg: var(--color-charcoal-400);
+  --color-bg-light: var(--color-charcoal-200);
+
+  /* --------------------
+     Warm Cream Scale
+     Primary text to muted
+     -------------------- */
+  --color-cream-50: #f5f2e9;
+  --color-cream-100: #e8e4d9;
+  --color-cream-200: #dbd6c9;
+  --color-cream-300: #cec8b9;
+  --color-cream-400: #c1baa9;
+  --color-cream-500: #b4ac99;
+  --color-cream-600: #a79e89;
+  --color-cream-700: #9a9079;
+  --color-cream-800: #8d8269;
+  --color-cream-900: #6a655a;
+
+  /* Short aliases for cream */
+  --color-text-primary: var(--color-cream-50);
+  --color-text-secondary: var(--color-cream-300);
+  --color-text-tertiary: var(--color-cream-500);
+  --color-text-muted: var(--color-cream-900);
+
+  /* --------------------
+     Amber Accents
+     Active states and highlights
+     -------------------- */
+  --color-amber-400: #ffb347;
+  --color-amber-500: #ffa42e;
+  --color-amber-600: #e89220;
+  --color-amber-glow: rgba(255, 179, 71, 0.6);
+  --color-amber-glow-strong: rgba(255, 179, 71, 0.85);
+  --color-amber-dim: rgba(255, 179, 71, 0.3);
+  --color-amber-subtle: rgba(255, 179, 71, 0.15);
+  --color-amber-faint: rgba(255, 179, 71, 0.08);
+
+  /* Amber aliases */
+  --color-accent: var(--color-amber-400);
+  --color-accent-hover: var(--color-amber-500);
+  --color-accent-active: var(--color-amber-600);
+
+  /* --------------------
+     Semantic Colors
+     Status and feedback
+     -------------------- */
+  /* Success - Industrial Green */
+  --color-success-400: #4ade80;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-glow: rgba(74, 222, 128, 0.5);
+  --color-success-dim: rgba(74, 222, 128, 0.2);
+  --color-success-bg: rgba(74, 222, 128, 0.1);
+
+  /* Warning - Amber/Orange */
+  --color-warning-400: #fb923c;
+  --color-warning-500: #f97316;
+  --color-warning-600: #ea580c;
+  --color-warning-glow: rgba(251, 146, 60, 0.5);
+  --color-warning-dim: rgba(251, 146, 60, 0.2);
+  --color-warning-bg: rgba(251, 146, 60, 0.1);
+
+  /* Error - Alert Red */
+  --color-error-400: #f87171;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-error-glow: rgba(248, 113, 113, 0.5);
+  --color-error-dim: rgba(248, 113, 113, 0.2);
+  --color-error-bg: rgba(248, 113, 113, 0.1);
+
+  /* Info - Signal Blue */
+  --color-info-400: #60a5fa;
+  --color-info-500: #3b82f6;
+  --color-info-600: #2563eb;
+  --color-info-glow: rgba(96, 165, 250, 0.5);
+  --color-info-dim: rgba(96, 165, 250, 0.2);
+  --color-info-bg: rgba(96, 165, 250, 0.1);
+
+  /* --------------------
+     Utility Colors
+     -------------------- */
+  --color-transparent: transparent;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-overlay: rgba(0, 0, 0, 0.7);
+  --color-overlay-light: rgba(0, 0, 0, 0.4);
+  --color-scrim: rgba(10, 10, 10, 0.85);
+
+  /* ============================================
+     2. TYPOGRAPHY SCALE
+     IBM Plex Mono for data/code, Space Grotesk for UI
+     ============================================ */
+
+  /* --------------------
+     Font Families
+     -------------------- */
+  --font-mono: 'IBM Plex Mono', 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+  --font-ui: 'Space Grotesk', 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
+
+  /* --------------------
+     Font Weights
+     -------------------- */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* --------------------
+     Type Scale - UI (Space Grotesk)
+     -------------------- */
+  --text-xs: 12px;
+  --text-xs-line-height: 16px;
+  --text-xs-letter-spacing: 0.01em;
+
+  --text-sm: 14px;
+  --text-sm-line-height: 20px;
+  --text-sm-letter-spacing: 0;
+
+  --text-base: 16px;
+  --text-base-line-height: 24px;
+  --text-base-letter-spacing: -0.01em;
+
+  --text-lg: 18px;
+  --text-lg-line-height: 28px;
+  --text-lg-letter-spacing: -0.01em;
+
+  --text-xl: 20px;
+  --text-xl-line-height: 28px;
+  --text-xl-letter-spacing: -0.02em;
+
+  --text-2xl: 24px;
+  --text-2xl-line-height: 32px;
+  --text-2xl-letter-spacing: -0.02em;
+
+  --text-3xl: 30px;
+  --text-3xl-line-height: 36px;
+  --text-3xl-letter-spacing: -0.02em;
+
+  --text-4xl: 36px;
+  --text-4xl-line-height: 40px;
+  --text-4xl-letter-spacing: -0.03em;
+
+  --text-5xl: 48px;
+  --text-5xl-line-height: 52px;
+  --text-5xl-letter-spacing: -0.03em;
+
+  /* --------------------
+     Type Scale - Mono (IBM Plex Mono)
+     For data, code, metrics
+     -------------------- */
+  --text-mono-xs: 11px;
+  --text-mono-xs-line-height: 16px;
+  --text-mono-xs-letter-spacing: 0.02em;
+
+  --text-mono-sm: 13px;
+  --text-mono-sm-line-height: 20px;
+  --text-mono-sm-letter-spacing: 0.01em;
+
+  --text-mono-base: 14px;
+  --text-mono-base-line-height: 22px;
+  --text-mono-base-letter-spacing: 0;
+
+  --text-mono-lg: 16px;
+  --text-mono-lg-line-height: 24px;
+  --text-mono-lg-letter-spacing: 0;
+
+  --text-mono-xl: 18px;
+  --text-mono-xl-line-height: 28px;
+  --text-mono-xl-letter-spacing: -0.01em;
+
+  --text-mono-2xl: 22px;
+  --text-mono-2xl-line-height: 32px;
+  --text-mono-2xl-letter-spacing: -0.01em;
+
+  /* --------------------
+     Typography Presets
+     -------------------- */
+  --font-ui-xs: var(--font-weight-regular) var(--text-xs) / var(--text-xs-line-height) var(--font-ui);
+  --font-ui-sm: var(--font-weight-regular) var(--text-sm) / var(--text-sm-line-height) var(--font-ui);
+  --font-ui-base: var(--font-weight-regular) var(--text-base) / var(--text-base-line-height) var(--font-ui);
+  --font-ui-lg: var(--font-weight-regular) var(--text-lg) / var(--text-lg-line-height) var(--font-ui);
+  --font-ui-xl: var(--font-weight-medium) var(--text-xl) / var(--text-xl-line-height) var(--font-ui);
+  --font-ui-2xl: var(--font-weight-medium) var(--text-2xl) / var(--text-2xl-line-height) var(--font-ui);
+  --font-ui-3xl: var(--font-weight-semibold) var(--text-3xl) / var(--text-3xl-line-height) var(--font-ui);
+  --font-ui-4xl: var(--font-weight-semibold) var(--text-4xl) / var(--text-4xl-line-height) var(--font-ui);
+  --font-ui-5xl: var(--font-weight-bold) var(--text-5xl) / var(--text-5xl-line-height) var(--font-ui);
+
+  --font-mono-xs: var(--font-weight-regular) var(--text-mono-xs) / var(--text-mono-xs-line-height) var(--font-mono);
+  --font-mono-sm: var(--font-weight-regular) var(--text-mono-sm) / var(--text-mono-sm-line-height) var(--font-mono);
+  --font-mono-base: var(--font-weight-regular) var(--text-mono-base) / var(--text-mono-base-line-height) var(--font-mono);
+  --font-mono-lg: var(--font-weight-regular) var(--text-mono-lg) / var(--text-mono-lg-line-height) var(--font-mono);
+  --font-mono-xl: var(--font-weight-medium) var(--text-mono-xl) / var(--text-mono-xl-line-height) var(--font-mono);
+  --font-mono-2xl: var(--font-weight-medium) var(--text-mono-2xl) / var(--text-mono-2xl-line-height) var(--font-mono);
+
+  /* ============================================
+     3. SPACING SCALE
+     4px base unit system
+     ============================================ */
+
+  /* --------------------
+     Base Spacing Scale
+     -------------------- */
+  --space-0: 0;
+  --space-px: 1px;
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-3-5: 14px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-9: 36px;
+  --space-10: 40px;
+  --space-11: 44px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-28: 112px;
+  --space-32: 128px;
+  --space-36: 144px;
+  --space-40: 160px;
+  --space-44: 176px;
+  --space-48: 192px;
+
+  /* --------------------
+     Component Spacing
+     -------------------- */
+  /* Button */
+  --button-padding-x: var(--space-4);
+  --button-padding-y: var(--space-2);
+  --button-padding-compact-x: var(--space-3);
+  --button-padding-compact-y: var(--space-1-5);
+  --button-gap: var(--space-2);
+  --button-icon-size: var(--space-4);
+
+  /* Card */
+  --card-padding: var(--space-5);
+  --card-padding-compact: var(--space-4);
+  --card-gap: var(--space-4);
+  --card-gap-tight: var(--space-3);
+  --card-header-gap: var(--space-2);
+
+  /* Input */
+  --input-padding-x: var(--space-3);
+  --input-padding-y: var(--space-2);
+  --input-height: 40px;
+  --input-height-sm: 32px;
+  --input-height-lg: 48px;
+
+  /* Form */
+  --form-gap: var(--space-4);
+  --form-label-gap: var(--space-1-5);
+  --form-helper-gap: var(--space-1);
+
+  /* List */
+  --list-item-padding: var(--space-3);
+  --list-item-gap: var(--space-3);
+  --list-gap: var(--space-0-5);
+
+  /* Table */
+  --table-cell-padding-x: var(--space-4);
+  --table-cell-padding-y: var(--space-3);
+  --table-header-padding-y: var(--space-2);
+
+  /* Modal/Dialog */
+  --modal-padding: var(--space-6);
+  --modal-gap: var(--space-5);
+  --modal-header-gap: var(--space-2);
+
+  /* Sidebar */
+  --sidebar-width: 240px;
+  --sidebar-width-collapsed: 64px;
+  --sidebar-padding: var(--space-3);
+  --sidebar-item-gap: var(--space-1);
+
+  /* Header */
+  --header-height: 64px;
+  --header-padding-x: var(--space-5);
+  --header-gap: var(--space-4);
+
+  /* ============================================
+     4. BORDER & RADIUS
+     Subtle hierarchy
+     ============================================ */
+
+  /* --------------------
+     Border Widths
+     -------------------- */
+  --border-width-0: 0;
+  --border-width-px: 1px;
+  --border-width-0-5: 0.5px;
+  --border-width-1: 1px;
+  --border-width-1-5: 1.5px;
+  --border-width-2: 2px;
+  --border-width-3: 3px;
+  --border-width-4: 4px;
+
+  /* --------------------
+     Border Colors
+     -------------------- */
+  --border-subtle: rgba(245, 242, 233, 0.06);
+  --border-default: rgba(245, 242, 233, 0.1);
+  --border-strong: rgba(245, 242, 233, 0.15);
+  --border-accent: var(--color-amber-dim);
+  --border-focus: var(--color-amber-glow);
+
+  /* --------------------
+     Border Radius
+     -------------------- */
+  --radius-none: 0;
+  --radius-tight: 2px;
+  --radius-sm: 3px;
+  --radius-default: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  /* --------------------
+     Border Presets
+     -------------------- */
+  --border-subtle-1: var(--border-width-1) solid var(--border-subtle);
+  --border-default-1: var(--border-width-1) solid var(--border-default);
+  --border-strong-1: var(--border-width-1) solid var(--border-strong);
+  --border-default-2: var(--border-width-2) solid var(--border-default);
+  --border-accent-1: var(--border-width-1) solid var(--border-accent);
+  --border-focus-2: var(--border-width-2) solid var(--border-focus);
+
+  /* ============================================
+     5. SHADOWS & GLOWS
+     Industrial depth and phosphor effects
+     ============================================ */
+
+  /* --------------------
+     Inner Shadows
+     For recessed elements
+     -------------------- */
+  --shadow-inner-sm: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+  --shadow-inner-md: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+  --shadow-inner-lg: inset 0 4px 8px rgba(0, 0, 0, 0.6);
+  --shadow-inner-xl: inset 0 6px 12px rgba(0, 0, 0, 0.6);
+  --shadow-inner-panel: inset 0 1px 0 rgba(0, 0, 0, 0.3), inset 0 -1px 0 rgba(255, 255, 255, 0.02);
+  --shadow-inner-well: inset 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(0, 0, 0, 0.4);
+
+  /* --------------------
+     Drop Shadows
+     For elevated elements
+     -------------------- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 6px 12px rgba(0, 0, 0, 0.45), 0 3px 6px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.5), 0 6px 10px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.6), 0 10px 20px rgba(0, 0, 0, 0.5);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.7);
+
+  /* --------------------
+     Phosphor Glow Effects
+     For active/focused states
+     -------------------- */
+  --glow-amber-sm: 0 0 4px var(--color-amber-glow);
+  --glow-amber: 0 0 8px var(--color-amber-glow);
+  --glow-amber-md: 0 0 12px var(--color-amber-glow);
+  --glow-amber-lg: 0 0 20px var(--color-amber-glow);
+  --glow-amber-xl: 0 0 32px var(--color-amber-glow-strong);
+  --glow-amber-ring: 0 0 0 2px var(--color-amber-subtle), 0 0 8px var(--color-amber-glow);
+
+  --glow-success-sm: 0 0 4px var(--color-success-glow);
+  --glow-success: 0 0 8px var(--color-success-glow);
+  --glow-success-md: 0 0 12px var(--color-success-glow);
+
+  --glow-warning-sm: 0 0 4px var(--color-warning-glow);
+  --glow-warning: 0 0 8px var(--color-warning-glow);
+  --glow-warning-md: 0 0 12px var(--color-warning-glow);
+
+  --glow-error-sm: 0 0 4px var(--color-error-glow);
+  --glow-error: 0 0 8px var(--color-error-glow);
+  --glow-error-md: 0 0 12px var(--color-error-glow);
+
+  --glow-info-sm: 0 0 4px var(--color-info-glow);
+  --glow-info: 0 0 8px var(--color-info-glow);
+  --glow-info-md: 0 0 12px var(--color-info-glow);
+
+  /* --------------------
+     Combined Shadow Presets
+     -------------------- */
+  --shadow-card: var(--shadow-sm);
+  --shadow-card-hover: var(--shadow-md);
+  --shadow-dropdown: var(--shadow-md);
+  --shadow-modal: var(--shadow-xl);
+  --shadow-tooltip: var(--shadow-sm);
+  --shadow-button-active: var(--shadow-inner-sm);
+  --shadow-input-focus: var(--glow-amber-sm);
+  --shadow-focus-ring: var(--glow-amber-ring);
+
+  /* ============================================
+     6. MOTION & TRANSITIONS
+     Mechanical feel with tactile response
+     ============================================ */
+
+  /* --------------------
+     Duration Scale
+     -------------------- */
+  --duration-instant: 0ms;
+  --duration-fast: 100ms;
+  --duration-base: 200ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+  --duration-slowest: 1000ms;
+
+  /* --------------------
+     Easing Curves
+     -------------------- */
+  --ease-linear: linear;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Mechanical/Tactile easings */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-snappy: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-heavy: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-mechanical: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-clunk: cubic-bezier(0.895, 0.03, 0.685, 0.22);
+
+  /* --------------------
+     Transition Presets
+     -------------------- */
+  --transition-fast: var(--duration-fast) var(--ease);
+  --transition-base: var(--duration-base) var(--ease);
+  --transition-slow: var(--duration-slow) var(--ease);
+
+  /* Property-specific transitions */
+  --transition-colors: color var(--duration-fast) var(--ease), 
+                       background-color var(--duration-fast) var(--ease), 
+                       border-color var(--duration-fast) var(--ease);
+  --transition-transform: transform var(--duration-base) var(--ease-snappy);
+  --transition-opacity: opacity var(--duration-fast) var(--ease);
+  --transition-shadow: box-shadow var(--duration-base) var(--ease);
+  --transition-all: all var(--duration-base) var(--ease);
+
+  /* UI Element transitions */
+  --transition-button: background-color var(--duration-fast) var(--ease),
+                       border-color var(--duration-fast) var(--ease),
+                       box-shadow var(--duration-fast) var(--ease),
+                       transform var(--duration-fast) var(--ease-spring);
+  --transition-input: border-color var(--duration-fast) var(--ease),
+                      box-shadow var(--duration-fast) var(--ease);
+  --transition-card: box-shadow var(--duration-base) var(--ease),
+                     transform var(--duration-base) var(--ease);
+  --transition-modal: opacity var(--duration-base) var(--ease),
+                      transform var(--duration-base) var(--ease-snappy);
+  --transition-dropdown: opacity var(--duration-fast) var(--ease-out),
+                         transform var(--duration-fast) var(--ease-out);
+
+  /* --------------------
+     Animation Keyframes (reference)
+     Use with animation property
+     -------------------- */
+  /* 
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: var(--glow-amber); }
+    50% { box-shadow: var(--glow-amber-md); }
+  }
+  
+  @keyframes slide-in-up {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  */
+
+  /* --------------------
+     Reduced Motion Support
+     -------------------- */
+  --duration-reduced: 0.01ms;
+  --ease-reduced: linear;
+
+  /* ============================================
+     7. Z-INDEX SCALE
+     Layer management from base to overlay
+     ============================================ */
+
+  /* --------------------
+     Z-Index Layers
+     -------------------- */
+  --z-base: 0;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-popover: 400;
+  --z-tooltip: 500;
+  --z-backdrop: 600;
+  --z-modal: 700;
+  --z-drawer: 800;
+  --z-toast: 900;
+  --z-overlay: 1000;
+  --z-max: 9999;
+
+  /* --------------------
+     Contextual Z-Index
+     -------------------- */
+  --z-below: -1;
+  --z-default: 1;
+  --z-above: 10;
+  --z-header: var(--z-fixed);
+  --z-sidebar: var(--z-fixed);
+  --z-fab: var(--z-fixed);
+
+  /* ============================================
+     8. ADDITIONAL TOKENS
+     Grid, breakpoints, and utilities
+     ============================================ */
+
+  /* --------------------
+     Grid
+     -------------------- */
+  --grid-columns: 12;
+  --grid-gap: var(--space-4);
+  --grid-gap-sm: var(--space-2);
+  --grid-gap-lg: var(--space-6);
+  --container-max: 1440px;
+  --container-lg: 1200px;
+  --container-md: 960px;
+  --container-sm: 720px;
+  --container-xs: 540px;
+
+  /* --------------------
+     Breakpoints (reference)
+     -------------------- */
+  /*
+  --breakpoint-xs: 0;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  */
+
+  /* --------------------
+     Focus States
+     -------------------- */
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--color-amber-glow);
+  --focus-ring: 0 0 0 var(--focus-ring-width) var(--focus-ring-color);
+
+  /* --------------------
+     Opacity Scale
+     -------------------- */
+  --opacity-0: 0;
+  --opacity-5: 0.05;
+  --opacity-10: 0.1;
+  --opacity-20: 0.2;
+  --opacity-30: 0.3;
+  --opacity-40: 0.4;
+  --opacity-50: 0.5;
+  --opacity-60: 0.6;
+  --opacity-70: 0.7;
+  --opacity-80: 0.8;
+  --opacity-90: 0.9;
+  --opacity-100: 1;
+
+  /* --------------------
+     Blur Scale
+     -------------------- */
+  --blur-xs: 2px;
+  --blur-sm: 4px;
+  --blur-md: 8px;
+  --blur-lg: 12px;
+  --blur-xl: 16px;
+  --blur-2xl: 24px;
+
+  /* --------------------
+     Backdrop Filters
+     -------------------- */
+  --backdrop-blur-sm: blur(var(--blur-sm));
+  --backdrop-blur: blur(var(--blur-md));
+  --backdrop-blur-lg: blur(var(--blur-lg));
+  --backdrop-blur-xl: blur(var(--blur-xl));
+}
+
+/* ============================================
+   REDUCED MOTION SUPPORT
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: var(--duration-reduced);
+    --duration-base: var(--duration-reduced);
+    --duration-slow: var(--duration-reduced);
+    --ease: var(--ease-reduced);
+    --ease-spring: var(--ease-reduced);
+    --ease-snappy: var(--ease-reduced);
+    --transition-all: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   DARK MODE OVERRIDE (default is already dark)
+   ============================================ */
+
+@media (prefers-color-scheme: light) {
+  /* Light mode overrides if needed */
+  /* Currently the system is designed for dark mode as default */
+}

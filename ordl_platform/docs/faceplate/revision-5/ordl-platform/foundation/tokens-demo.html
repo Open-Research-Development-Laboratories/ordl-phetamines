@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORDL Ultimate Platform - Design Tokens Demo</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="design-tokens.css">
+  
+  <style>
+    /* Reset & Base */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font: var(--font-ui-base);
+      font-family: var(--font-ui);
+      background-color: var(--color-bg-deepest);
+      color: var(--color-text-primary);
+      line-height: var(--text-base-line-height);
+      min-height: 100vh;
+    }
+
+    /* Layout */
+    .container {
+      max-width: var(--container-max);
+      margin: 0 auto;
+      padding: var(--space-8) var(--space-6);
+    }
+
+    /* Header */
+    .page-header {
+      margin-bottom: var(--space-10);
+      padding-bottom: var(--space-6);
+      border-bottom: var(--border-default-1);
+    }
+
+    .page-title {
+      font: var(--font-ui-5xl);
+      letter-spacing: var(--text-5xl-letter-spacing);
+      margin-bottom: var(--space-2);
+      background: linear-gradient(135deg, var(--color-text-primary) 0%, var(--color-accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-subtitle {
+      font: var(--font-mono-base);
+      color: var(--color-text-secondary);
+    }
+
+    /* Section */
+    .section {
+      margin-bottom: var(--space-12);
+    }
+
+    .section-title {
+      font: var(--font-ui-2xl);
+      margin-bottom: var(--space-6);
+      color: var(--color-accent);
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .section-title::before {
+      content: '//';
+      font: var(--font-mono-lg);
+      color: var(--color-text-muted);
+    }
+
+    .section-desc {
+      font: var(--font-ui-base);
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-6);
+      max-width: 600px;
+    }
+
+    /* Cards */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--card-gap);
+    }
+
+    .card {
+      background: var(--color-charcoal-800);
+      border: var(--border-default-1);
+      border-radius: var(--radius-default);
+      padding: var(--card-padding);
+      box-shadow: var(--shadow-card);
+      transition: var(--transition-card);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .card-title {
+      font: var(--font-ui-lg);
+      margin-bottom: var(--space-2);
+    }
+
+    .card-mono {
+      font: var(--font-mono-sm);
+      color: var(--color-text-tertiary);
+    }
+
+    /* Color Swatches */
+    .swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .swatch {
+      background: var(--color-charcoal-800);
+      border: var(--border-default-1);
+      border-radius: var(--radius-default);
+      overflow: hidden;
+    }
+
+    .swatch-color {
+      height: 80px;
+      position: relative;
+    }
+
+    .swatch-info {
+      padding: var(--space-3);
+    }
+
+    .swatch-name {
+      font: var(--font-mono-sm);
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-1);
+    }
+
+    .swatch-value {
+      font: var(--font-mono-xs);
+      color: var(--color-text-tertiary);
+    }
+
+    /* Typography Demo */
+    .type-sample {
+      padding: var(--space-4);
+      background: var(--color-charcoal-800);
+      border: var(--border-default-1);
+      border-radius: var(--radius-default);
+      margin-bottom: var(--space-3);
+    }
+
+    .type-sample-label {
+      font: var(--font-mono-xs);
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-2);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* Spacing Demo */
+    .spacing-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+      align-items: flex-end;
+    }
+
+    .spacing-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .spacing-box {
+      background: var(--color-accent);
+      border-radius: var(--radius-tight);
+    }
+
+    .spacing-label {
+      font: var(--font-mono-xs);
+      color: var(--color-text-tertiary);
+    }
+
+    /* Border & Radius Demo */
+    .border-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .border-sample {
+      height: 80px;
+      background: var(--color-charcoal-800);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font: var(--font-mono-sm);
+    }
+
+    .radius-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-4);
+    }
+
+    .radius-sample {
+      width: 80px;
+      height: 80px;
+      background: var(--color-accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font: var(--font-mono-xs);
+      color: var(--color-charcoal-deepest);
+    }
+
+    /* Shadow Demo */
+    .shadow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: var(--space-6);
+    }
+
+    .shadow-sample {
+      height: 100px;
+      background: var(--color-charcoal-700);
+      border-radius: var(--radius-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font: var(--font-mono-xs);
+      color: var(--color-text-secondary);
+      text-align: center;
+      padding: var(--space-3);
+    }
+
+    .glow-sample {
+      height: 100px;
+      background: var(--color-charcoal-800);
+      border-radius: var(--radius-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font: var(--font-mono-xs);
+      color: var(--color-accent);
+      text-align: center;
+      padding: var(--space-3);
+      border: var(--border-default-1);
+    }
+
+    /* Motion Demo */
+    .motion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .motion-button {
+      padding: var(--button-padding-y) var(--button-padding-x);
+      background: var(--color-charcoal-700);
+      border: var(--border-default-1);
+      border-radius: var(--radius-default);
+      color: var(--color-text-primary);
+      font: var(--font-mono-sm);
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .motion-button:hover {
+      background: var(--color-charcoal-600);
+    }
+
+    .motion-ease { transition: var(--transition-base); }
+    .motion-spring { transition: all var(--duration-base) var(--ease-spring); }
+    .motion-snappy { transition: all var(--duration-base) var(--ease-snappy); }
+    .motion-slow { transition: var(--transition-slow); }
+    .motion-fast { transition: var(--transition-fast); }
+
+    .motion-button:hover {
+      transform: scale(1.05);
+      border-color: var(--color-accent);
+      box-shadow: var(--glow-amber-sm);
+    }
+
+    /* Z-Index Demo */
+    .z-stack {
+      position: relative;
+      height: 200px;
+    }
+
+    .z-layer {
+      position: absolute;
+      width: 180px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font: var(--font-mono-sm);
+      border: var(--border-default-1);
+      border-radius: var(--radius-default);
+    }
+
+    .z-layer-1 { 
+      background: var(--color-charcoal-800);
+      top: 0; left: 0;
+      z-index: var(--z-base);
+    }
+    .z-layer-2 { 
+      background: var(--color-charcoal-700);
+      top: 30px; left: 40px;
+      z-index: var(--z-dropdown);
+    }
+    .z-layer-3 { 
+      background: var(--color-charcoal-600);
+      top: 60px; left: 80px;
+      z-index: var(--z-sticky);
+    }
+    .z-layer-4 { 
+      background: var(--color-charcoal-500);
+      top: 90px; left: 120px;
+      z-index: var(--z-modal);
+    }
+    .z-layer-5 { 
+      background: var(--color-accent);
+      color: var(--color-charcoal-deepest);
+      top: 120px; left: 160px;
+      z-index: var(--z-overlay);
+    }
+
+    /* Component Demo */
+    .component-showcase {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: var(--space-6);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--button-gap);
+      padding: var(--button-padding-y) var(--button-padding-x);
+      font: var(--font-mono-sm);
+      border-radius: var(--radius-default);
+      cursor: pointer;
+      transition: var(--transition-button);
+      border: var(--border-width-1) solid transparent;
+    }
+
+    .btn-primary {
+      background: var(--color-accent);
+      color: var(--color-charcoal-deepest);
+      font-weight: var(--font-weight-semibold);
+    }
+
+    .btn-primary:hover {
+      background: var(--color-accent-hover);
+      box-shadow: var(--glow-amber);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.98);
+      box-shadow: var(--shadow-button-active);
+    }
+
+    .btn-secondary {
+      background: var(--color-charcoal-700);
+      color: var(--color-text-primary);
+      border: var(--border-default-1);
+    }
+
+    .btn-secondary:hover {
+      background: var(--color-charcoal-600);
+      border-color: var(--color-accent);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--color-text-secondary);
+    }
+
+    .btn-ghost:hover {
+      color: var(--color-text-primary);
+      background: var(--color-charcoal-800);
+    }
+
+    .input {
+      width: 100%;
+      padding: var(--input-padding-y) var(--input-padding-x);
+      height: var(--input-height);
+      background: var(--color-charcoal-900);
+      border: var(--border-default-1);
+      border-radius: var(--radius-default);
+      color: var(--color-text-primary);
+      font: var(--font-mono-base);
+      transition: var(--transition-input);
+    }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--color-accent);
+      box-shadow: var(--shadow-input-focus);
+    }
+
+    .input::placeholder {
+      color: var(--color-text-muted);
+    }
+
+    /* Status badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-1-5);
+      padding: var(--space-1) var(--space-2);
+      border-radius: var(--radius-tight);
+      font: var(--font-mono-xs);
+    }
+
+    .badge-success {
+      background: var(--color-success-bg);
+      color: var(--color-success-400);
+      border: 1px solid var(--color-success-dim);
+    }
+
+    .badge-warning {
+      background: var(--color-warning-bg);
+      color: var(--color-warning-400);
+      border: 1px solid var(--color-warning-dim);
+    }
+
+    .badge-error {
+      background: var(--color-error-bg);
+      color: var(--color-error-400);
+      border: 1px solid var(--color-error-dim);
+    }
+
+    .badge-info {
+      background: var(--color-info-bg);
+      color: var(--color-info-400);
+      border: 1px solid var(--color-info-dim);
+    }
+
+    /* Demo sections */
+    .demo-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+      align-items: center;
+    }
+
+    /* Inner shadow demo */
+    .inset-demo {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .inset-box {
+      height: 80px;
+      background: var(--color-charcoal-700);
+      border-radius: var(--radius-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font: var(--font-mono-xs);
+      color: var(--color-text-tertiary);
+    }
+
+    /* Table */
+    .demo-table {
+      width: 100%;
+      border-collapse: collapse;
+      font: var(--font-mono-sm);
+    }
+
+    .demo-table th,
+    .demo-table td {
+      padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+      text-align: left;
+      border-bottom: var(--border-default-1);
+    }
+
+    .demo-table th {
+      color: var(--color-text-tertiary);
+      font-weight: var(--font-weight-medium);
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .demo-table tr:hover td {
+      background: var(--color-charcoal-800);
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--color-charcoal-900);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-charcoal-600);
+      border-radius: var(--radius-tight);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--color-charcoal-500);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="page-header">
+      <h1 class="page-title">ORDL Ultimate Platform</h1>
+      <p class="page-subtitle">// DESIGN_TOKENS_V1.0.0 :: MONOCROME_MACHINERY_THEME</p>
+    </header>
+
+    <!-- Color Palette Section -->
+    <section class="section">
+      <h2 class="section-title">Color Palette</h2>
+      <p class="section-desc">Monochrome machinery theme with warm cream text and amber accents. Deep charcoal provides the foundation, amber guides the eye, and semantic colors communicate status.</p>
+      
+      <h3 class="card-title" style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">Deep Charcoal Scale</h3>
+      <div class="swatch-grid" style="margin-bottom: var(--space-8);">
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-charcoal-deepest);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">charcoal-deepest</div>
+            <div class="swatch-value">#0a0a0a</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-charcoal-900);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">charcoal-900</div>
+            <div class="swatch-value">#0f0f0f</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-charcoal-800);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">charcoal-800</div>
+            <div class="swatch-value">#141414</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-charcoal-700);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">charcoal-700</div>
+            <div class="swatch-value">#1a1a1a</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-charcoal-600);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">charcoal-600</div>
+            <div class="swatch-value">#1f1f1f</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-charcoal-500);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">charcoal-500</div>
+            <div class="swatch-value">#242424</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-charcoal-400);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">charcoal-400</div>
+            <div class="swatch-value">#2a2a2a</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-charcoal-300);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">charcoal-300</div>
+            <div class="swatch-value">#2f2f2f</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="card-title" style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">Warm Cream Scale</h3>
+      <div class="swatch-grid" style="margin-bottom: var(--space-8);">
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-cream-50);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">cream-50 (primary)</div>
+            <div class="swatch-value">#f5f2e9</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-cream-200);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">cream-200</div>
+            <div class="swatch-value">#dbd6c9</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-cream-400);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">cream-400</div>
+            <div class="swatch-value">#c1baa9</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-cream-600);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">cream-600</div>
+            <div class="swatch-value">#a79e89</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-cream-800);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">cream-800</div>
+            <div class="swatch-value">#8d8269</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-cream-900);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">cream-900 (muted)</div>
+            <div class="swatch-value">#6a655a</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="card-title" style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">Amber Accents</h3>
+      <div class="swatch-grid" style="margin-bottom: var(--space-8);">
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-amber-400);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">amber-400 (active)</div>
+            <div class="swatch-value">#ffb347</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-amber-500);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">amber-500</div>
+            <div class="swatch-value">#ffa42e</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-amber-dim);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">amber-dim</div>
+            <div class="swatch-value">rgba(255,179,71,0.3)</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-amber-subtle);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">amber-subtle</div>
+            <div class="swatch-value">rgba(255,179,71,0.15)</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 class="card-title" style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">Semantic Colors</h3>
+      <div class="swatch-grid">
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-success-500);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">success-500</div>
+            <div class="swatch-value">#22c55e</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-warning-500);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">warning-500</div>
+            <div class="swatch-value">#f97316</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-error-500);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">error-500</div>
+            <div class="swatch-value">#ef4444</div>
+          </div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background: var(--color-info-500);"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">info-500</div>
+            <div class="swatch-value">#3b82f6</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Typography Section -->
+    <section class="section">
+      <h2 class="section-title">Typography Scale</h2>
+      <p class="section-desc">IBM Plex Mono for data and code display. Space Grotesk for UI elements and headings.</p>
+      
+      <h3 class="card-title" style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">UI Font (Space Grotesk)</h3>
+      <div style="margin-bottom: var(--space-8);">
+        <div class="type-sample">
+          <div class="type-sample-label">text-5xl / 48px — Bold</div>
+          <div style="font: var(--font-ui-5xl);">ORDL Platform Dashboard</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-4xl / 36px — Semibold</div>
+          <div style="font: var(--font-ui-4xl);">Section Heading</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-3xl / 30px — Semibold</div>
+          <div style="font: var(--font-ui-3xl);">Card Title Display</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-2xl / 24px — Medium</div>
+          <div style="font: var(--font-ui-2xl);">Subsection Header</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-xl / 20px — Medium</div>
+          <div style="font: var(--font-ui-xl);">Feature Title</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-lg / 18px — Regular</div>
+          <div style="font: var(--font-ui-lg);">Lead paragraph text for important content blocks.</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-base / 16px — Regular</div>
+          <div style="font: var(--font-ui-base);">Body text is set at 16px with comfortable line height for reading.</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-sm / 14px — Regular</div>
+          <div style="font: var(--font-ui-sm);">Secondary text, labels, and supporting content.</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-xs / 12px — Regular</div>
+          <div style="font: var(--font-ui-xs);">Captions, timestamps, metadata.</div>
+        </div>
+      </div>
+
+      <h3 class="card-title" style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">Mono Font (IBM Plex Mono)</h3>
+      <div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-mono-2xl / 22px — Medium</div>
+          <div style="font: var(--font-mono-2xl);">0x7F3A9B2C :: METRICS</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-mono-xl / 18px — Medium</div>
+          <div style="font: var(--font-mono-xl);">STATUS: ONLINE [42ms]</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-mono-lg / 16px — Regular</div>
+          <div style="font: var(--font-mono-lg);">hash: a3f7e2d9b1c8</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-mono-base / 14px — Regular</div>
+          <div style="font: var(--font-mono-base);">const data = await fetch('/api/v1/system');</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-mono-sm / 13px — Regular</div>
+          <div style="font: var(--font-mono-sm);">2024-03-06T14:32:18.452Z</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">text-mono-xs / 11px — Regular</div>
+          <div style="font: var(--font-mono-xs);">TX: 0x4a...9f2e | GAS: 21000</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Spacing Section -->
+    <section class="section">
+      <h2 class="section-title">Spacing Scale</h2>
+      <p class="section-desc">4px base unit system for consistent spacing across components. From 0px to 192px covering all layout needs.</p>
+      
+      <div class="spacing-grid">
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: var(--space-1); height: var(--space-1);"></div>
+          <span class="spacing-label">--space-1 (4px)</span>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: var(--space-2); height: var(--space-2);"></div>
+          <span class="spacing-label">--space-2 (8px)</span>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: var(--space-3); height: var(--space-3);"></div>
+          <span class="spacing-label">--space-3 (12px)</span>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: var(--space-4); height: var(--space-4);"></div>
+          <span class="spacing-label">--space-4 (16px)</span>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: var(--space-5); height: var(--space-5);"></div>
+          <span class="spacing-label">--space-5 (20px)</span>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: var(--space-6); height: var(--space-6);"></div>
+          <span class="spacing-label">--space-6 (24px)</span>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: var(--space-8); height: var(--space-8);"></div>
+          <span class="spacing-label">--space-8 (32px)</span>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: var(--space-10); height: var(--space-10);"></div>
+          <span class="spacing-label">--space-10 (40px)</span>
+        </div>
+        <div class="spacing-item">
+          <div class="spacing-box" style="width: var(--space-12); height: var(--space-12);"></div>
+          <span class="spacing-label">--space-12 (48px)</span>
+        </div>
+      </div>
+
+      <h3 class="card-title" style="margin: var(--space-8) 0 var(--space-4); color: var(--color-text-secondary);">Component Spacing Examples</h3>
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-title">Button Padding</div>
+          <div class="demo-row">
+            <button class="btn btn-primary" style="padding: var(--button-padding-y) var(--button-padding-x);">Default</button>
+            <button class="btn btn-secondary" style="padding: var(--button-padding-compact-y) var(--button-padding-compact-x); font: var(--font-mono-xs);">Compact</button>
+          </div>
+          <p class="card-mono">--button-padding-x: --space-4<br>--button-padding-y: --space-2</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Card Padding</div>
+          <div style="background: var(--color-charcoal-900); border: var(--border-default-1); padding: var(--card-padding); border-radius: var(--radius-default);">
+            <div style="background: var(--color-accent); height: 20px; border-radius: var(--radius-tight);"></div>
+          </div>
+          <p class="card-mono" style="margin-top: var(--space-3);">--card-padding: --space-5</p>
+        </div>
+        <div class="card">
+          <div class="card-title">Input Dimensions</div>
+          <input type="text" class="input" placeholder="Placeholder text..." style="margin-bottom: var(--space-2);">
+          <p class="card-mono">--input-height: 40px<br>--input-padding-x: --space-3</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Border & Radius Section -->
+    <section class="section">
+      <h2 class="section-title">Border & Radius</h2>
+      <p class="section-desc">Subtle hierarchy for borders and consistent radius scale for component corners.</p>
+      
+      <h3 class="card-title" style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">Border Widths</h3>
+      <div class="border-grid" style="margin-bottom: var(--space-8);">
+        <div class="border-sample" style="border: var(--border-subtle-1);">--border-subtle</div>
+        <div class="border-sample" style="border: var(--border-default-1);">--border-default</div>
+        <div class="border-sample" style="border: var(--border-strong-1);">--border-strong</div>
+        <div class="border-sample" style="border: var(--border-accent-1);">--border-accent</div>
+      </div>
+
+      <h3 class="card-title" style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">Border Radius</h3>
+      <div class="radius-grid">
+        <div class="radius-sample" style="border-radius: var(--radius-none);">0px</div>
+        <div class="radius-sample" style="border-radius: var(--radius-tight);">2px</div>
+        <div class="radius-sample" style="border-radius: var(--radius-default);">4px</div>
+        <div class="radius-sample" style="border-radius: var(--radius-md);">6px</div>
+        <div class="radius-sample" style="border-radius: var(--radius-lg);">8px</div>
+        <div class="radius-sample" style="border-radius: var(--radius-xl);">12px</div>
+      </div>
+    </section>
+
+    <!-- Shadows & Glows Section -->
+    <section class="section">
+      <h2 class="section-title">Shadows & Glows</h2>
+      <p class="section-desc">Industrial depth with inner shadows for recessed elements, drop shadows for elevation, and phosphor glow effects for active states.</p>
+      
+      <h3 class="card-title" style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">Inner Shadows (Recessed)</h3>
+      <div class="inset-demo" style="margin-bottom: var(--space-8);">
+        <div class="inset-box" style="box-shadow: var(--shadow-inner-sm);">--inner-sm</div>
+        <div class="inset-box" style="box-shadow: var(--shadow-inner);">--inner</div>
+        <div class="inset-box" style="box-shadow: var(--shadow-inner-md);">--inner-md</div>
+        <div class="inset-box" style="box-shadow: var(--shadow-inner-lg);">--inner-lg</div>
+      </div>
+
+      <h3 class="card-title" style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">Drop Shadows (Elevation)</h3>
+      <div class="shadow-grid" style="margin-bottom: var(--space-8);">
+        <div class="shadow-sample" style="box-shadow: var(--shadow-xs);">--shadow-xs</div>
+        <div class="shadow-sample" style="box-shadow: var(--shadow-sm);">--shadow-sm</div>
+        <div class="shadow-sample" style="box-shadow: var(--shadow);">--shadow</div>
+        <div class="shadow-sample" style="box-shadow: var(--shadow-md);">--shadow-md</div>
+        <div class="shadow-sample" style="box-shadow: var(--shadow-lg);">--shadow-lg</div>
+        <div class="shadow-sample" style="box-shadow: var(--shadow-xl);">--shadow-xl</div>
+      </div>
+
+      <h3 class="card-title" style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">Phosphor Glows (Active States)</h3>
+      <div class="shadow-grid">
+        <div class="glow-sample" style="box-shadow: var(--glow-amber-sm);">--glow-amber-sm</div>
+        <div class="glow-sample" style="box-shadow: var(--glow-amber);">--glow-amber</div>
+        <div class="glow-sample" style="box-shadow: var(--glow-amber-md);">--glow-amber-md</div>
+        <div class="glow-sample" style="box-shadow: var(--glow-amber-lg);">--glow-amber-lg</div>
+        <div class="glow-sample" style="background: var(--color-success-bg); color: var(--color-success-400); box-shadow: var(--glow-success);">--glow-success</div>
+        <div class="glow-sample" style="background: var(--color-error-bg); color: var(--color-error-400); box-shadow: var(--glow-error);">--glow-error</div>
+      </div>
+    </section>
+
+    <!-- Motion & Transitions Section -->
+    <section class="section">
+      <h2 class="section-title">Motion & Transitions</h2>
+      <p class="section-desc">Mechanical feel with tactile response. Hover over buttons to see different easing curves in action.</p>
+      
+      <h3 class="card-title" style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">Duration Scale</h3>
+      <table class="demo-table" style="margin-bottom: var(--space-8); max-width: 400px;">
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>--duration-instant</td>
+            <td>0ms</td>
+          </tr>
+          <tr>
+            <td>--duration-fast</td>
+            <td>100ms</td>
+          </tr>
+          <tr>
+            <td>--duration-base</td>
+            <td>200ms</td>
+          </tr>
+          <tr>
+            <td>--duration-slow</td>
+            <td>400ms</td>
+          </tr>
+          <tr>
+            <td>--duration-slowest</td>
+            <td>1000ms</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 class="card-title" style="margin-bottom: var(--space-4); color: var(--color-text-secondary);">Easing Curves (Hover to Test)</h3>
+      <div class="motion-grid">
+        <button class="motion-button motion-fast">--ease (100ms)</button>
+        <button class="motion-button motion-ease">--ease (200ms)</button>
+        <button class="motion-button motion-spring">--ease-spring</button>
+        <button class="motion-button motion-snappy">--ease-snappy</button>
+        <button class="motion-button motion-slow">--ease (400ms)</button>
+      </div>
+    </section>
+
+    <!-- Z-Index Section -->
+    <section class="section">
+      <h2 class="section-title">Z-Index Scale</h2>
+      <p class="section-desc">Layer management from base (0) to overlay (1000). Visualized as stacking layers.</p>
+      
+      <div class="z-stack">
+        <div class="z-layer z-layer-1">--z-base<br>0</div>
+        <div class="z-layer z-layer-2">--z-dropdown<br>100</div>
+        <div class="z-layer z-layer-3">--z-sticky<br>200</div>
+        <div class="z-layer z-layer-4">--z-modal<br>700</div>
+        <div class="z-layer z-layer-5">--z-overlay<br>1000</div>
+      </div>
+    </section>
+
+    <!-- Component Showcase -->
+    <section class="section">
+      <h2 class="section-title">Component Showcase</h2>
+      <p class="section-desc">Real-world application of design tokens in common UI components.</p>
+      
+      <div class="component-showcase">
+        <div class="card">
+          <div class="card-title">Buttons</div>
+          <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+            <button class="btn btn-primary">Primary Action</button>
+            <button class="btn btn-secondary">Secondary Action</button>
+            <button class="btn btn-ghost">Ghost Button</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Form Input</div>
+          <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+            <input type="text" class="input" placeholder="Enter value...">
+            <input type="text" class="input" value="Prefilled content" style="border-color: var(--color-accent); box-shadow: var(--shadow-input-focus);">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Status Badges</div>
+          <div style="display: flex; flex-wrap: wrap; gap: var(--space-2);">
+            <span class="badge badge-success">● Online</span>
+            <span class="badge badge-warning">● Pending</span>
+            <span class="badge badge-error">● Error</span>
+            <span class="badge badge-info">● Info</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Data Display</div>
+          <div style="font: var(--font-mono-sm); color: var(--color-text-secondary);">
+            <div style="display: flex; justify-content: space-between; padding: var(--space-2) 0; border-bottom: var(--border-default-1);">
+              <span>Block Height</span>
+              <span style="color: var(--color-text-primary);">#18,452,901</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: var(--space-2) 0; border-bottom: var(--border-default-1);">
+              <span>Gas Price</span>
+              <span style="color: var(--color-accent);">12.4 gwei</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: var(--space-2) 0;">
+              <span>Status</span>
+              <span style="color: var(--color-success-400);">Synced</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Metric Card</div>
+          <div style="text-align: center; padding: var(--space-4);">
+            <div style="font: var(--font-mono-xs); color: var(--color-text-tertiary); margin-bottom: var(--space-1);">TOTAL VALUE LOCKED</div>
+            <div style="font: var(--font-ui-3xl); color: var(--color-text-primary);">$2.4B</div>
+            <div style="font: var(--font-mono-sm); color: var(--color-success-400); margin-top: var(--space-1);">+12.5% (24h)</div>
+          </div>
+        </div>
+
+        <div class="card" style="box-shadow: var(--shadow-modal);">
+          <div class="card-title">Elevated Card</div>
+          <p style="font: var(--font-ui-sm); color: var(--color-text-secondary);">This card uses the modal shadow level for high elevation.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="margin-top: var(--space-12); padding-top: var(--space-6); border-top: var(--border-default-1); text-align: center; color: var(--color-text-muted); font: var(--font-mono-sm);">
+      <p>ORDL Ultimate Platform Design System v1.0.0</p>
+      <p style="margin-top: var(--space-2);">Built with custom CSS properties • Monochrome Machinery Theme</p>
+    </footer>
+  </div>
+</body>
+</html>

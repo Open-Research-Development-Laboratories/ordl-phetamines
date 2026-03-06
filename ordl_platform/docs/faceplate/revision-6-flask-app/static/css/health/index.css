@@ -1,0 +1,332 @@
+/* templates/health/index.html - Health Dashboard Styles */
+
+.health-container {
+    display: grid;
+    grid-template-columns: 280px 1fr 320px;
+    gap: 16px;
+    height: calc(100vh - 120px);
+}
+
+/* Gateway Monitor */
+.gateway-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    display: flex;
+    flex-direction: column;
+}
+
+.gateway-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.gateway-item {
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.gateway-item:hover {
+    border-color: var(--border-strong);
+}
+
+.gateway-item.selected {
+    border-color: var(--accent-primary);
+    background: var(--accent-dim);
+}
+
+.gateway-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.gateway-name {
+    font-size: 12px;
+    color: var(--text-primary);
+}
+
+.gateway-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+.gateway-status.online { color: var(--success); }
+.gateway-status.warning { color: var(--warning); }
+.gateway-status.offline { color: var(--error); }
+
+.gateway-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.gateway-metric {
+    font-size: 11px;
+}
+
+.gateway-metric-label {
+    color: var(--text-muted);
+    font-size: 9px;
+    text-transform: uppercase;
+}
+
+.gateway-metric-value {
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+}
+
+/* Node Keepalive */
+.nodes-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    display: flex;
+    flex-direction: column;
+}
+
+.nodes-toolbar {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-default);
+    display: flex;
+    gap: 12px;
+}
+
+.nodes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+    padding: 12px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.node-cell {
+    padding: 12px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-default);
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.node-cell:hover {
+    border-color: var(--border-strong);
+}
+
+.node-cell.offline {
+    border-color: var(--error);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.node-cell.warning {
+    border-color: var(--warning);
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.node-icon {
+    font-size: 20px;
+    margin-bottom: 6px;
+}
+
+.node-name {
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.node-heartbeat {
+    font-size: 9px;
+    color: var(--text-muted);
+}
+
+/* Diagnostics Panel */
+.diagnostics-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+}
+
+.diagnostic-log {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 11px;
+}
+
+.diagnostic-log:last-child {
+    border-bottom: none;
+}
+
+.diagnostic-time {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    margin-bottom: 4px;
+}
+
+.diagnostic-message {
+    color: var(--text-secondary);
+}
+
+.diagnostic-message.error { color: var(--error); }
+.diagnostic-message.warning { color: var(--warning); }
+.diagnostic-message.success { color: var(--success); }
+
+/* SLO View */
+.slo-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+}
+
+.slo-item {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.slo-item:last-child {
+    border-bottom: none;
+}
+
+.slo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.slo-name {
+    font-size: 12px;
+    color: var(--text-primary);
+}
+
+.slo-status {
+    padding: 2px 8px;
+    font-size: 9px;
+    text-transform: uppercase;
+}
+
+.slo-status.meeting {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
+}
+
+.slo-status.at-risk {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid var(--warning);
+    color: var(--warning);
+}
+
+.slo-status.breached {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--error);
+    color: var(--error);
+}
+
+.slo-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-tertiary);
+    margin-bottom: 6px;
+    overflow: hidden;
+}
+
+.slo-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.slo-fill.meeting { background: var(--success); }
+.slo-fill.at-risk { background: var(--warning); }
+.slo-fill.breached { background: var(--error); }
+
+.slo-values {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+}
+
+.slo-current {
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+.slo-target {
+    color: var(--text-muted);
+}
+
+/* Reconnect Diagnostics */
+.reconnect-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    margin-bottom: 16px;
+}
+
+.reconnect-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 12px;
+}
+
+.reconnect-stat {
+    padding: 12px;
+    background: var(--bg-tertiary);
+    text-align: center;
+}
+
+.reconnect-stat-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+.reconnect-stat-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* Health Overview Stats */
+.health-overview {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.health-stat {
+    padding: 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-default);
+    text-align: center;
+}
+
+.health-stat-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+.health-stat-value.success { color: var(--success); }
+.health-stat-value.warning { color: var(--warning); }
+.health-stat-value.error { color: var(--error); }
+
+.health-stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    margin-top: 6px;
+}

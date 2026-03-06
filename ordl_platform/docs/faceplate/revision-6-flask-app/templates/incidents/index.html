@@ -1,0 +1,355 @@
+{% extends "layouts/app_base.html" %}
+
+{% block title %}Incidents - ORDL{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="/app">Platform</a>
+    <span class="separator">/</span>
+    <span>Incidents</span>
+</div>
+{% endblock %}
+
+{% block header_actions %}
+<button class="header-btn">View Reports</button>
+<button class="header-btn">Export Data</button>
+<button class="header-btn primary">+ New Incident</button>
+{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section">
+    <div class="nav-title">Platform</div>
+    <a href="/app/nodes/discovery" class="nav-item">
+        <span class="nav-icon">◐</span>
+        <span>Discovery</span>
+    </a>
+    <a href="/app/nodes/autoupdate" class="nav-item">
+        <span class="nav-icon">↻</span>
+        <span>Auto-Update</span>
+    </a>
+    <a href="/app/health" class="nav-item">
+        <span class="nav-icon">♥</span>
+        <span>Health</span>
+    </a>
+    <a href="/app/incidents" class="nav-item active">
+        <span class="nav-icon">⚠</span>
+        <span>Incidents</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Model Engineering</div>
+    <a href="/app/models/workshop" class="nav-item">
+        <span class="nav-icon">◈</span>
+        <span>Workshop</span>
+    </a>
+    <a href="/app/models/training" class="nav-item">
+        <span class="nav-icon">▶</span>
+        <span>Training</span>
+    </a>
+    <a href="/app/models/inference" class="nav-item">
+        <span class="nav-icon">⚡</span>
+        <span>Inference</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Data</div>
+    <a href="/app/data/pipelines" class="nav-item">
+        <span class="nav-icon">◆</span>
+        <span>Pipelines</span>
+    </a>
+    <a href="/app/data/datasets" class="nav-item">
+        <span class="nav-icon">◉</span>
+        <span>Datasets</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/incidents/index.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Active Incident Banner -->
+<div class="active-incident-banner">
+    <div class="banner-content">
+        <span class="banner-icon">⚠</span>
+        <span class="banner-text">
+            <strong>INC-2024-0089:</strong> 
+            Elevated error rate in gateway-ap-south-1 - 23 minutes ongoing
+        </span>
+    </div>
+    
+    <div class="banner-actions">
+        <button class="banner-btn">View Details</button>
+        <button class="banner-btn">Acknowledge</button>
+    </div>
+</div>
+
+<div class="incidents-container">
+    <!-- Incident Board -->
+    <div class="board-panel">
+        <div class="board-toolbar">
+            <select>
+                <option>All Services</option>
+                <option>Gateway</option>
+                <option>Training</option>
+                <option>Inference</option>
+                <option>Data Pipeline</option>
+            </select>
+            
+            <select>
+                <option>All Severities</option>
+                <option>Critical</option>
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+            </select>
+            
+            <input type="search" placeholder="Search incidents..." style="flex: 1;">
+            
+            <button class="btn">Filter</button>
+        </div>
+        
+        <div class="incident-columns">
+            <!-- Triaging -->
+            <div class="incident-column">
+                <div class="column-header">
+                    <span>Triaging</span>
+                    <span class="column-count">2</span>
+                </div>
+                
+                <div class="column-content">
+                    <div class="incident-card high">
+                        <div class="incident-header">
+                            <span class="incident-id">INC-2024-0091</span>
+                            <span class="incident-severity high">High</span>
+                        </div>
+                        
+                        <div class="incident-title">Training job failures on GPU nodes</div>
+                        
+                        <div class="incident-meta">
+                            <span class="incident-service">Training</span>
+                            <span class="incident-time">5m ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Investigating -->
+            <div class="incident-column">
+                <div class="column-header">
+                    <span>Investigating</span>
+                    <span class="column-count">1</span>
+                </div>
+                
+                <div class="column-content">
+                    <div class="incident-card critical">
+                        <div class="incident-header">
+                            <span class="incident-id">INC-2024-0089</span>
+                            <span class="incident-severity critical">Critical</span>
+                        </div>
+                        
+                        <div class="incident-title">Elevated error rate in gateway-ap-south-1</div>
+                        
+                        <div class="incident-meta">
+                            <span class="incident-service">Gateway</span>
+                            <span class="incident-time">23m ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mitigating -->
+            <div class="incident-column">
+                <div class="column-header">
+                    <span>Mitigating</span>
+                    <span class="column-count">0</span>
+                </div>
+                
+                <div class="column-content">
+                    <!-- Empty -->
+                </div>
+            </div>
+            
+            <!-- Resolved -->
+            <div class="incident-column">
+                <div class="column-header">
+                    <span>Resolved</span>
+                    <span class="column-count">3</span>
+                </div>
+                
+                <div class="column-content">
+                    <div class="incident-card medium">
+                        <div class="incident-header">
+                            <span class="incident-id">INC-2024-0087</span>
+                            <span class="incident-severity medium">Medium</span>
+                        </div>
+                        
+                        <div class="incident-title">Data pipeline delay</div>
+                        
+                        <div class="incident-meta">
+                            <span class="incident-service">Data Pipeline</span>
+                            <span class="incident-time">2h ago</span>
+                        </div>
+                    </div>
+                    
+                    
+                    <div class="incident-card low">
+                        <div class="incident-header">
+                            <span class="incident-id">INC-2024-0085</span>
+                            <span class="incident-severity low">Low</span>
+                        </div>
+                        
+                        <div class="incident-title">Memory warning on node-042</span>
+                        
+                        <div class="incident-meta">
+                            <span class="incident-service">Infrastructure</span>
+                            <span class="incident-time">4h ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <!-- Triage Workflows -->
+        <div class="triage-panel"
+>
+            <div class="panel-header">Quick Triage Workflows</div>
+            
+            <div class="workflow-item">
+                <div class="workflow-icon">⚡</div>
+                <div class="workflow-info">
+                    <div class="workflow-name">Gateway Outage</div>
+                    <div class="workflow-desc">Failover and escalation steps</div>
+                </div>
+                <button class="workflow-btn">Run</button>
+            </div>
+            
+            <div class="workflow-item">
+                <div class="workflow-icon">◈</div>
+                <div class="workflow-info">
+                    <div class="workflow-name">Training Failure</div>
+                    <div class="workflow-desc">Checkpoint recovery process</div>
+                </div>
+                <button class="workflow-btn">Run</button>
+            </div>
+            
+            <div class="workflow-item">
+                <div class="workflow-icon">▼</div>
+                <div class="workflow-info">
+                    <div class="workflow-name">Data Pipeline Stuck</div>
+                    <div class="workflow-desc">Restart and data integrity check</div>
+                </div>
+                <button class="workflow-btn">Run</button>
+            </div>
+        </div>
+        
+        
+        <!-- Timeline -->
+        <div class="timeline-panel"
+>
+            <div class="panel-header"
+>
+                <span>INC-2024-0089 Timeline</span>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-marker">
+                    <span class="timeline-dot"></span>
+                    <span class="timeline-line"></span>
+                </div>
+                
+                <div class="timeline-content">
+                    <div class="timeline-time">14:32:15</div>
+                    <div class="timeline-text">Alert triggered: Error rate > 1%</div>
+                    <div class="timeline-author">system</div>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-marker"
+>
+                    <span class="timeline-dot"></span>
+                    <span class="timeline-line"></span>
+                </div>
+                
+                <div class="timeline-content"
+>
+                    <div class="timeline-time">14:35:42</div>
+                    <div class="timeline-text">Incident created and page sent</div>
+                    <div class="timeline-author">oncall-eng</div>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-marker"
+>
+                    <span class="timeline-dot"></span>
+                    <span class="timeline-line"></span>
+                </div>
+                
+                <div class="timeline-content"
+>
+                    <div class="timeline-time">14:40:18</div>
+                    <div class="timeline-text">Identified: Load balancer misconfiguration</div>
+                    <div class="timeline-author">sarah.chen</div>
+                </div>
+            </div>
+            
+            <div class="timeline-item"
+>
+                <div class="timeline-marker">
+                    <span class="timeline-dot" style="background: var(--error);"></span>
+                </div>
+                
+                <div class="timeline-content">
+                    <div class="timeline-time">14:45:00</div>
+                    <div class="timeline-text">Investigating root cause</div>
+                    <div class="timeline-author">oncall-eng</div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- Postmortem Links -->
+        <div class="postmortem-panel">
+            <div class="panel-header">Postmortem Links</div>
+            
+            <div class="postmortem-item">
+                <div class="postmortem-info">
+                    <div class="postmortem-title">INC-2024-0078: Regional Outage</div>
+                    <div class="postmortem-date">Due: 2024-03-10</div>
+                </div>
+                
+                <span class="postmortem-status pending">Pending</span>
+            </div>
+            
+            <div class="postmortem-item">
+                <div class="postmortem-info">
+                    <div class="postmortem-title">INC-2024-0062: Data Loss Event</div>
+                    <div class="postmortem-date">Completed: 2024-03-01</div>
+                </div>
+                
+                <span class="postmortem-status completed">Done</span>
+            </div>
+            
+            <div class="postmortem-item"
+>
+                <div class="postmortem-info">
+                    <div class="postmortem-title">INC-2024-0051: Cascade Failure</div>
+                    <div class="postmortem-date">Completed: 2024-02-20</div>
+                </div>
+                
+                <span class="postmortem-status completed">Done</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script src="{{ url_for('static', filename='js/incidents/index.js') }}"></script>
+{% endblock %}

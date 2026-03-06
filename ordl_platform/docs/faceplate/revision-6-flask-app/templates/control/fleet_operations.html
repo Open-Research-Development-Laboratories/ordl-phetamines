@@ -1,0 +1,692 @@
+{% extends "app_base.html" %}
+
+{% block title %}Fleet Operations — ORDL Control{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item">Control</span>
+<span class="breadcrumb-separator">›</span>
+<span class="breadcrumb-item">Fleet</span>
+<span class="breadcrumb-separator">›</span>
+<span class="breadcrumb-item">Operations</span>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .content-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+        display: flex;
+        gap: 24px;
+        padding: 16px 0;
+        margin-bottom: 16px;
+        border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .stat-value {
+        font-family: var(--font-mono);
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stat-value.healthy { color: var(--success); }
+    .stat-value.warning { color: var(--warning); }
+    .stat-value.error { color: var(--error); }
+
+    /* Toolbar */
+    .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 0;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        position: relative;
+        flex: 1;
+        min-width: 240px;
+        max-width: 400px;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 8px 12px 8px 36px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 14px;
+    }
+
+    .search-box input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+    }
+
+    .search-box input::placeholder {
+        color: var(--text-muted);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        width: 16px;
+        height: 16px;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-select {
+        padding: 8px 32px 8px 12px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 13px;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6660' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+    }
+
+    /* Bulk Actions Bar */
+    .bulk-actions-bar {
+        display: none;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+        background: var(--bg-tertiary);
+        border-radius: 6px;
+        margin-bottom: 16px;
+        padding: 12px 16px;
+    }
+
+    .bulk-actions-bar.visible {
+        display: flex;
+    }
+
+    .selected-count {
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .selected-count strong {
+        color: var(--text-primary);
+    }
+
+    /* Node Table */
+    .table-container {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 16px;
+    }
+
+    .node-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .node-table th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        background: var(--bg-tertiary);
+        border-bottom: 1px solid var(--border-default);
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+    }
+
+    .node-table th:hover {
+        color: var(--text-secondary);
+    }
+
+    .node-table th.sortable::after {
+        content: '↕';
+        margin-left: 6px;
+        opacity: 0.4;
+        font-size: 10px;
+    }
+
+    .node-table th.sort-asc::after {
+        content: '↑';
+        opacity: 1;
+        color: var(--accent-primary);
+    }
+
+    .node-table th.sort-desc::after {
+        content: '↓';
+        opacity: 1;
+        color: var(--accent-primary);
+    }
+
+    .node-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border-subtle);
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .node-table tbody tr {
+        transition: background var(--transition-fast);
+    }
+
+    .node-table tbody tr:hover {
+        background: var(--bg-hover);
+    }
+
+    .node-table tbody tr.selected {
+        background: var(--accent-dim);
+    }
+
+    .node-table tbody tr.selected td {
+        color: var(--text-primary);
+    }
+
+    /* Status Badges */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .badge::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+
+    .badge-online { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+    .badge-online::before { background: var(--success); }
+    .badge-offline { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+    .badge-offline::before { background: var(--error); }
+    .badge-cordoned { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .badge-cordoned::before { background: var(--warning); }
+    .badge-draining { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .badge-draining::before { background: var(--info); }
+
+    /* Role Tags */
+    .role-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .role-coordinator { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .role-worker { background: rgba(6, 182, 212, 0.15); color: #67e8f9; }
+    .role-gateway { background: rgba(139, 92, 246, 0.15); color: #c084fc; }
+    .role-relay { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+
+    /* Node ID */
+    .node-id {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .node-id:hover {
+        color: var(--accent-primary);
+        cursor: pointer;
+    }
+
+    .node-address {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+
+    /* Resource Bars */
+    .resource-bar-container {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 100px;
+    }
+
+    .resource-bar {
+        height: 6px;
+        background: var(--bg-tertiary);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .resource-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+
+    .resource-bar-fill.cpu { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .resource-bar-fill.memory { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+    .resource-bar-fill.gpu { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+
+    .resource-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    /* Checkbox */
+    .checkbox {
+        width: 16px;
+        height: 16px;
+        border: 1px solid var(--border-strong);
+        border-radius: 4px;
+        background: var(--bg-secondary);
+        cursor: pointer;
+        appearance: none;
+        position: relative;
+    }
+
+    .checkbox:checked {
+        background: var(--accent-primary);
+        border-color: var(--accent-primary);
+    }
+
+    .checkbox:checked::after {
+        content: '';
+        position: absolute;
+        left: 5px;
+        top: 2px;
+        width: 4px;
+        height: 8px;
+        border: solid #000;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    /* Action Buttons in Table */
+    .table-actions {
+        display: flex;
+        gap: 6px;
+        opacity: 0;
+        transition: opacity var(--transition-fast);
+    }
+
+    .node-table tbody tr:hover .table-actions {
+        opacity: 1;
+    }
+
+    .action-btn-sm {
+        padding: 4px 8px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-default);
+        border-radius: 4px;
+        color: var(--text-secondary);
+        font-size: 11px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .action-btn-sm:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        border-color: var(--border-strong);
+    }
+
+    .action-btn-sm.warning:hover {
+        border-color: var(--warning);
+        color: var(--warning);
+    }
+
+    .action-btn-sm.danger:hover {
+        border-color: var(--error);
+        color: var(--error);
+    }
+
+    /* Update Status */
+    .update-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .update-progress {
+        width: 60px;
+        height: 4px;
+        background: var(--bg-tertiary);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .update-progress-fill {
+        height: 100%;
+        background: var(--accent-primary);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+
+    .update-text {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 0;
+    }
+
+    .pagination-info {
+        font-size: 13px;
+        color: var(--text-tertiary);
+    }
+
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pagination-btn {
+        padding: 6px 12px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 4px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        border-color: var(--border-strong);
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .pagination-btn.active {
+        background: var(--accent-dim);
+        color: var(--accent-primary);
+        border-color: var(--accent-primary);
+    }
+
+    /* Empty State */
+    .empty-state {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 64px;
+        text-align: center;
+    }
+
+    .empty-state.visible {
+        display: flex;
+    }
+
+    /* Modal for actions */
+    .action-modal .modal-body {
+        min-height: 100px;
+    }
+
+    .action-confirm-text {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+    }
+
+    .action-confirm-list {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-default);
+        border-radius: 6px;
+        padding: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .action-confirm-item {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-primary);
+        padding: 4px 0;
+        border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .action-confirm-item:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-header">
+    <div class="content-header-left">
+        <h1>Fleet Operations</h1>
+        <p>Manage node status, reconnect controls, drain/cordon actions, and updates</p>
+    </div>
+    <button class="btn btn-primary" onclick="showAddNodeModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Add Node
+    </button>
+</div>
+
+<div class="content-body">
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-value">50</span>
+            <span class="stat-label">Total Nodes</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value healthy">44</span>
+            <span class="stat-label">Online</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value warning">3</span>
+            <span class="stat-label">Cordoned</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value error">2</span>
+            <span class="stat-label">Offline</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value warning">1</span>
+            <span class="stat-label">Draining</span>
+        </div>
+        <div class="stat-item" style="margin-left: auto;">
+            <span class="stat-value">12</span>
+            <span class="stat-label">Updating</span>
+        </div>
+    </div>
+
+    <!-- Bulk Actions Bar -->
+    <div class="bulk-actions-bar" id="bulkActionsBar">
+        <span class="selected-count"><strong id="selectedCount">0</strong> nodes selected</span>
+        <button class="btn" onclick="bulkAction('reconnect')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9M4 4v5"/>
+                <path d="M20 20v-5h-.581m0 0a8.003 8.003 0 0 1-15.357 2m15.357-2H20"/>
+            </svg>
+            Reconnect
+        </button>
+        <button class="btn" onclick="bulkAction('cordon')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
+            Cordon
+        </button>
+        <button class="btn" onclick="bulkAction('drain')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M2 12h20"/>
+            </svg>
+            Drain
+        </button>
+        <button class="btn" onclick="bulkAction('update')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                <path d="M16 21h5v-5"/>
+            </svg>
+            Update
+        </button>
+        <button class="btn btn-danger" onclick="bulkAction('delete')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            Delete
+        </button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Search by node ID, hostname, or IP...">
+        </div>
+        <div class="filter-group">
+            <select class="filter-select" id="regionFilter">
+                <option value="">All Regions</option>
+                <option value="us-east">US East</option>
+                <option value="us-west">US West</option>
+                <option value="eu-west">EU West</option>
+                <option value="eu-central">EU Central</option>
+                <option value="ap-southeast">AP Southeast</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <select class="filter-select" id="statusFilter">
+                <option value="">All Status</option>
+                <option value="online">Online</option>
+                <option value="offline">Offline</option>
+                <option value="cordoned">Cordoned</option>
+                <option value="draining">Draining</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <select class="filter-select" id="roleFilter">
+                <option value="">All Roles</option>
+                <option value="coordinator">Coordinator</option>
+                <option value="worker">Worker</option>
+                <option value="gateway">Gateway</option>
+                <option value="relay">Relay</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Node Table -->
+    <div class="table-container">
+        <table class="node-table" id="nodeTable">
+            <thead>
+                <tr>
+                    <th style="width: 40px;"><input type="checkbox" class="checkbox" id="selectAll"></th>
+                    <th class="sortable" data-sort="id">Node ID</th>
+                    <th class="sortable" data-sort="status">Status</th>
+                    <th class="sortable" data-sort="role">Role</th>
+                    <th class="sortable" data-sort="region">Region</th>
+                    <th>Resources</th>
+                    <th class="sortable" data-sort="uptime">Uptime</th>
+                    <th>Update Status</th>
+                    <th style="width: 150px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Generated by JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        <span class="pagination-info">Showing 1-25 of 50 nodes</span>
+        <div class="pagination-controls">
+            <button class="pagination-btn" disabled>Previous</button>
+            <button class="pagination-btn active">1</button>
+            <button class="pagination-btn">2</button>
+            <button class="pagination-btn">Next</button>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState">
+        <div class="empty-state-icon">🔍</div>
+        <h3 class="empty-state-title">No nodes found</h3>
+        <p class="empty-state-desc">Try adjusting your search or filter criteria</p>
+        <button class="btn" onclick="clearFilters()">Clear Filters</button>
+    </div>
+</div>
+
+<!-- Action Confirmation Modal -->
+<div class="modal-overlay" id="actionModal">
+    <div class="modal action-modal">
+        <div class="modal-header" id="actionModalTitle">Confirm Action</div>
+        <div class="modal-body">
+            <p class="action-confirm-text" id="actionConfirmText"></p>
+            <div class="action-confirm-list" id="actionConfirmList"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeActionModal()">Cancel</button>
+            <button class="btn btn-primary" id="actionConfirmBtn" onclick="confirmBulkAction()">Confirm</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/control/fleet_operations.js') }}"></script>
+{% endblock %}

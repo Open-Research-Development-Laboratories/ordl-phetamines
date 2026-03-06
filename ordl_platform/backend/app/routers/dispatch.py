@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import json
+
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -8,10 +11,17 @@ from app.authz import evaluate_authorization
 from app.common import ensure_project_scope
 from app.config import get_settings
 from app.db import get_db
-from app.dispatch import create_dispatch
-from app.models import CollabMessage, DispatchRequest, DispatchResult
+from app.dispatch import create_dispatch, execute_dispatch_request
+from app.models import CollabMessage, DispatchEvent, DispatchExecution, DispatchRequest, DispatchResult
 from app.providers import PROVIDER_REGISTRY
-from app.schemas import DispatchCreate, DispatchOut, DispatchResultOut
+from app.schemas import (
+    DispatchCreate,
+    DispatchEventOut,
+    DispatchExecuteRequest,
+    DispatchExecutionOut,
+    DispatchOut,
+    DispatchResultOut,
+)
 from app.security import Principal, get_current_principal
 
 router = APIRouter(prefix='/dispatch', tags=['dispatch'])
@@ -28,6 +38,38 @@ def _dispatch_out(row: DispatchRequest) -> DispatchOut:
         model=row.model,
         request_hash=row.request_hash,
         state=row.state,
+    )
+
+
+def _execution_out(row: DispatchExecution) -> DispatchExecutionOut:
+    return DispatchExecutionOut(
+        id=row.id,
+        dispatch_request_id=row.dispatch_request_id,
+        started_by_user_id=row.started_by_user_id,
+        status=row.status,
+        provider_reference=row.provider_reference,
+        output_text=row.output_text,
+        error_text=row.error_text,
+        started_at=row.started_at.isoformat() if row.started_at else None,
+        completed_at=row.completed_at.isoformat() if row.completed_at else None,
+    )
+
+
+def _event_out(row: DispatchEvent) -> DispatchEventOut:
+    try:
+        payload = json.loads(row.event_payload_json or "{}")
+    except json.JSONDecodeError:
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {"value": str(payload)}
+    return DispatchEventOut(
+        id=row.id,
+        execution_id=row.execution_id,
+        dispatch_request_id=row.dispatch_request_id,
+        sequence=row.sequence,
+        event_type=row.event_type,
+        event_payload=payload,
+        created_at=row.created_at.isoformat() if row.created_at else None,
     )
 
 
@@ -112,3 +154,106 @@ def list_dispatch_results(
         )
         for row in rows
     ]
+
+
+@router.post('/{dispatch_request_id}/execute', response_model=DispatchExecutionOut)
+def execute_dispatch(
+    dispatch_request_id: str,
+    payload: DispatchExecuteRequest,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> DispatchExecutionOut:
+    dispatch = db.get(DispatchRequest, dispatch_request_id)
+    if dispatch is None:
+        raise HTTPException(status_code=404, detail='dispatch request not found')
+    ensure_project_scope(db, principal, dispatch.project_id)
+
+    auth = evaluate_authorization(principal, action='dispatch', high_risk=True)
+    if auth.decision != 'allow':
+        raise HTTPException(status_code=403, detail=f'dispatch denied: {auth.reason_codes}')
+
+    if not payload.force and dispatch.state == 'failed':
+        raise HTTPException(status_code=400, detail='dispatch is failed; use force=true to retry execution')
+
+    execution, _, _ = execute_dispatch_request(
+        db,
+        tenant_id=principal.tenant_id,
+        dispatch_request=dispatch,
+        requested_by_user_id=principal.user_id,
+        settings=get_settings(),
+        policy_reason_codes=auth.reason_codes,
+    )
+    db.commit()
+    return _execution_out(execution)
+
+
+@router.get('/{dispatch_request_id}/executions', response_model=list[DispatchExecutionOut])
+def list_dispatch_executions(
+    dispatch_request_id: str,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> list[DispatchExecutionOut]:
+    dispatch = db.get(DispatchRequest, dispatch_request_id)
+    if dispatch is None:
+        return []
+    ensure_project_scope(db, principal, dispatch.project_id)
+    rows = db.scalars(
+        select(DispatchExecution)
+        .where(DispatchExecution.dispatch_request_id == dispatch_request_id)
+        .order_by(DispatchExecution.started_at.asc(), DispatchExecution.id.asc())
+    ).all()
+    return [_execution_out(row) for row in rows]
+
+
+@router.get('/executions/{execution_id}/events', response_model=list[DispatchEventOut])
+def list_execution_events(
+    execution_id: str,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> list[DispatchEventOut]:
+    execution = db.get(DispatchExecution, execution_id)
+    if execution is None:
+        return []
+    dispatch = db.get(DispatchRequest, execution.dispatch_request_id)
+    if dispatch is None:
+        return []
+    ensure_project_scope(db, principal, dispatch.project_id)
+    rows = db.scalars(
+        select(DispatchEvent)
+        .where(DispatchEvent.execution_id == execution_id)
+        .order_by(DispatchEvent.sequence.asc(), DispatchEvent.created_at.asc())
+    ).all()
+    return [_event_out(row) for row in rows]
+
+
+@router.get('/executions/{execution_id}/stream')
+def stream_execution_events(
+    execution_id: str,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> StreamingResponse:
+    execution = db.get(DispatchExecution, execution_id)
+    if execution is None:
+        raise HTTPException(status_code=404, detail='dispatch execution not found')
+    dispatch = db.get(DispatchRequest, execution.dispatch_request_id)
+    if dispatch is None:
+        raise HTTPException(status_code=404, detail='dispatch request not found')
+    ensure_project_scope(db, principal, dispatch.project_id)
+    rows = db.scalars(
+        select(DispatchEvent)
+        .where(DispatchEvent.execution_id == execution_id)
+        .order_by(DispatchEvent.sequence.asc(), DispatchEvent.created_at.asc())
+    ).all()
+
+    def _iter_sse():
+        for row in rows:
+            try:
+                payload = json.loads(row.event_payload_json or "{}")
+            except json.JSONDecodeError:
+                payload = {}
+            if not isinstance(payload, dict):
+                payload = {"value": str(payload)}
+            yield f"event: {row.event_type}\n"
+            yield f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+    return StreamingResponse(_iter_sse(), media_type='text/event-stream')

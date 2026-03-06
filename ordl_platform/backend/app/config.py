@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     environment: str = "development"
 
     database_url: str = "sqlite:///./ordl_platform.db"
+    db_rls_enabled: bool = True
     policy_secret: str = "ordl-dev-policy-secret-please-change-this-32b"
     auth_secret: str = "ordl-dev-auth-secret-please-change-this-32b"
     extension_signing_secret: str = "ordl-dev-extension-secret-please-change-this-32b"

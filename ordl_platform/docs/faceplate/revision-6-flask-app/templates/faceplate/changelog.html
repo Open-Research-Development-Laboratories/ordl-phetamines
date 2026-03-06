@@ -1,0 +1,230 @@
+{% extends "app_base.html" %}
+
+{% block title %}Changelog | ORDL{% endblock %}
+{% block page_name %}changelog{% endblock %}
+
+{% block breadcrumb %}
+<nav class="fp-breadcrumb" aria-label="Breadcrumb">
+  <div class="fp-container">
+    <ol class="fp-breadcrumb-list">
+      <li class="fp-breadcrumb-item"><a href="{{ url_for('home') }}">Home</a> <span class="fp-breadcrumb-separator">›</span></li>
+      <li class="fp-breadcrumb-item">Changelog</li>
+    </ol>
+  </div>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/faceplate/changelog.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Changelog Header -->
+<section class="changelog-header">
+  <div class="fp-container">
+    <div class="changelog-intro" data-animate>
+      <h1>Changelog</h1>
+      <p>Track updates, improvements, and fixes across the ORDL platform.</p>
+      
+      <div class="changelog-subscribe">
+        <a href="#" class="fp-btn fp-btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          Subscribe to updates
+        </a>
+        <a href="#" class="fp-btn fp-btn-ghost">View on GitHub</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Version Filter -->
+<section class="changelog-filter">
+  <div class="fp-container">
+    <div class="filter-tabs">
+      <button class="filter-tab active">All</button>
+      <button class="filter-tab">Features</button>
+      <button class="filter-tab">Fixes</button>
+      <button class="filter-tab">Security</button>
+    </div>
+
+    <div class="version-select">
+      <select class="fp-input">
+        <option>All versions</option>
+        <option>v2.4.x</option>
+        <option>v2.3.x</option>
+        <option>v2.2.x</option>
+      </select>
+    </div>
+  </div>
+</section>
+
+<!-- Release Timeline -->
+<section class="fp-section changelog-timeline">
+  <div class="fp-container">
+    
+    <!-- v2.4.0 -->
+    <article class="release" data-animate>
+      <div class="release-badge">
+        <span class="version">v2.4.0</span>
+        <span class="date">Mar 1, 2026</span>
+      </div>
+
+      <div class="release-content">
+        <h2 class="release-title">Multi-Region Fleet Orchestration</h2>
+
+        <div class="release-notes">
+          <div class="note-section">
+            <h3><span class="badge badge-feature">Feature</span></h3>
+            <ul>
+              <li>Added support for cross-region model deployment with automatic failover</li>
+              <li>New Fleet Topology visualizer with real-time health indicators</li>
+              <li>Integrated cost optimization recommendations for fleet sizing</li>
+            </ul>
+          </div>
+
+          <div class="note-section">
+            <h3><span class="badge badge-improvement">Improvement</span></h3>
+            <ul>
+              <li>Reduced inference latency by 15% through optimized batching</li>
+              <li>Enhanced audit log search with full-text indexing</li>
+              <li>Improved model registry UI with version comparison</li>
+            </ul>
+          </div>
+
+          <div class="note-section">
+            <h3><span class="badge badge-fix">Fix</span></h3>
+            <ul>
+              <li>Fixed race condition in concurrent model deployments</li>
+              <li>Resolved intermittent WebSocket reconnection issues</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="release-meta">
+          <a href="#" class="meta-link">Full Release Notes →</a>
+          <a href="#" class="meta-link">Migration Guide →</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- v2.3.2 -->
+    <article class="release" data-animate>
+      <div class="release-badge">
+        <span class="version">v2.3.2</span>
+        <span class="date">Feb 15, 2026</span>
+      </div>
+
+      <div class="release-content">
+        <h2 class="release-title">Security Patch Release</h2>
+
+        <div class="release-notes">
+          <div class="note-section">
+            <h3><span class="badge badge-security">Security</span></h3>
+            <ul>
+              <li>CVE-2026-1234: Patched vulnerability in JWT token validation</li>
+              <li>Updated dependencies to address transitive vulnerability in grpc</li>
+              <li>Enhanced rate limiting to prevent brute force attempts</li>
+            </ul>
+          </div>
+
+          <div class="note-section">
+            <h3><span class="badge badge-fix">Fix</span></h3>
+            <ul>
+              <li>Fixed memory leak in long-running inference workers</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="release-meta">
+          <a href="#" class="meta-link">Security Advisory →</a>
+          <a href="#" class="meta-link">Rollback Notes →</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- v2.3.0 -->
+    <article class="release" data-animate>
+      <div class="release-badge">
+        <span class="version">v2.3.0</span>
+        <span class="date">Feb 1, 2026</span>
+      </div>
+
+      <div class="release-content">
+        <h2 class="release-title">IDE 2.0 and Pipeline Builder</h2>
+
+        <div class="release-notes">
+          <div class="note-section">
+            <h3><span class="badge badge-feature">Feature</span></h3>
+            <ul>
+              <li>Complete IDE redesign with Monaco editor integration</li>
+              <li>New visual Pipeline Builder with drag-and-drop interface</li>
+              <li>Added support for custom model containers</li>
+              <li>Real-time collaboration in shared workspaces</li>
+            </ul>
+          </div>
+
+          <div class="note-section">
+            <h3><span class="badge badge-breaking">Breaking</span></h3>
+            <ul>
+              <li>Pipeline API v1 deprecated, migration to v2 required by June 2026</li>
+              <li>Legacy Python SDK (v1.x) no longer supported</li>
+            </ul>
+          </div>
+
+          <div class="note-section">
+            <h3><span class="badge badge-migration">Migration</span></h3>
+            <ul>
+              <li>Automated migration tool available for pipeline definitions</li>
+              <li>Backward compatibility layer enabled for 90 days</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="release-meta">
+          <a href="#" class="meta-link">Full Release Notes →</a>
+          <a href="#" class="meta-link">Migration Guide →</a>
+          <a href="#" class="meta-link">Rollback Notes →</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- Load More -->
+    <div class="load-more" data-animate>
+      <button class="fp-btn fp-btn-secondary">Load More Releases</button>
+    </div>
+  </div>
+</section>
+
+<!-- Roadmap Teaser -->
+<section class="fp-section fp-section-alt">
+  <div class="fp-container">
+    <div class="roadmap-teaser" data-animate>
+      <h2>Coming Soon</h2>
+
+      <div class="roadmap-items">
+        <div class="roadmap-item">
+          <span class="roadmap-quarter">Q2 2026</span>
+          <h4>ORDL 3.0 Beta</h4>
+          <p>Next-generation orchestration engine with enhanced governance</p>
+        </div>
+
+        <div class="roadmap-item">
+          <span class="roadmap-quarter">Q3 2026</span>
+          <h4>Edge Deployment</h4>
+          <p>Deploy models to edge locations with minimal latency</p>
+        </div>
+
+        <div class="roadmap-item">
+          <span class="roadmap-quarter">Q4 2026</span>
+          <h4>AutoML Integration</h4>
+          <p>Built-in model training and fine-tuning capabilities</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/faceplate/changelog.js') }}"></script>
+{% endblock %}

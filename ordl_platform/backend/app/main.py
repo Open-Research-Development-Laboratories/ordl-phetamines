@@ -10,6 +10,7 @@ from app.config import get_settings
 from app.connectivity_monitor import run_monitor_daemon
 from app.db import get_engine, init_engine
 from app.models import Base
+from app.rls import ensure_postgres_rls
 from app.routers import (
     approvals,
     audit,
@@ -55,7 +56,9 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     init_engine(settings.database_url)
-    Base.metadata.create_all(bind=get_engine())
+    engine = get_engine()
+    Base.metadata.create_all(bind=engine)
+    ensure_postgres_rls(engine, settings)
 
     app = FastAPI(title=settings.app_name, lifespan=lifespan)
 

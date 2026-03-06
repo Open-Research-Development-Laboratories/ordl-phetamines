@@ -1,0 +1,332 @@
+{% extends "app_base.html" %}
+
+{% block title %}Providers - ORDL Security{% endblock %}
+{% block page_id %}providers-page{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/security/providers.css') }}">
+{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item">Security</span>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item active">Providers</span>
+{% endblock %}
+
+{% block content_header %}
+<h1>Model Providers</h1>
+<p>Model provider configuration, authentication status, failover priority, and health probes</p>
+{% endblock %}
+
+{% block content %}
+<div class="providers-container">
+    
+    <!-- Provider Overview Cards -->
+    <div class="providers-section">
+        <div class="section-header">
+            <div class="section-stats">
+                <div class="stat-card">
+                    <span class="stat-value">{{ providers|length if providers else 6 }}</span>
+                    <span class="stat-label">Configured</span>
+                </div>
+                <div class="stat-card success">
+                    <span class="stat-value">5</span>
+                    <span class="stat-label">Healthy</span>
+                </div>
+                <div class="stat-card warning">
+                    <span class="stat-value">1</span>
+                    <span class="stat-label">Degraded</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">23ms</span>
+                    <span class="stat-label">Avg Latency</span>
+                </div>
+            </div>
+            <button class="btn btn-amber" data-action="add-provider">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Add Provider
+            </button>
+        </div>
+
+        <div class="providers-list">
+            {% for provider in providers if providers else [
+                {'id': 'prov_001', 'name': 'OpenAI GPT-4', 'type': 'openai', 'priority': 1, 'status': 'healthy', 'auth': 'valid', 'latency': 18, 'rps': 500, 'region': 'us-east-1', 'last_check': '2s ago'},
+                {'id': 'prov_002', 'name': 'Anthropic Claude', 'type': 'anthropic', 'priority': 2, 'status': 'healthy', 'auth': 'valid', 'latency': 24, 'rps': 300, 'region': 'us-west-2', 'last_check': '5s ago'},
+                {'id': 'prov_003', 'name': 'Azure OpenAI', 'type': 'azure', 'priority': 3, 'status': 'healthy', 'auth': 'valid', 'latency': 32, 'rps': 1000, 'region': 'us-east-1', 'last_check': '3s ago'},
+                {'id': 'prov_004', 'name': 'AWS Bedrock', 'type': 'aws', 'priority': 4, 'status': 'degraded', 'auth': 'valid', 'latency': 89, 'rps': 200, 'region': 'eu-west-1', 'last_check': '10s ago'},
+                {'id': 'prov_005', 'name': 'Google Vertex', 'type': 'google', 'priority': 5, 'status': 'healthy', 'auth': 'valid', 'latency': 28, 'rps': 400, 'region': 'us-central1', 'last_check': '4s ago'},
+                {'id': 'prov_006', 'name': 'Cohere', 'type': 'cohere', 'priority': 6, 'status': 'healthy', 'auth': 'valid', 'latency': 22, 'rps': 250, 'region': 'us-east-1', 'last_check': '6s ago'}
+            ] %}
+            <div class="provider-card {{ provider.status }}" data-provider-id="{{ provider.id }}">
+                <div class="provider-header">
+                    <div class="provider-identity">
+                        <div class="provider-icon {{ provider.type }}">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                        </div>
+                        <div class="provider-info">
+                            <h4>{{ provider.name }}</h4>
+                            <div class="provider-meta">
+                                <span class="provider-id">{{ provider.id }}</span>
+                                <span class="separator">•</span>
+                                <span class="provider-type">{{ provider.type|title }}</span>
+                                <span class="separator">•</span>
+                                <span class="provider-region">{{ provider.region }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="provider-badges">
+                        <span class="priority-badge">Priority {{ provider.priority }}</span>
+                        <span class="status-badge {{ provider.status }}">{{ provider.status|title }}</span>
+                    </div>
+                </div>
+
+                <div class="provider-metrics">
+                    <div class="metric">
+                        <span class="metric-label">Latency</span>
+                        <span class="metric-value {{ 'warning' if provider.latency > 50 else '' }}">{{ provider.latency }}ms</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">RPS</span>
+                        <span class="metric-value">{{ provider.rps }}</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Auth</span>
+                        <span class="metric-value {{ provider.auth }}">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            {{ provider.auth|title }}
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Health Check</span>
+                        <span class="metric-value">{{ provider.last_check }}</span>
+                    </div>
+                </div>
+
+                <div class="provider-health-bar">
+                    <div class="health-segments">
+                        <div class="segment success" style="width: 85%"></div>
+                        <div class="segment warning" style="width: 10%"></div>
+                        <div class="segment error" style="width: 5%"></div>
+                    </div>
+                    <div class="health-label">99.7% uptime (24h)</div>
+                </div>
+
+                <div class="provider-actions">
+                    <button class="btn btn-sm" data-action="test-provider" data-provider="{{ provider.id }}">Test</button>
+                    <button class="btn btn-sm" data-action="config-provider" data-provider="{{ provider.id }}">Configure</button>
+                    <button class="btn btn-sm" data-action="logs-provider" data-provider="{{ provider.id }}">Logs</button>
+                    {% if provider.status == 'degraded' %}
+                    <button class="btn btn-sm btn-amber" data-action="failover-provider" data-provider="{{ provider.id }}">Force Failover</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Failover Priority Configuration -->
+    <div class="providers-section">
+        <div class="section-header">
+            <h2>Failover Priority Chain</h2>
+            <button class="btn btn-amber" data-action="save-priority">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Save Order
+            </button>
+        </div>
+        <div class="failover-chain">
+            <div class="chain-items" id="priorityChain">
+                <div class="chain-item" data-priority="1">
+                    <div class="chain-rank">1</div>
+                    <div class="chain-provider">OpenAI GPT-4</div>
+                    <div class="chain-handle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="12" r="1"/>
+                            <circle cx="9" cy="5" r="1"/>
+                            <circle cx="9" cy="19" r="1"/>
+                            <circle cx="15" cy="12" r="1"/>
+                            <circle cx="15" cy="5" r="1"/>
+                            <circle cx="15" cy="19" r="1"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="chain-connector"></div>
+                <div class="chain-item" data-priority="2">
+                    <div class="chain-rank">2</div>
+                    <div class="chain-provider">Anthropic Claude</div>
+                    <div class="chain-handle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="12" r="1"/>
+                            <circle cx="9" cy="5" r="1"/>
+                            <circle cx="9" cy="19" r="1"/>
+                            <circle cx="15" cy="12" r="1"/>
+                            <circle cx="15" cy="5" r="1"/>
+                            <circle cx="15" cy="19" r="1"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="chain-connector"></div>
+                <div class="chain-item" data-priority="3">
+                    <div class="chain-rank">3</div>
+                    <div class="chain-provider">Azure OpenAI</div>
+                    <div class="chain-handle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="12" r="1"/>
+                            <circle cx="9" cy="5" r="1"/>
+                            <circle cx="9" cy="19" r="1"/>
+                            <circle cx="15" cy="12" r="1"/>
+                            <circle cx="15" cy="5" r="1"/>
+                            <circle cx="15" cy="19" r="1"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="chain-connector"></div>
+                <div class="chain-item" data-priority="4">
+                    <div class="chain-rank">4</div>
+                    <div class="chain-provider">AWS Bedrock</div>
+                    <div class="chain-handle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="12" r="1"/>
+                            <circle cx="9" cy="5" r="1"/>
+                            <circle cx="9" cy="19" r="1"/>
+                            <circle cx="15" cy="12" r="1"/>
+                            <circle cx="15" cy="5" r="1"/>
+                            <circle cx="15" cy="19" r="1"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="chain-connector"></div>
+                <div class="chain-item" data-priority="5">
+                    <div class="chain-rank">5</div>
+                    <div class="chain-provider">Google Vertex</div>
+                    <div class="chain-handle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="12" r="1"/>
+                            <circle cx="9" cy="5" r="1"/>
+                            <circle cx="9" cy="19" r="1"/>
+                            <circle cx="15" cy="12" r="1"/>
+                            <circle cx="15" cy="5" r="1"/>
+                            <circle cx="15" cy="19" r="1"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Probe Configuration -->
+    <div class="providers-section">
+        <div class="section-header">
+            <h2>Health Probe Configuration</h2>
+            <button class="btn btn-amber" data-action="edit-probes">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit Probes
+            </button>
+        </div>
+        <div class="probes-grid">
+            <div class="probe-card">
+                <div class="probe-header">
+                    <h4>Latency Check</h4>
+                    <span class="probe-status active">Active</span>
+                </div>
+                <div class="probe-config">
+                    <div class="config-row">
+                        <span class="config-label">Interval</span>
+                        <span class="config-value">30s</span>
+                    </div>
+                    <div class="config-row">
+                        <span class="config-label">Timeout</span>
+                        <span class="config-value">5s</span>
+                    </div>
+                    <div class="config-row">
+                        <span class="config-label">Threshold</span>
+                        <span class="config-value">100ms</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="probe-card">
+                <div class="probe-header">
+                    <h4>Authentication Check</h4>
+                    <span class="probe-status active">Active</span>
+                </div>
+                <div class="probe-config">
+                    <div class="config-row">
+                        <span class="config-label">Interval</span>
+                        <span class="config-value">5m</span>
+                    </div>
+                    <div class="config-row">
+                        <span class="config-label">Method</span>
+                        <span class="config-value">Token validation</span>
+                    </div>
+                    <div class="config-row">
+                        <span class="config-label">Alert on</span>
+                        <span class="config-value">Expiry &lt; 24h</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="probe-card">
+                <div class="probe-header">
+                    <h4>Rate Limit Check</h4>
+                    <span class="probe-status active">Active</span>
+                </div>
+                <div class="probe-config">
+                    <div class="config-row">
+                        <span class="config-label">Interval</span>
+                        <span class="config-value">1m</span>
+                    </div>
+                    <div class="config-row">
+                        <span class="config-label">Threshold</span>
+                        <span class="config-value">80% capacity</span>
+                    </div>
+                    <div class="config-row">
+                        <span class="config-label">Action</span>
+                        <span class="config-value">Alert + Log</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="probe-card">
+                <div class="probe-header">
+                    <h4>Model Availability</h4>
+                    <span class="probe-status active">Active</span>
+                </div>
+                <div class="probe-config">
+                    <div class="config-row">
+                        <span class="config-label">Interval</span>
+                        <span class="config-value">10s</span>
+                    </div>
+                    <div class="config-row">
+                        <span class="config-label">Test Model</span>
+                        <span class="config-value">gpt-4-turbo</span>
+                    </div>
+                    <div class="config-row">
+                        <span class="config-label">Test Prompt</span>
+                        <span class="config-value">"Hello" (1 token)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/security/providers.js') }}"></script>
+{% endblock %}

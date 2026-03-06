@@ -1,0 +1,347 @@
+{% extends "app_base.html" %}
+
+{% block title %}Policy - ORDL Governance{% endblock %}
+{% block page_id %}policy-page{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/governance/policy.css') }}">
+{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item">Governance</span>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item active">Policy Engine</span>
+{% endblock %}
+
+{% block content_header %}
+<h1>Policy Engine</h1>
+<p>Policy token decisions, rule simulation, and hold/deny reason explorer</p>
+{% endblock %}
+
+{% block content %}
+<div class="policy-container">
+    
+    <!-- Policy Tokens Dashboard -->
+    <div class="policy-section">
+        <div class="section-header">
+            <h2>Active Policy Tokens</h2>
+            <div class="token-stats">
+                <span class="stat-badge success">{{ token_stats.granted if token_stats else '1,247' }} Granted</span>
+                <span class="stat-badge warning">{{ token_stats.held if token_stats else '23' }} Held</span>
+                <span class="stat-badge error">{{ token_stats.denied if token_stats else '8' }} Denied</span>
+            </div>
+        </div>
+        <div class="tokens-grid">
+            <div class="token-card">
+                <div class="token-header">
+                    <span class="token-id">POL-2024-001</span>
+                    <span class="token-status granted">Granted</span>
+                </div>
+                <div class="token-subject">
+                    <span class="subject-type">User</span>
+                    <span class="subject-id">user_8xK2mN</span>
+                </div>
+                <div class="token-action">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    data:read:dataset_42
+                </div>
+                <div class="token-meta">
+                    <span>Issued: 2 min ago</span>
+                    <span>Expires: 8h</span>
+                </div>
+            </div>
+
+            <div class="token-card">
+                <div class="token-header">
+                    <span class="token-id">POL-2024-002</span>
+                    <span class="token-status held">Held</span>
+                </div>
+                <div class="token-subject">
+                    <span class="subject-type">Service</span>
+                    <span class="subject-id">svc_inference_api</span>
+                </div>
+                <div class="token-action">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                    model:deploy:prod
+                </div>
+                <div class="token-meta">
+                    <span>Issued: 15 min ago</span>
+                    <span>Pending approval</span>
+                </div>
+            </div>
+
+            <div class="token-card">
+                <div class="token-header">
+                    <span class="token-id">POL-2024-003</span>
+                    <span class="token-status denied">Denied</span>
+                </div>
+                <div class="token-subject">
+                    <span class="subject-type">User</span>
+                    <span class="subject-id">user_9pL4qR</span>
+                </div>
+                <div class="token-action">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                    </svg>
+                    admin:user:modify:clearance
+                </div>
+                <div class="token-meta">
+                    <span>Issued: 32 min ago</span>
+                    <span>Insufficient clearance</span>
+                </div>
+            </div>
+
+            <div class="token-card">
+                <div class="token-header">
+                    <span class="token-id">POL-2024-004</span>
+                    <span class="token-status granted">Granted</span>
+                </div>
+                <div class="token-subject">
+                    <span class="subject-type">Seat</span>
+                    <span class="subject-id">seat_127</span>
+                </div>
+                <div class="token-action">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    compute:provision:gpu_cluster
+                </div>
+                <div class="token-meta">
+                    <span>Issued: 1 hour ago</span>
+                    <span>Expires: 24h</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rule Simulation Engine -->
+    <div class="policy-section">
+        <div class="section-header">
+            <h2>Rule Simulation</h2>
+            <button class="btn btn-amber" data-action="run-simulation">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                Run Simulation
+            </button>
+        </div>
+        <div class="simulator-container">
+            <div class="simulator-input">
+                <div class="input-group">
+                    <label>Subject</label>
+                    <select id="simSubject">
+                        <option value="user_8xK2mN">user_8xK2mN (L3)</option>
+                        <option value="user_9pL4qR">user_9pL4qR (L2)</option>
+                        <option value="svc_inference_api">svc_inference_api</option>
+                        <option value="seat_127">seat_127 (L4)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Action</label>
+                    <select id="simAction">
+                        <optgroup label="Data">
+                            <option value="data:read">data:read</option>
+                            <option value="data:write">data:write</option>
+                            <option value="data:delete">data:delete</option>
+                        </optgroup>
+                        <optgroup label="Model">
+                            <option value="model:deploy">model:deploy</option>
+                            <option value="model:train">model:train</option>
+                            <option value="model:infer">model:infer</option>
+                        </optgroup>
+                        <optgroup label="Admin">
+                            <option value="admin:user:modify">admin:user:modify</option>
+                            <option value="admin:policy:edit">admin:policy:edit</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Resource</label>
+                    <input type="text" id="simResource" placeholder="e.g., dataset_42" value="dataset_42">
+                </div>
+                <div class="input-group">
+                    <label>Context (JSON)</label>
+                    <textarea id="simContext" rows="4">{
+  "time_of_day": "14:30",
+  "source_ip": "10.0.1.42",
+  "mfa_verified": true,
+  "session_age_minutes": 45
+}</textarea>
+                </div>
+            </div>
+            <div class="simulator-output">
+                <div class="output-header">
+                    <h4>Simulation Result</h4>
+                    <span class="sim-status pending">Ready to run</span>
+                </div>
+                <div class="output-content" id="simResult">
+                    <div class="result-placeholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                        </svg>
+                        <p>Configure parameters and run simulation</p>
+                    </div>
+                </div>
+                <div class="output-rules" id="simRules" style="display: none;">
+                    <h5>Rules Evaluated</h5>
+                    <div class="rules-list">
+                        <div class="rule-item">
+                            <span class="rule-name">Check clearance tier</span>
+                            <span class="rule-result pass">Pass</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-name">Verify compartment access</span>
+                            <span class="rule-result pass">Pass</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-name">Check time restrictions</span>
+                            <span class="rule-result pass">Pass</span>
+                        </div>
+                        <div class="rule-item">
+                            <span class="rule-name">Verify MFA for sensitive actions</span>
+                            <span class="rule-result pass">Pass</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hold/Deny Reason Explorer -->
+    <div class="policy-section">
+        <div class="section-header">
+            <h2>Hold/Deny Reason Explorer</h2>
+            <div class="reason-filters">
+                <select id="reasonTypeFilter">
+                    <option value="">All Types</option>
+                    <option value="clearance">Clearance</option>
+                    <option value="compartment">Compartment</option>
+                    <option value="time">Time Restriction</option>
+                    <option value="mfa">MFA</option>
+                    <option value="quorum">Quorum</option>
+                </select>
+            </div>
+        </div>
+        <div class="reasons-container">
+            <div class="reasons-legend">
+                <div class="legend-item">
+                    <span class="legend-dot hold"></span>
+                    <span>Hold (awaiting approval)</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot deny"></span>
+                    <span>Deny (rejected)</span>
+                </div>
+            </div>
+            <div class="reasons-tree">
+                <div class="reason-category">
+                    <div class="category-header">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <span>Clearance Violations</span>
+                        <span class="category-count">12</span>
+                    </div>
+                    <div class="category-items">
+                        <div class="reason-item deny">
+                            <span class="reason-code">CLEARANCE-001</span>
+                            <span class="reason-desc">Subject clearance insufficient for target resource</span>
+                            <span class="reason-count">8</span>
+                        </div>
+                        <div class="reason-item deny">
+                            <span class="reason-code">CLEARANCE-002</span>
+                            <span class="reason-desc">Elevation required but not approved</span>
+                            <span class="reason-count">4</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reason-category">
+                    <div class="category-header">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        <span>Compartment Access</span>
+                        <span class="category-count">7</span>
+                    </div>
+                    <div class="category-items">
+                        <div class="reason-item deny">
+                            <span class="reason-code">COMPART-001</span>
+                            <span class="reason-desc">Not a member of required compartment</span>
+                            <span class="reason-count">5</span>
+                        </div>
+                        <div class="reason-item hold">
+                            <span class="reason-code">COMPART-002</span>
+                            <span class="reason-desc">Compartment membership pending review</span>
+                            <span class="reason-count">2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reason-category">
+                    <div class="category-header">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                        <span>Time Restrictions</span>
+                        <span class="category-count">5</span>
+                    </div>
+                    <div class="category-items">
+                        <div class="reason-item deny">
+                            <span class="reason-code">TIME-001</span>
+                            <span class="reason-desc">Action outside allowed time window</span>
+                            <span class="reason-count">3</span>
+                        </div>
+                        <div class="reason-item hold">
+                            <span class="reason-code">TIME-002</span>
+                            <span class="reason-desc">Maintenance window restriction</span>
+                            <span class="reason-count">2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reason-category">
+                    <div class="category-header">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <path d="m9 12 2 2 4-4"/>
+                        </svg>
+                        <span>Approval Quorum</span>
+                        <span class="category-count">4</span>
+                    </div>
+                    <div class="category-items">
+                        <div class="reason-item hold">
+                            <span class="reason-code">QUORUM-001</span>
+                            <span class="reason-desc">Awaiting 2 of 3 approvals</span>
+                            <span class="reason-count">3</span>
+                        </div>
+                        <div class="reason-item hold">
+                            <span class="reason-code">QUORUM-002</span>
+                            <span class="reason-desc">Board approval required</span>
+                            <span class="reason-count">1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/governance/policy.js') }}"></script>
+{% endblock %}

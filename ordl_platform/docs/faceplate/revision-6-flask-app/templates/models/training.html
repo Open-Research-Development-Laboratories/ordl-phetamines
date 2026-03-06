@@ -1,0 +1,295 @@
+{% extends "layouts/app_base.html" %}
+
+{% block title %}Model Training - ORDL{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="/app/models">Models</a>
+    <span class="separator">/</span>
+    <span>Training</span>
+</div>
+{% endblock %}
+
+{% block header_actions %}
+<button class="header-btn">Save Config</button>
+<button class="header-btn primary">Launch Training</button>
+{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section">
+    <div class="nav-title">Model Engineering</div>
+    <a href="/app/models/workshop" class="nav-item">
+        <span class="nav-icon">◈</span>
+        <span>Workshop</span>
+    </a>
+    <a href="/app/models/training" class="nav-item active">
+        <span class="nav-icon">▶</span>
+        <span>Training</span>
+    </a>
+    <a href="/app/models/inference" class="nav-item">
+        <span class="nav-icon">⚡</span>
+        <span>Inference</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Data</div>
+    <a href="/app/data/pipelines" class="nav-item">
+        <span class="nav-icon">◆</span>
+        <span>Pipelines</span>
+    </a>
+    <a href="/app/data/datasets" class="nav-item">
+        <span class="nav-icon">◉</span>
+        <span>Datasets</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Platform</div>
+    <a href="/app/nodes/discovery" class="nav-item">
+        <span class="nav-icon">◐</span>
+        <span>Discovery</span>
+    </a>
+    <a href="/app/nodes/autoupdate" class="nav-item">
+        <span class="nav-icon">↻</span>
+        <span>Auto-Update</span>
+    </a>
+    <a href="/app/health" class="nav-item">
+        <span class="nav-icon">♥</span>
+        <span>Health</span>
+    </a>
+    <a href="/app/incidents" class="nav-item">
+        <span class="nav-icon">⚠</span>
+        <span>Incidents</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/models/training.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="training-container">
+    <!-- Dataset Selection -->
+    <div class="dataset-panel">
+        <div class="card-header">Dataset Selection</div>
+        
+        <div class="dataset-search">
+            <input type="search" placeholder="Search datasets..." id="datasetSearch">
+        </div>
+        
+        <div class="dataset-categories">
+            <span class="dataset-category active">All</span>
+            <span class="dataset-category">Raw</span>
+            <span class="dataset-category">Processed</span>
+            <span class="dataset-category">Labeled</span>
+        </div>
+        
+        <div class="dataset-list" id="datasetList">
+            <div class="dataset-item selected">
+                <input type="checkbox" class="dataset-checkbox" checked>
+                <div class="dataset-info">
+                    <div class="dataset-name">customer_interactions_v2</div>
+                    <div class="dataset-meta">4.2B rows · processed</div>
+                </div>
+                <span class="dataset-size">142TB</span>
+            </div>
+            
+            <div class="dataset-item selected">
+                <input type="checkbox" class="dataset-checkbox" checked>
+                <div class="dataset-info">
+                    <div class="dataset-name">support_tickets_processed</div>
+                    <div class="dataset-meta">128M rows · labeled</div>
+                </div>
+                <span class="dataset-size">5.6TB</span>
+            </div>
+            
+            <div class="dataset-item">
+                <input type="checkbox" class="dataset-checkbox">
+                <div class="dataset-info">
+                    <div class="dataset-name">documentation_corpus</div>
+                    <div class="dataset-meta">45M docs · raw</div>
+                </div>
+                <span class="dataset-size">890GB</span>
+            </div>
+            
+            <div class="dataset-item">
+                <input type="checkbox" class="dataset-checkbox">
+                <div class="dataset-info">
+                    <div class="dataset-name">conversation_logs_q4</div>
+                    <div class="dataset-meta">2.1B rows · raw</div>
+                </div>
+                <span class="dataset-size">67TB</span>
+            </div>
+            
+            <div class="dataset-item">
+                <input type="checkbox" class="dataset-checkbox">
+                <div class="dataset-info">
+                    <div class="dataset-name">feedback_ratings_2024</div>
+                    <div class="dataset-meta">89M rows · labeled</div>
+                </div>
+                <span class="dataset-size">12GB</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Run Config -->
+    <div class="config-panel">
+        <div class="card-header">Run Configuration</div>
+        
+        <div style="flex: 1; overflow-y: auto;">
+            <div class="config-section">
+                <div class="config-title">Training Parameters</div>
+                <div class="config-grid">
+                    <div class="config-field">
+                        <label class="config-label">Batch Size</label>
+                        <input type="number" class="config-input" value="512">
+                    </div>
+                    
+                    <div class="config-field">
+                        <label class="config-label">Learning Rate</label>
+                        <input type="text" class="config-input" value="1e-4">
+                    </div>
+                    
+                    <div class="config-field">
+                        <label class="config-label">Warmup Steps</label>
+                        <input type="number" class="config-input" value="1000">
+                    </div>
+                    
+                    <div class="config-field">
+                        <label class="config-label">Max Steps</label>
+                        <input type="number" class="config-input" value="100000">
+                    </div>
+                    
+                    <div class="config-field">
+                        <label class="config-label">Optimizer</label>
+                        <select class="config-select">
+                            <option>AdamW</option>
+                            <option>Adam</option>
+                            <option>SGD</option>
+                        </select>
+                    </div>
+                    
+                    <div class="config-field">
+                        <label class="config-label">Scheduler</label>
+                        <select class="config-select">
+                            <option>Cosine</option>
+                            <option>Linear</option>
+                            <option>Polynomial</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="config-section">
+                <div class="config-title">Hardware Target</div>
+                
+                <div class="hardware-grid">
+                    <div class="hardware-option selected">
+                        <div class="hardware-icon">◈</div>
+                        <div class="hardware-info">
+                            <div class="hardware-name">GPU-8xA100-80GB</div>
+                            <div class="hardware-spec">640GB VRAM · NVLink</div>
+                        </div>
+                        <span class="hardware-price">$32.50/hr</span>
+                    </div>
+                    
+                    <div class="hardware-option">
+                        <div class="hardware-icon">◉</div>
+                        <div class="hardware-info">
+                            <div class="hardware-name">GPU-4xA100-40GB</div>
+                            <div class="hardware-spec">160GB VRAM · InfiniBand</div>
+                        </div>
+                        <span class="hardware-price">$16.20/hr</span>
+                    </div>
+                    
+                    <div class="hardware-option">
+                        <div class="hardware-icon">◆</div>
+                        <div class="hardware-info">
+                            <div class="hardware-name">GPU-8xH100-80GB</div>
+                            <div class="hardware-spec">640GB VRAM · NVLink4</div>
+                        </div>
+                        <span class="hardware-price">$64.00/hr</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cost/Time Estimator -->
+    <div class="estimator-panel">
+        <div class="card-header">Cost & Time Estimator</div>
+        
+        <div class="estimator-content">
+            <div class="estimate-section">
+                <div class="estimate-title">Resource Estimate</div>
+                
+                <div class="estimate-item">
+                    <span class="estimate-label">Compute Hours</span>
+                    <span class="estimate-value" id="computeHours">~48.5 hrs</span>
+                </div>
+                
+                <div class="estimate-item">
+                    <span class="estimate-label">Tokens Processed</span>
+                    <span class="estimate-value">~4.2T</span>
+                </div>
+                
+                <div class="estimate-item">
+                    <span class="estimate-label">Checkpoints</span>
+                    <span class="estimate-value">50 × 45GB</span>
+                </div>
+            </div>
+            
+            <div class="estimate-section">
+                <div class="estimate-title">Time Breakdown</div>
+                
+                <div class="time-chart">
+                    <div class="chart-bar" style="height: 80%">
+                        <span class="chart-bar-label">Train</span>
+                    </div>
+                    <div class="chart-bar" style="height: 30%">
+                        <span class="chart-bar-label">Val</span>
+                    </div>
+                    <div class="chart-bar" style="height: 15%">
+                        <span class="chart-bar-label">IO</span>
+                    </div>
+                    <div class="chart-bar" style="height: 10%">
+                        <span class="chart-bar-label">Init</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="training-preview">
+                <div class="preview-title">Training Summary</div>
+                
+                <div class="preview-item">
+                    <span class="preview-label">Model</span>
+                    <span class="preview-value">Orchestrator-v2.1.1</span>
+                </div>
+                
+                <div class="preview-item">
+                    <span class="preview-label">Datasets</span>
+                    <span class="preview-value">2 selected</span>
+                </div>
+                
+                <div class="preview-item">
+                    <span class="preview-label">Hardware</span>
+                    <span class="preview-value">8x A100</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="estimate-total">
+            <span class="estimate-total-label">Est. Total</span>
+            <span class="estimate-total-value" id="estimateTotal">$1,576</span>
+        </div>
+        
+        <div class="launch-section">
+            <button class="launch-btn" id="launchBtn">🚀 Launch Training</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script src="{{ url_for('static', filename='js/models/training.js') }}"></script>
+{% endblock %}

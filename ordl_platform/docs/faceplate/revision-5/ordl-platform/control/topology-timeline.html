@@ -1,0 +1,1404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORDL Control Platform - Topology Timeline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-panel: #111118;
+            --bg-elevated: #1a1a24;
+            --border: #2a2a3a;
+            --text-primary: #e0e0e0;
+            --text-secondary: #888;
+            --accent-primary: #00d4ff;
+            --accent-secondary: #7c3aed;
+            --accent-warning: #f59e0b;
+            --accent-error: #ef4444;
+            --accent-success: #10b981;
+            --grid-color: rgba(0, 212, 255, 0.05);
+            --tape-bg: #1a1a1a;
+            --tape-border: #3a3a3a;
+        }
+
+        body {
+            font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--accent-primary);
+            letter-spacing: 1px;
+        }
+
+        .route-badge {
+            font-size: 11px;
+            color: var(--text-secondary);
+            background: var(--bg-elevated);
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Timeline Scrubber Section */
+        .timeline-section {
+            background: var(--tape-bg);
+            border-bottom: 2px solid var(--tape-border);
+            padding: 16px 20px;
+            position: relative;
+        }
+
+        .timeline-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .timeline-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .play-pause-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-primary);
+            background: transparent;
+            color: var(--accent-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .play-pause-btn:hover {
+            background: var(--accent-primary);
+            color: var(--bg-dark);
+        }
+
+        .speed-selector {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .time-display {
+            font-family: 'SF Mono', monospace;
+            font-size: 18px;
+            color: var(--accent-primary);
+            background: var(--bg-dark);
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .duration-display {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Tape Machine Scrubber */
+        .scrubber-container {
+            position: relative;
+            height: 60px;
+            background: 
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                var(--bg-dark);
+            background-size: 50px 100%, 100% 20px;
+            border: 1px solid var(--tape-border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .scrubber-track {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            cursor: pointer;
+        }
+
+        .scrubber-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                rgba(0, 212, 255, 0.1) 0%, 
+                rgba(0, 212, 255, 0.2) 100%
+            );
+            border-right: 2px solid var(--accent-primary);
+            pointer-events: none;
+        }
+
+        .scrubber-head {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 40px;
+            background: var(--accent-primary);
+            border-radius: 2px;
+            cursor: grab;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            z-index: 10;
+        }
+
+        .scrubber-head:active {
+            cursor: grabbing;
+        }
+
+        .scrubber-head::before,
+        .scrubber-head::after {
+            content: '';
+            position: absolute;
+            left: 4px;
+            right: 4px;
+            height: 2px;
+            background: var(--bg-dark);
+        }
+
+        .scrubber-head::before {
+            top: 12px;
+        }
+
+        .scrubber-head::after {
+            bottom: 12px;
+        }
+
+        /* Timeline Markers */
+        .timeline-markers {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+        .marker {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .marker.agent-join {
+            background: var(--accent-success);
+        }
+
+        .marker.agent-leave {
+            background: var(--accent-error);
+        }
+
+        .marker.state-change {
+            background: var(--accent-warning);
+        }
+
+        .marker.error {
+            background: var(--accent-error);
+        }
+
+        .marker.branch-point {
+            width: 12px;
+            height: 12px;
+            background: var(--accent-secondary);
+            transform: rotate(45deg);
+            top: 50%;
+            margin-top: -6px;
+            border: 2px solid var(--bg-dark);
+        }
+
+        .marker:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            white-space: nowrap;
+            margin-bottom: 4px;
+            border: 1px solid var(--border);
+            z-index: 100;
+        }
+
+        /* Time Preview Tooltip */
+        .time-preview {
+            position: absolute;
+            bottom: 100%;
+            transform: translateX(-50%);
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            border: 1px solid var(--accent-primary);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            margin-bottom: 8px;
+            z-index: 100;
+        }
+
+        .time-preview.visible {
+            opacity: 1;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Topology Visualization */
+        .topology-panel {
+            flex: 2;
+            background: var(--bg-dark);
+            border-right: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            background: var(--bg-panel);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topology-canvas {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(124, 58, 237, 0.03) 0%, transparent 50%),
+                var(--bg-dark);
+        }
+
+        .topology-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .node {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .node-circle {
+            fill: var(--bg-elevated);
+            stroke: var(--accent-primary);
+            stroke-width: 2;
+        }
+
+        .node.active .node-circle {
+            fill: rgba(0, 212, 255, 0.1);
+            stroke: var(--accent-success);
+        }
+
+        .node.error .node-circle {
+            stroke: var(--accent-error);
+            animation: pulse-error 1s infinite;
+        }
+
+        @keyframes pulse-error {
+            0%, 100% { stroke-opacity: 1; }
+            50% { stroke-opacity: 0.5; }
+        }
+
+        .node-label {
+            fill: var(--text-primary);
+            font-size: 11px;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        .connection {
+            stroke: var(--border);
+            stroke-width: 1;
+            fill: none;
+        }
+
+        .connection.active {
+            stroke: var(--accent-primary);
+            stroke-width: 2;
+            stroke-dasharray: 5, 5;
+            animation: dash 1s linear infinite;
+        }
+
+        @keyframes dash {
+            to { stroke-dashoffset: -10; }
+        }
+
+        .message-particle {
+            fill: var(--accent-primary);
+            r: 3;
+        }
+
+        /* Event Stream Panel */
+        .event-panel {
+            flex: 1;
+            min-width: 320px;
+            background: var(--bg-panel);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .event-filter {
+            display: flex;
+            gap: 8px;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .filter-btn.agent_activation { border-color: var(--accent-success); color: var(--accent-success); }
+        .filter-btn.message { border-color: var(--accent-primary); color: var(--accent-primary); }
+        .filter-btn.state_change { border-color: var(--accent-warning); color: var(--accent-warning); }
+        .filter-btn.error { border-color: var(--accent-error); color: var(--accent-error); }
+
+        .event-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .event-item {
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            background: var(--bg-elevated);
+            border-radius: 4px;
+            border-left: 3px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .event-item:hover {
+            background: var(--bg-dark);
+            transform: translateX(4px);
+        }
+
+        .event-item.agent_activation { border-left-color: var(--accent-success); }
+        .event-item.message { border-left-color: var(--accent-primary); }
+        .event-item.state_change { border-left-color: var(--accent-warning); }
+        .event-item.error { border-left-color: var(--accent-error); }
+
+        .event-item.branch-point {
+            background: linear-gradient(90deg, rgba(124, 58, 237, 0.1), transparent);
+        }
+
+        .event-item.branch-point::after {
+            content: '◆';
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--accent-secondary);
+        }
+
+        .event-time {
+            font-size: 10px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .event-type {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        .event-type.agent_activation { background: rgba(16, 185, 129, 0.2); color: var(--accent-success); }
+        .event-type.message { background: rgba(0, 212, 255, 0.2); color: var(--accent-primary); }
+        .event-type.state_change { background: rgba(245, 158, 11, 0.2); color: var(--accent-warning); }
+        .event-type.error { background: rgba(239, 68, 68, 0.2); color: var(--accent-error); }
+
+        .event-desc {
+            font-size: 11px;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .event-meta {
+            font-size: 9px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* State Inspector Panel */
+        .inspector-panel {
+            position: absolute;
+            right: 20px;
+            top: 70px;
+            width: 240px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 50;
+        }
+
+        .inspector-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .inspector-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .inspector-stat:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--accent-primary);
+        }
+
+        .stat-value.success { color: var(--accent-success); }
+        .stat-value.warning { color: var(--accent-warning); }
+        .stat-value.error { color: var(--accent-error); }
+
+        .agent-list {
+            margin-top: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .agent-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+
+        .agent-item:hover {
+            background: var(--bg-elevated);
+        }
+
+        .agent-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .agent-status.active { background: var(--accent-success); }
+        .agent-status.idle { background: var(--accent-warning); }
+        .agent-status.offline { background: var(--accent-error); }
+
+        /* Action Buttons */
+        .action-buttons {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 50;
+        }
+
+        .action-btn {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-dark);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.primary {
+            background: var(--accent-primary);
+            color: var(--bg-dark);
+            border-color: var(--accent-primary);
+        }
+
+        .action-btn.primary:hover {
+            background: #00b8e0;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+        /* Branch indicator */
+        .branch-indicator {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            background: var(--accent-secondary);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .branch-indicator.visible {
+            display: block;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.3s;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-text {
+            color: var(--accent-primary);
+            font-size: 14px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-text">Loading Timeline...</div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">ORDL CONTROL PLATFORM</div>
+            <div class="route-badge">/app/topology/timeline</div>
+        </div>
+        <div class="header-right">
+            <div class="duration-display">Window: Last 24 hours</div>
+        </div>
+    </header>
+
+    <!-- Timeline Scrubber Section -->
+    <section class="timeline-section">
+        <div class="timeline-header">
+            <div class="timeline-controls">
+                <button class="play-pause-btn" id="playPauseBtn" title="Play/Pause">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5,3 19,12 5,21" id="playIcon"/>
+                        <rect x="6" y="4" width="4" height="16" id="pauseIcon1" style="display:none"/>
+                        <rect x="14" y="4" width="4" height="16" id="pauseIcon2" style="display:none"/>
+                    </svg>
+                </button>
+                <select class="speed-selector" id="speedSelector">
+                    <option value="1">1x Speed</option>
+                    <option value="2">2x Speed</option>
+                    <option value="5">5x Speed</option>
+                    <option value="10">10x Speed</option>
+                </select>
+            </div>
+            <div class="time-display" id="timeDisplay">--:--:--</div>
+        </div>
+        
+        <div class="scrubber-container" id="scrubberContainer">
+            <div class="scrubber-track" id="scrubberTrack"></div>
+            <div class="scrubber-progress" id="scrubberProgress"></div>
+            <div class="scrubber-head" id="scrubberHead"></div>
+            <div class="timeline-markers" id="timelineMarkers"></div>
+            <div class="time-preview" id="timePreview"></div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Topology Visualization -->
+        <div class="topology-panel">
+            <div class="panel-header">
+                <span>Topology View (Historical)</span>
+                <div class="branch-indicator" id="branchIndicator">BRANCH POINT</div>
+            </div>
+            <div class="topology-canvas">
+                <svg class="topology-svg" id="topologySvg">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                                refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#2a2a3a"/>
+                        </marker>
+                        <marker id="arrowhead-active" markerWidth="10" markerHeight="7" 
+                                refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#00d4ff"/>
+                        </marker>
+                    </defs>
+                    <g id="connectionsLayer"></g>
+                    <g id="nodesLayer"></g>
+                    <g id="particlesLayer"></g>
+                </svg>
+            </div>
+
+            <!-- State Inspector -->
+            <div class="inspector-panel">
+                <div class="inspector-title">Fleet State</div>
+                <div class="inspector-stat">
+                    <span class="stat-label">Active Agents</span>
+                    <span class="stat-value success" id="activeAgents">0</span>
+                </div>
+                <div class="inspector-stat">
+                    <span class="stat-label">Message Queue</span>
+                    <span class="stat-value warning" id="queueDepth">0</span>
+                </div>
+                <div class="inspector-stat">
+                    <span class="stat-label">Connections</span>
+                    <span class="stat-value" id="connections">0</span>
+                </div>
+                <div class="inspector-title" style="margin-top: 16px;">Active Agents</div>
+                <div class="agent-list" id="agentList"></div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <button class="action-btn" id="saveCheckpointBtn">
+                    <span>💾</span> Save Checkpoint
+                </button>
+                <button class="action-btn" id="exportScenarioBtn">
+                    <span>📥</span> Export Scenario
+                </button>
+                <button class="action-btn" id="openPostmortemBtn" disabled>
+                    <span>🔍</span> Open Postmortem
+                </button>
+            </div>
+        </div>
+
+        <!-- Event Stream Panel -->
+        <div class="event-panel">
+            <div class="panel-header">Event Stream</div>
+            <div class="event-filter">
+                <button class="filter-btn agent_activation active" data-type="agent_activation">Agents</button>
+                <button class="filter-btn message active" data-type="message">Messages</button>
+                <button class="filter-btn state_change active" data-type="state_change">State</button>
+                <button class="filter-btn error active" data-type="error">Errors</button>
+            </div>
+            <div class="event-list" id="eventList"></div>
+        </div>
+    </main>
+
+    <script>
+        /**
+         * ORDL Timeline Engine
+         * Vanilla JS implementation for temporal debugging
+         */
+
+        // ==================== Configuration ====================
+        const CONFIG = {
+            defaultDuration: 24 * 60 * 60 * 1000, // 24 hours in ms
+            updateInterval: 16, // ~60fps
+            gridSize: 50,
+            colors: {
+                agent_activation: '#10b981',
+                message: '#00d4ff',
+                state_change: '#f59e0b',
+                error: '#ef4444'
+            }
+        };
+
+        // ==================== Timeline Engine ====================
+        class TimelineEngine {
+            constructor() {
+                this.startTime = Date.now() - CONFIG.defaultDuration;
+                this.endTime = Date.now();
+                this.currentTime = this.startTime;
+                this.duration = CONFIG.defaultDuration;
+                this.isPlaying = false;
+                this.speed = 1;
+                this.animationId = null;
+                this.events = [];
+                this.branchPoints = [];
+                this.lastFrameTime = 0;
+                this.isDragging = false;
+                this.filteredTypes = new Set(['agent_activation', 'message', 'state_change', 'error']);
+                
+                // DOM elements
+                this.scrubberContainer = document.getElementById('scrubberContainer');
+                this.scrubberTrack = document.getElementById('scrubberTrack');
+                this.scrubberProgress = document.getElementById('scrubberProgress');
+                this.scrubberHead = document.getElementById('scrubberHead');
+                this.timeDisplay = document.getElementById('timeDisplay');
+                this.timePreview = document.getElementById('timePreview');
+                this.playPauseBtn = document.getElementById('playPauseBtn');
+                this.speedSelector = document.getElementById('speedSelector');
+                
+                this.init();
+            }
+
+            init() {
+                this.generateMockData();
+                this.bindEvents();
+                this.renderMarkers();
+                this.updateDisplay();
+                this.seek(this.startTime);
+                this.updateTopology();
+                
+                // Hide loading
+                setTimeout(() => {
+                    document.getElementById('loadingOverlay').classList.add('hidden');
+                }, 500);
+            }
+
+            generateMockData() {
+                // Generate mock events for the last 24 hours
+                const eventTypes = ['agent_activation', 'message', 'state_change', 'error'];
+                const now = Date.now();
+                
+                for (let i = 0; i < 150; i++) {
+                    const timestamp = this.startTime + Math.random() * this.duration;
+                    const type = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+                    
+                    const event = {
+                        id: `evt_${i}`,
+                        timestamp,
+                        type,
+                        description: this.generateEventDescription(type),
+                        metadata: this.generateEventMetadata(type),
+                        isBranchPoint: Math.random() < 0.05 // 5% chance of being a branch point
+                    };
+                    
+                    this.events.push(event);
+                    
+                    if (event.isBranchPoint) {
+                        this.branchPoints.push(event);
+                    }
+                }
+                
+                // Sort events by timestamp
+                this.events.sort((a, b) => a.timestamp - b.timestamp);
+                
+                // Render events
+                this.renderEvents();
+            }
+
+            generateEventDescription(type) {
+                const descriptions = {
+                    agent_activation: [
+                        'Agent node-7f3a joined the fleet',
+                        'New worker agent activated in zone-east',
+                        'Orchestrator agent started',
+                        'Backup agent promoted to primary'
+                    ],
+                    message: [
+                        'Heartbeat received from agent-node-2',
+                        'State sync broadcast initiated',
+                        'Task assignment distributed',
+                        'Configuration update propagated'
+                    ],
+                    state_change: [
+                        'Cluster state transitioned to degraded',
+                        'Leader election completed',
+                        'Partition rebalanced',
+                        'Quorum status changed'
+                    ],
+                    error: [
+                        'Connection timeout to agent-node-4',
+                        'Message delivery failed after 3 retries',
+                        'State divergence detected',
+                        'Agent heartbeat missed (5s)'
+                    ]
+                };
+                
+                const list = descriptions[type];
+                return list[Math.floor(Math.random() * list.length)];
+            }
+
+            generateEventMetadata(type) {
+                const meta = {
+                    agent_activation: { agent: `agent-${Math.floor(Math.random() * 20)}`, zone: ['east', 'west', 'central'][Math.floor(Math.random() * 3)] },
+                    message: { from: `node-${Math.floor(Math.random() * 10)}`, to: `node-${Math.floor(Math.random() * 10)}`, size: `${Math.floor(Math.random() * 1000)}B` },
+                    state_change: { previous: 'stable', current: ['degraded', 'recovering', 'stable'][Math.floor(Math.random() * 3)] },
+                    error: { severity: ['low', 'medium', 'high'][Math.floor(Math.random() * 3)], retry: Math.floor(Math.random() * 3) }
+                };
+                return meta[type];
+            }
+
+            bindEvents() {
+                // Play/Pause
+                this.playPauseBtn.addEventListener('click', () => this.togglePlay());
+                
+                // Speed selector
+                this.speedSelector.addEventListener('change', (e) => {
+                    this.speed = parseInt(e.target.value);
+                });
+                
+                // Scrubber interactions
+                this.scrubberTrack.addEventListener('click', (e) => this.handleScrubberClick(e));
+                this.scrubberHead.addEventListener('mousedown', (e) => this.startDrag(e));
+                document.addEventListener('mousemove', (e) => this.handleDrag(e));
+                document.addEventListener('mouseup', () => this.endDrag());
+                
+                // Hover preview
+                this.scrubberTrack.addEventListener('mousemove', (e) => this.showTimePreview(e));
+                this.scrubberTrack.addEventListener('mouseleave', () => this.hideTimePreview());
+                
+                // Filter buttons
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    btn.addEventListener('click', () => this.toggleFilter(btn));
+                });
+                
+                // Action buttons
+                document.getElementById('saveCheckpointBtn').addEventListener('click', () => this.saveCheckpoint());
+                document.getElementById('exportScenarioBtn').addEventListener('click', () => this.exportScenario());
+                document.getElementById('openPostmortemBtn').addEventListener('click', () => this.openPostmortem());
+            }
+
+            togglePlay() {
+                this.isPlaying = !this.isPlaying;
+                this.updatePlayPauseIcon();
+                
+                if (this.isPlaying) {
+                    this.lastFrameTime = performance.now();
+                    this.animate();
+                } else {
+                    cancelAnimationFrame(this.animationId);
+                }
+            }
+
+            updatePlayPauseIcon() {
+                const playIcon = document.getElementById('playIcon');
+                const pauseIcon1 = document.getElementById('pauseIcon1');
+                const pauseIcon2 = document.getElementById('pauseIcon2');
+                
+                if (this.isPlaying) {
+                    playIcon.style.display = 'none';
+                    pauseIcon1.style.display = 'block';
+                    pauseIcon2.style.display = 'block';
+                } else {
+                    playIcon.style.display = 'block';
+                    pauseIcon1.style.display = 'none';
+                    pauseIcon2.style.display = 'none';
+                }
+            }
+
+            animate() {
+                if (!this.isPlaying) return;
+                
+                const now = performance.now();
+                const delta = now - this.lastFrameTime;
+                this.lastFrameTime = now;
+                
+                // Advance time based on speed
+                const timeAdvance = delta * this.speed;
+                let newTime = this.currentTime + timeAdvance;
+                
+                // Loop or stop at end
+                if (newTime > this.endTime) {
+                    newTime = this.startTime;
+                }
+                
+                this.seek(newTime);
+                this.animationId = requestAnimationFrame(() => this.animate());
+            }
+
+            seek(timestamp) {
+                this.currentTime = Math.max(this.startTime, Math.min(this.endTime, timestamp));
+                this.updateDisplay();
+                this.updateTopology();
+                this.highlightCurrentEvents();
+                this.updateInspector();
+                this.checkBranchPoint();
+            }
+
+            handleScrubberClick(e) {
+                const rect = this.scrubberTrack.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percent = x / rect.width;
+                const timestamp = this.startTime + (percent * this.duration);
+                this.seek(timestamp);
+            }
+
+            startDrag(e) {
+                this.isDragging = true;
+                this.wasPlaying = this.isPlaying;
+                if (this.isPlaying) {
+                    this.togglePlay();
+                }
+                e.preventDefault();
+            }
+
+            handleDrag(e) {
+                if (!this.isDragging) return;
+                
+                const rect = this.scrubberTrack.getBoundingClientRect();
+                const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+                const percent = x / rect.width;
+                const timestamp = this.startTime + (percent * this.duration);
+                this.seek(timestamp);
+            }
+
+            endDrag() {
+                if (this.isDragging && this.wasPlaying) {
+                    this.togglePlay();
+                }
+                this.isDragging = false;
+            }
+
+            showTimePreview(e) {
+                const rect = this.scrubberTrack.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const percent = x / rect.width;
+                const timestamp = this.startTime + (percent * this.duration);
+                
+                this.timePreview.textContent = this.formatTime(timestamp);
+                this.timePreview.style.left = `${x}px`;
+                this.timePreview.classList.add('visible');
+            }
+
+            hideTimePreview() {
+                this.timePreview.classList.remove('visible');
+            }
+
+            updateDisplay() {
+                const progress = (this.currentTime - this.startTime) / this.duration;
+                const percent = progress * 100;
+                
+                this.scrubberProgress.style.width = `${percent}%`;
+                this.scrubberHead.style.left = `${percent}%`;
+                this.timeDisplay.textContent = this.formatTime(this.currentTime);
+            }
+
+            formatTime(timestamp) {
+                const date = new Date(timestamp);
+                return date.toISOString().replace('T', ' ').substring(0, 19);
+            }
+
+            renderMarkers() {
+                const container = document.getElementById('timelineMarkers');
+                container.innerHTML = '';
+                
+                // Add markers for different event types
+                const markerTypes = [
+                    { type: 'agent-join', color: 'var(--accent-success)' },
+                    { type: 'agent-leave', color: 'var(--accent-error)' },
+                    { type: 'state-change', color: 'var(--accent-warning)' },
+                    { type: 'error', color: 'var(--accent-error)' }
+                ];
+                
+                this.events.forEach(event => {
+                    const progress = (event.timestamp - this.startTime) / this.duration;
+                    const percent = progress * 100;
+                    
+                    const marker = document.createElement('div');
+                    marker.className = `marker ${event.type}`;
+                    if (event.isBranchPoint) {
+                        marker.classList.add('branch-point');
+                    }
+                    marker.style.left = `${percent}%`;
+                    marker.dataset.tooltip = `${this.formatTime(event.timestamp)} - ${event.type}`;
+                    marker.addEventListener('click', () => this.seek(event.timestamp));
+                    container.appendChild(marker);
+                });
+            }
+
+            renderEvents() {
+                const container = document.getElementById('eventList');
+                container.innerHTML = '';
+                
+                this.events.forEach(event => {
+                    if (!this.filteredTypes.has(event.type)) return;
+                    
+                    const item = document.createElement('div');
+                    item.className = `event-item ${event.type}`;
+                    if (event.isBranchPoint) {
+                        item.classList.add('branch-point');
+                    }
+                    item.dataset.timestamp = event.timestamp;
+                    
+                    item.innerHTML = `
+                        <div class="event-time">${this.formatTime(event.timestamp)}</div>
+                        <div class="event-type ${event.type}">${event.type.replace('_', ' ')}</div>
+                        <div class="event-desc">${event.description}</div>
+                        <div class="event-meta">${this.formatMetadata(event.metadata)}</div>
+                    `;
+                    
+                    item.addEventListener('click', () => this.seek(event.timestamp));
+                    container.appendChild(item);
+                });
+            }
+
+            formatMetadata(metadata) {
+                return Object.entries(metadata).map(([k, v]) => `${k}: ${v}`).join(' | ');
+            }
+
+            toggleFilter(btn) {
+                const type = btn.dataset.type;
+                btn.classList.toggle('active');
+                
+                if (this.filteredTypes.has(type)) {
+                    this.filteredTypes.delete(type);
+                } else {
+                    this.filteredTypes.add(type);
+                }
+                
+                this.renderEvents();
+            }
+
+            highlightCurrentEvents() {
+                // Highlight events within a small window of current time
+                const windowMs = 5000; // 5 second window
+                
+                document.querySelectorAll('.event-item').forEach(item => {
+                    const timestamp = parseInt(item.dataset.timestamp);
+                    const diff = Math.abs(timestamp - this.currentTime);
+                    
+                    if (diff < windowMs) {
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateX(8px)';
+                    } else {
+                        item.style.opacity = '0.5';
+                        item.style.transform = 'translateX(0)';
+                    }
+                });
+            }
+
+            checkBranchPoint() {
+                const windowMs = 1000;
+                const isAtBranch = this.branchPoints.some(bp => 
+                    Math.abs(bp.timestamp - this.currentTime) < windowMs
+                );
+                
+                const indicator = document.getElementById('branchIndicator');
+                const postmortemBtn = document.getElementById('openPostmortemBtn');
+                
+                if (isAtBranch) {
+                    indicator.classList.add('visible');
+                    postmortemBtn.disabled = false;
+                } else {
+                    indicator.classList.remove('visible');
+                    postmortemBtn.disabled = true;
+                }
+            }
+
+            // ==================== Topology Visualization ====================
+            updateTopology() {
+                const svg = document.getElementById('topologySvg');
+                const connectionsLayer = document.getElementById('connectionsLayer');
+                const nodesLayer = document.getElementById('nodesLayer');
+                const particlesLayer = document.getElementById('particlesLayer');
+                
+                // Generate topology based on current time
+                const progress = (this.currentTime - this.startTime) / this.duration;
+                const activeNodes = Math.floor(5 + progress * 10);
+                
+                // Only render if first time or nodes changed significantly
+                if (this.lastNodeCount === activeNodes) return;
+                this.lastNodeCount = activeNodes;
+                
+                nodesLayer.innerHTML = '';
+                connectionsLayer.innerHTML = '';
+                
+                const width = svg.clientWidth;
+                const height = svg.clientHeight;
+                const centerX = width / 2;
+                const centerY = height / 2;
+                
+                // Create nodes in a circular layout
+                const nodes = [];
+                const radius = Math.min(width, height) * 0.35;
+                
+                for (let i = 0; i < activeNodes; i++) {
+                    const angle = (i / activeNodes) * Math.PI * 2 - Math.PI / 2;
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    
+                    nodes.push({ id: i, x, y, angle });
+                    
+                    const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    nodeGroup.className.baseVal = 'node active';
+                    nodeGroup.innerHTML = `
+                        <circle class="node-circle" cx="${x}" cy="${y}" r="20"/>
+                        <text class="node-label" x="${x}" y="${y + 35}">node-${i}</text>
+                    `;
+                    nodesLayer.appendChild(nodeGroup);
+                }
+                
+                // Create connections between adjacent nodes
+                for (let i = 0; i < nodes.length; i++) {
+                    const nextIndex = (i + 1) % nodes.length;
+                    const node1 = nodes[i];
+                    const node2 = nodes[nextIndex];
+                    
+                    const isActive = Math.random() > 0.3;
+                    
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', node1.x);
+                    line.setAttribute('y1', node1.y);
+                    line.setAttribute('x2', node2.x);
+                    line.setAttribute('y2', node2.y);
+                    line.className.baseVal = `connection ${isActive ? 'active' : ''}`;
+                    connectionsLayer.appendChild(line);
+                }
+                
+                // Add some cross connections
+                for (let i = 0; i < nodes.length; i++) {
+                    if (Math.random() > 0.7) {
+                        const targetIndex = Math.floor(Math.random() * nodes.length);
+                        if (targetIndex !== i) {
+                            const node1 = nodes[i];
+                            const node2 = nodes[targetIndex];
+                            
+                            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            line.setAttribute('x1', node1.x);
+                            line.setAttribute('y1', node1.y);
+                            line.setAttribute('x2', node2.x);
+                            line.setAttribute('y2', node2.y);
+                            line.className.baseVal = 'connection';
+                            connectionsLayer.appendChild(line);
+                        }
+                    }
+                }
+            }
+
+            // ==================== State Inspector ====================
+            updateInspector() {
+                const progress = (this.currentTime - this.startTime) / this.duration;
+                
+                // Simulate fleet state based on time
+                const activeAgents = Math.floor(5 + progress * 10 + Math.sin(progress * Math.PI * 4) * 3);
+                const queueDepth = Math.floor(Math.random() * 50);
+                const connections = Math.floor(activeAgents * 1.5 + Math.random() * 5);
+                
+                document.getElementById('activeAgents').textContent = activeAgents;
+                document.getElementById('queueDepth').textContent = queueDepth;
+                document.getElementById('connections').textContent = connections;
+                
+                // Update agent list
+                const agentList = document.getElementById('agentList');
+                agentList.innerHTML = '';
+                
+                for (let i = 0; i < Math.min(activeAgents, 10); i++) {
+                    const statuses = ['active', 'active', 'active', 'idle', 'offline'];
+                    const status = statuses[Math.floor(Math.random() * statuses.length)];
+                    
+                    const item = document.createElement('div');
+                    item.className = 'agent-item';
+                    item.innerHTML = `
+                        <div class="agent-status ${status}"></div>
+                        <span>agent-${i}</span>
+                    `;
+                    agentList.appendChild(item);
+                }
+                
+                if (activeAgents > 10) {
+                    const more = document.createElement('div');
+                    more.className = 'agent-item';
+                    more.style.color = 'var(--text-secondary)';
+                    more.textContent = `... and ${activeAgents - 10} more`;
+                    agentList.appendChild(more);
+                }
+            }
+
+            // ==================== Actions ====================
+            saveCheckpoint() {
+                const checkpoint = {
+                    timestamp: this.currentTime,
+                    fleetState: {
+                        activeAgents: document.getElementById('activeAgents').textContent,
+                        queueDepth: document.getElementById('queueDepth').textContent,
+                        connections: document.getElementById('connections').textContent
+                    },
+                    events: this.events.filter(e => e.timestamp <= this.currentTime)
+                };
+                
+                const blob = new Blob([JSON.stringify(checkpoint, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `checkpoint_${this.formatTime(this.currentTime).replace(/[:\s]/g, '-')}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                console.log('Checkpoint saved:', checkpoint);
+            }
+
+            exportScenario() {
+                const scenario = {
+                    startTime: this.startTime,
+                    endTime: this.endTime,
+                    currentTime: this.currentTime,
+                    events: this.events,
+                    branchPoints: this.branchPoints
+                };
+                
+                const blob = new Blob([JSON.stringify(scenario, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `scenario_${this.formatTime(this.currentTime).replace(/[:\s]/g, '-')}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                console.log('Scenario exported:', scenario);
+            }
+
+            openPostmortem() {
+                const incident = this.branchPoints.find(bp => 
+                    Math.abs(bp.timestamp - this.currentTime) < 1000
+                );
+                
+                if (incident) {
+                    console.log('Opening postmortem for incident:', incident);
+                    alert(`Opening postmortem for incident at ${this.formatTime(incident.timestamp)}\n\n${incident.description}`);
+                }
+            }
+        }
+
+        // ==================== Initialize ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            window.timelineEngine = new TimelineEngine();
+        });
+    </script>
+</body>
+</html>

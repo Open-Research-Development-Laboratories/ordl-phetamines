@@ -1,0 +1,353 @@
+{% extends "layouts/app_base.html" %}
+
+{% block title %}Health - ORDL{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="/app">Platform</a>
+    <span class="separator">/</span>
+    <span>Health</span>
+</div>
+{% endblock %}
+
+{% block header_actions %}
+<button class="header-btn">Export Report</button>
+<button class="header-btn">Run Diagnostics</button>
+<button class="header-btn primary">Acknowledge All</button>
+{% endblock %}
+
+{% block sidebar %}
+<div class="nav-section">
+    <div class="nav-title">Platform</div>
+    <a href="/app/nodes/discovery" class="nav-item">
+        <span class="nav-icon">◐</span>
+        <span>Discovery</span>
+    </a>
+    <a href="/app/nodes/autoupdate" class="nav-item">
+        <span class="nav-icon">↻</span>
+        <span>Auto-Update</span>
+    </a>
+    <a href="/app/health" class="nav-item active">
+        <span class="nav-icon">♥</span>
+        <span>Health</span>
+    </a>
+    <a href="/app/incidents" class="nav-item">
+        <span class="nav-icon">⚠</span>
+        <span>Incidents</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Model Engineering</div>
+    <a href="/app/models/workshop" class="nav-item">
+        <span class="nav-icon">◈</span>
+        <span>Workshop</span>
+    </a>
+    <a href="/app/models/training" class="nav-item">
+        <span class="nav-icon">▶</span>
+        <span>Training</span>
+    </a>
+    <a href="/app/models/inference" class="nav-item">
+        <span class="nav-icon">⚡</span>
+        <span>Inference</span>
+    </a>
+</div>
+<div class="nav-section">
+    <div class="nav-title">Data</div>
+    <a href="/app/data/pipelines" class="nav-item">
+        <span class="nav-icon">◆</span>
+        <span>Pipelines</span>
+    </a>
+    <a href="/app/data/datasets" class="nav-item">
+        <span class="nav-icon">◉</span>
+        <span>Datasets</span>
+    </a>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/health/index.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Health Overview -->
+<div class="health-overview">
+    <div class="health-stat">
+        <div class="health-stat-value success">171</div>
+        <div class="health-stat-label">Healthy Nodes</div>
+    </div>
+    
+    <div class="health-stat">
+        <div class="health-stat-value warning">3</div>
+        <div class="health-stat-label">Degraded</div>
+    </div>
+    
+    <div class="health-stat">
+        <div class="health-stat-value error">1</div>
+        <div class="health-stat-label">Offline</div>
+    </div>
+    
+    <div class="health-stat">
+        <div class="health-stat-value">99.7%</div>
+        <div class="health-stat-label">Uptime (24h)</div>
+    </div>
+</div>
+
+<div class="health-container">
+    <!-- Gateway Monitor -->
+    <div class="gateway-panel">
+        <div class="card-header">Gateway Status</div>
+        
+        <div class="gateway-list">
+            <div class="gateway-item selected">
+                <div class="gateway-header">
+                    <span class="gateway-name">gateway-us-east-1</span>
+                    <span class="gateway-status online">
+                        <span class="status-dot online"></span>
+                        Online
+                    </span>
+                </div>
+                
+                <div class="gateway-metrics">
+                    <div class="gateway-metric">
+                        <div class="gateway-metric-label">Latency</div>
+                        <div class="gateway-metric-value">12ms</span>
+                    </div>
+                    
+                    <div class="gateway-metric">
+                        <div class="gateway-metric-label">Connections</div>
+                        <div class="gateway-metric-value">1,247</span>
+                    </div>
+                    
+                    <div class="gateway-metric">
+                        <div class="gateway-metric-label">Throughput</div>
+                        <div class="gateway-metric-value">45MB/s</span>
+                    </div>
+                    
+                    <div class="gateway-metric">
+                        <div class="gateway-metric-label">Errors</div>
+                        <div class="gateway-metric-value">0.01%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="gateway-item">
+                <div class="gateway-header">
+                    <span class="gateway-name">gateway-eu-west-1</span>
+                    <span class="gateway-status online">
+                        <span class="status-dot online"></span>
+                        Online
+                    </span>
+                </div>
+                
+                <div class="gateway-metrics">
+                    <div class="gateway-metric">
+                        <div class="gateway-metric-label">Latency</div>
+                        <div class="gateway-metric-value">24ms</span>
+                    </div>
+                    
+                    <div class="gateway-metric">
+                        <div class="gateway-metric-label">Connections</div>
+                        <div class="gateway-metric-value">892</span>
+                    </div>
+                    
+                    <div class="gateway-metric">
+                        <div class="gateway-metric-label">Throughput</div>
+                        <div class="gateway-metric-value">32MB/s</span>
+                    </div>
+                    
+                    <div class="gateway-metric">
+                        <div class="gateway-metric-label">Errors</div>
+                        <div class="gateway-metric-value">0.02%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="gateway-item">
+                <div class="gateway-header">
+                    <span class="gateway-name">gateway-ap-south-1</span>
+                    <span class="gateway-status warning">
+                        <span class="status-dot warning"></span>
+                        Degraded
+                    </span>
+                </div>
+                
+                <div class="gateway-metrics">
+                    <div class="gateway-metric">
+                        <div class="gateway-metric-label">Latency</div>
+                        <div class="gateway-metric-value">156ms</span>
+                    </div>
+                    
+                    <div class="gateway-metric">
+                        <div class="gateway-metric-label">Connections</div>
+                        <div class="gateway-metric-value">423</span>
+                    </div>
+                    
+                    <div class="gateway-metric">
+                        <div class="gateway-metric-label">Throughput</div>
+                        <div class="gateway-metric-value">18MB/s</span>
+                    </div>
+                    
+                    <div class="gateway-metric">
+                        <div class="gateway-metric-label">Errors</div>
+                        <div class="gateway-metric-value">0.8%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Node Keepalive Grid -->
+    <div class="nodes-panel">
+        <div class="card-header">Node Keepalive Status</div>
+        
+        <div class="nodes-toolbar">
+            <select>
+                <option>All Regions</option>
+                <option>us-east-1</option>
+                <option>eu-west-1</option>
+                <option>ap-south-1</option>
+            </select>
+            
+            <select>
+                <option>All Roles</option>
+                <option>Training</option>
+                <option>Inference</option>
+                <option>Gateway</option>
+            </select>
+            
+            <input type="search" placeholder="Filter nodes..." style="flex: 1;">
+        </div>
+        
+        <div class="nodes-grid">
+            {% for i in range(1, 25) %}
+            <div class="node-cell {{ 'warning' if i == 5 else 'offline' if i == 12 else '' }}">
+                <div class="node-icon">{{ '⚠' if i == 5 else '✕' if i == 12 else '◉' }}</div>
+                <div class="node-name">node-{{ "{:03d}".format(i) }}</div>
+                <div class="node-heartbeat">{{ '2m ago' if i == 5 else '15m ago' if i == 12 else 'Now' }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <!-- SLO View -->
+        <div class="slo-panel">
+            <div class="panel-header">SLO Status</div>
+            
+            <div class="slo-item">
+                <div class="slo-header">
+                    <span class="slo-name">Availability</span>
+                    <span class="slo-status meeting">Meeting</span>
+                </div>
+                
+                <div class="slo-bar">
+                    <div class="slo-fill meeting" style="width: 99.7%"></div>
+                </div>
+                
+                <div class="slo-values">
+                    <span class="slo-current">99.7%</span>
+                    <span class="slo-target">Target: 99.5%</span>
+                </div>
+            </div>
+            
+            <div class="slo-item">
+                <div class="slo-header">
+                    <span class="slo-name">Latency (P99)</span>
+                    <span class="slo-status meeting">Meeting</span>
+                </div>
+                
+                <div class="slo-bar">
+                    <div class="slo-fill meeting" style="width: 85%"></div>
+                </div>
+                
+                <div class="slo-values">
+                    <span class="slo-current">170ms</span>
+                    <span class="slo-target">Target: < 200ms</span>
+                </div>
+            </div>
+            
+            <div class="slo-item">
+                <div class="slo-header">
+                    <span class="slo-name">Error Rate</span>
+                    <span class="slo-status at-risk">At Risk</span>
+                </div>
+                
+                <div class="slo-bar">
+                    <div class="slo-fill at-risk" style="width: 65%"></div>
+                </div>
+                
+                <div class="slo-values">
+                    <span class="slo-current">0.13%</span>
+                    <span class="slo-target">Target: < 0.1%</span>
+                </div>
+            </div>
+            
+            <div class="slo-item">
+                <div class="slo-header">
+                    <span class="slo-name">Node Uptime</span>
+                    <span class="slo-status meeting">Meeting</span>
+                </div>
+                
+                <div class="slo-bar">
+                    <div class="slo-fill meeting" style="width: 97.8%"></div>
+                </div>
+                
+                <div class="slo-values">
+                    <span class="slo-current">97.8%</span>
+                    <span class="slo-target">Target: 95%</span>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- Reconnect Diagnostics -->
+        <div class="reconnect-panel">
+            <div class="panel-header">Reconnect Diagnostics</div>
+            
+            <div class="reconnect-stats">
+                <div class="reconnect-stat">
+                    <div class="reconnect-stat-value">42</div>
+                    <div class="reconnect-stat-label">Reconnections</div>
+                </div>
+                
+                <div class="reconnect-stat">
+                    <div class="reconnect-stat-value">3.2s</div>
+                    <div class="reconnect-stat-label">Avg Recovery</div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- Diagnostics Log -->
+        <div class="diagnostics-panel">
+            <div class="panel-header">Recent Diagnostics</div>
+            
+            <div class="diagnostic-log">
+                <div class="diagnostic-time">14:23:05</div>
+                <div class="diagnostic-message error">Node node-012 heartbeat timeout</div>
+            </div>
+            
+            <div class="diagnostic-log">
+                <div class="diagnostic-time">14:22:48</div>
+                <div class="diagnostic-message warning">Gateway latency spike detected</div>
+            </div>
+            
+            <div class="diagnostic-log">
+                <div class="diagnostic-time">14:21:12</div>
+                <div class="diagnostic-message success">Node node-005 reconnected</div>
+            </div>
+            
+            <div class="diagnostic-log">
+                <div class="diagnostic-time">14:18:33</div>
+                <div class="diagnostic-message">Health check completed</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script src="{{ url_for('static', filename='js/health/index.js') }}"></script>
+{% endblock %}

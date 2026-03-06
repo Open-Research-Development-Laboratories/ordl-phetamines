@@ -1,0 +1,245 @@
+{% extends "app_base.html" %}
+
+{% block title %}ORDL | Enterprise AI Infrastructure for Deterministic Swarm Operations{% endblock %}
+{% block page_name %}home{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/faceplate/home.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="fp-hero">
+  <div class="fp-container">
+    <div class="fp-hero-content">
+      <h1 class="fp-hero-title">Deterministic AI Infrastructure</h1>
+      <p class="fp-hero-subtitle">
+        Deploy, orchestrate, and govern AI swarms with military-grade precision. 
+        Built for mission-critical operations where failure is not an option.
+      </p>
+      <div class="fp-hero-actions">
+        <a href="{{ url_for('signup') }}" class="fp-btn fp-btn-primary fp-btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          Get Started
+        </a>
+        <a href="{{ url_for('docs') }}" class="fp-btn fp-btn-secondary fp-btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+          Documentation
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust Bar -->
+<section class="fp-trust-bar" aria-label="Compliance and trust indicators">
+  <div class="fp-container">
+    <div class="fp-trust-content">
+      <div class="fp-trust-label">
+        <svg class="fp-trust-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><polyline points="9 12 12 15 16 10"></polyline></svg>
+        U.S. Government Trusted
+      </div>
+      <div class="fp-trust-badges">
+        <span class="fp-trust-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          FedRAMP Authorized
+        </span>
+        <span class="fp-trust-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          SOC 2 Type II
+        </span>
+        <span class="fp-trust-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          ISO 27001
+        </span>
+        <span class="fp-trust-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+          NIST 800-53
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Architecture Overview -->
+<section class="fp-section" id="architecture">
+  <div class="fp-container">
+    <div class="fp-section-header">
+      <h2 class="fp-section-title">Unified AI Infrastructure</h2>
+      <p class="fp-section-subtitle">Deploy, orchestrate, and govern AI swarms with military-grade precision and enterprise scalability.</p>
+    </div>
+
+    <div class="arch-grid">
+      <article class="arch-card" data-animate>
+        <div class="arch-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+        </div>
+        <h3 class="arch-title">Multi-Model IDE</h3>
+        <p class="arch-desc">Integrated development environment supporting multiple LLM providers with unified APIs, real-time testing, and deterministic output validation.</p>
+        <a href="{{ url_for('docs') }}" class="arch-link">Explore IDE →</a>
+      </article>
+
+      <article class="arch-card" data-animate>
+        <div class="arch-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        </div>
+        <h3 class="arch-title">Fleet Mesh Orchestration</h3>
+        <p class="arch-desc">Distributed swarm coordination with automatic load balancing, fault tolerance, and cross-region deployment management at enterprise scale.</p>
+        <a href="{{ url_for('docs') }}#fleet" class="arch-link">Learn about Fleet →</a>
+      </article>
+
+      <article class="arch-card" data-animate>
+        <div class="arch-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        </div>
+        <h3 class="arch-title">Governance & Compliance</h3>
+        <p class="arch-desc">Built-in policy enforcement, comprehensive audit trails, and clearance-based access controls designed for classified environments.</p>
+        <a href="{{ url_for('trust') }}" class="arch-link">View Trust Center →</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Capability Pillars -->
+<section class="fp-section fp-section-alt" id="capabilities">
+  <div class="fp-container">
+    <div class="fp-section-header">
+      <h2 class="fp-section-title">Enterprise-Grade Capabilities</h2>
+      <p class="fp-section-subtitle">Every feature engineered for mission-critical operations where failure is not an option.</p>
+    </div>
+
+    <div class="caps-grid">
+      <div class="cap-item" data-animate>
+        <div class="cap-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        </div>
+        <h4 class="cap-title">Deterministic Swarms</h4>
+        <p class="cap-desc">Reproducible AI outputs with version-controlled prompts and deterministic execution guarantees.</p>
+      </div>
+
+      <div class="cap-item" data-animate>
+        <div class="cap-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        </div>
+        <h4 class="cap-title">Human-in-the-Loop</h4>
+        <p class="cap-desc">Configurable approval workflows with escalation paths and real-time intervention capabilities.</p>
+      </div>
+
+      <div class="cap-item" data-animate>
+        <div class="cap-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        </div>
+        <h4 class="cap-title">Clearance Controls</h4>
+        <p class="cap-desc">Granular access management integrated with government clearance levels and compartmentalized information.</p>
+      </div>
+
+      <div class="cap-item" data-animate>
+        <div class="cap-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <h4 class="cap-title">Audit Trails</h4>
+        <p class="cap-desc">Immutable, cryptographically signed logs of every operation with tamper-evident verification.</p>
+      </div>
+
+      <div class="cap-item" data-animate>
+        <div class="cap-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+        </div>
+        <h4 class="cap-title">Policy Enforcement</h4>
+        <p class="cap-desc">Automated compliance checking with configurable guardrails and real-time violation detection.</p>
+      </div>
+
+      <div class="cap-item" data-animate>
+        <div class="cap-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+        </div>
+        <h4 class="cap-title">Real-time Topology</h4>
+        <p class="cap-desc">Live visualization of swarm health, resource utilization, and network topology across all zones.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Proof Metrics -->
+<section class="fp-section" id="metrics">
+  <div class="fp-container">
+    <div class="metrics-grid">
+      <div class="metric-item" data-animate>
+        <div class="metric-value" data-count="247">0</div>
+        <div class="metric-label">Active Models</div>
+        <div class="metric-change positive">+12% this month</div>
+      </div>
+
+      <div class="metric-item" data-animate>
+        <div class="metric-value" data-count="99.97" data-suffix="%">0</div>
+        <div class="metric-label">Uptime SLA</div>
+        <div class="metric-change positive">99.97% achieved</div>
+      </div>
+
+      <div class="metric-item" data-animate>
+        <div class="metric-value" data-count="2.4" data-suffix="M" data-prefix="">0</div>
+        <div class="metric-label">Daily Inferences</div>
+        <div class="metric-change positive">+28% growth</div>
+      </div>
+
+      <div class="metric-item" data-animate>
+        <div class="metric-value" data-count="42" data-suffix="ms">0</div>
+        <div class="metric-label">Avg Latency</div>
+        <div class="metric-change positive">p95: 89ms</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Social Proof -->
+<section class="fp-section fp-section-alt" id="testimonials">
+  <div class="fp-container">
+    <div class="testimonial" data-animate>
+      <blockquote class="testimonial-quote">
+        "ORDL has transformed how we deploy AI at scale. The deterministic guarantees and built-in compliance controls are exactly what mission-critical operations demand."
+      </blockquote>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">JD</div>
+        <div class="testimonial-info">
+          <div class="testimonial-name">James Davidson</div>
+          <div class="testimonial-title">Chief Technology Officer, Federal Systems Integrator</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="agency-logos" data-animate>
+      <span class="agency-logo">Department of Defense</span>
+      <span class="agency-logo">Intelligence Community</span>
+      <span class="agency-logo">Federal Agencies</span>
+      <span class="agency-logo">Fortune 500</span>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Ladder -->
+<section class="fp-section fp-section-cta" id="cta">
+  <div class="fp-container">
+    <div class="cta-content" data-animate>
+      <h2 class="cta-title">Ready to deploy with confidence?</h2>
+      <p class="cta-subtitle">Join government agencies and enterprise teams building the future with deterministic AI infrastructure.</p>
+      
+      <div class="cta-actions">
+        <a href="{{ url_for('signup') }}" class="fp-btn fp-btn-primary fp-btn-lg">Start Free Trial</a>
+        <a href="{{ url_for('contact') }}" class="fp-btn fp-btn-secondary fp-btn-lg">Talk to Sales</a>
+      </div>
+
+      <form class="cta-form" action="{{ url_for('signup') }}" method="GET">
+        <div class="cta-input-group">
+          <input type="email" class="fp-input cta-input" placeholder="Enter your work email" required>
+          <button type="submit" class="fp-btn fp-btn-primary">Get Started</button>
+        </div>
+        <p class="cta-disclaimer">Free 14-day trial. No credit card required.</p>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/faceplate/home.js') }}"></script>
+{% endblock %}

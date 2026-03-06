@@ -1,0 +1,302 @@
+{% extends "app_base.html" %}
+
+{% block title %}Clearance - ORDL Governance{% endblock %}
+{% block page_id %}clearance-page{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/governance/clearance.css') }}">
+{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item">Governance</span>
+<span class="breadcrumb-separator">/</span>
+<span class="breadcrumb-item active">Clearance</span>
+{% endblock %}
+
+{% block content_header %}
+<h1>Clearance Management</h1>
+<p>Tier and compartment editor, need-to-know matrix, and conflict visualization</p>
+{% endblock %}
+
+{% block content %}
+<div class="clearance-container">
+    
+    <!-- Tier Editor -->
+    <div class="clearance-section">
+        <div class="section-header">
+            <h2>Clearance Tiers</h2>
+            <button class="btn btn-amber" data-action="edit-tiers">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit Tiers
+            </button>
+        </div>
+        <div class="tiers-grid">
+            {% for tier in tiers if tiers else [
+                {'level': 'L0', 'name': 'Public', 'description': 'Unauthenticated public access', 'count': 0, 'color': 'gray'},
+                {'level': 'L1', 'name': 'Restricted', 'description': 'Authenticated, minimal access', 'count': 145, 'color': 'blue'},
+                {'level': 'L2', 'name': 'Standard', 'description': 'Standard employee access', 'count': 892, 'color': 'green'},
+                {'level': 'L3', 'name': 'Confidential', 'description': 'Sensitive data access', 'count': 234, 'color': 'yellow'},
+                {'level': 'L4', 'name': 'Secret', 'description': 'Critical systems access', 'count': 56, 'color': 'orange'},
+                {'level': 'L5', 'name': 'Top Secret', 'description': 'Maximum clearance required', 'count': 12, 'color': 'red'}
+            ] %}
+            <div class="tier-card tier-{{ tier.level[1] }}">
+                <div class="tier-header">
+                    <div class="tier-badge">{{ tier.level }}</div>
+                    <h4>{{ tier.name }}</h4>
+                </div>
+                <p class="tier-desc">{{ tier.description }}</p>
+                <div class="tier-stats">
+                    <span class="tier-count">{{ tier.count }}</span>
+                    <span class="tier-count-label">assigned</span>
+                </div>
+                <div class="tier-actions">
+                    <button class="btn btn-sm" data-action="view-tier" data-tier="{{ tier.level }}">View</button>
+                    <button class="btn btn-sm" data-action="edit-tier" data-tier="{{ tier.level }}">Edit</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Compartment Editor -->
+    <div class="clearance-section">
+        <div class="section-header">
+            <h2>Compartments</h2>
+            <button class="btn btn-amber" data-action="add-compartment">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Add Compartment
+            </button>
+        </div>
+        <div class="compartments-list">
+            {% for comp in compartments if compartments else [
+                {'id': 'comp_001', 'name': 'R&D', 'description': 'Research and Development', 'min_clearance': 'L3', 'seats': 45, 'status': 'active'},
+                {'id': 'comp_002', 'name': 'AI-Core', 'description': 'Core AI Model Access', 'min_clearance': 'L4', 'seats': 23, 'status': 'active'},
+                {'id': 'comp_003', 'name': 'Data-Ops', 'description': 'Data Operations', 'min_clearance': 'L2', 'seats': 89, 'status': 'active'},
+                {'id': 'comp_004', 'name': 'Sec-Ops', 'description': 'Security Operations', 'min_clearance': 'L4', 'seats': 12, 'status': 'active'},
+                {'id': 'comp_005', 'name': 'Analytics', 'description': 'Business Analytics', 'min_clearance': 'L2', 'seats': 34, 'status': 'active'},
+                {'id': 'comp_006', 'name': 'Audit', 'description': 'Compliance Audit', 'min_clearance': 'L3', 'seats': 8, 'status': 'restricted'},
+                {'id': 'comp_007', 'name': 'Legal', 'description': 'Legal Affairs', 'min_clearance': 'L3', 'seats': 6, 'status': 'active'},
+                {'id': 'comp_008', 'name': 'Infra', 'description': 'Infrastructure', 'min_clearance': 'L3', 'seats': 67, 'status': 'active'}
+            ] %}
+            <div class="compartment-row" data-comp-id="{{ comp.id }}">
+                <div class="comp-info">
+                    <div class="comp-header">
+                        <h4>{{ comp.name }}</h4>
+                        <span class="comp-id">{{ comp.id }}</span>
+                    </div>
+                    <p>{{ comp.description }}</p>
+                </div>
+                <div class="comp-badges">
+                    <span class="comp-min-clearance">Min: {{ comp.min_clearance }}</span>
+                    <span class="comp-status {{ comp.status }}">{{ comp.status|title }}</span>
+                </div>
+                <div class="comp-stats">
+                    <div class="stat">
+                        <span class="stat-value">{{ comp.seats }}</span>
+                        <span class="stat-label">Seats</span>
+                    </div>
+                </div>
+                <div class="comp-actions">
+                    <button class="action-btn" data-action="edit-comp" data-comp="{{ comp.id }}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                    </button>
+                    <button class="action-btn" data-action="view-comp" data-comp="{{ comp.id }}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Need-to-Know Matrix -->
+    <div class="clearance-section">
+        <div class="section-header">
+            <h2>Need-to-Know Matrix</h2>
+            <div class="matrix-controls">
+                <button class="btn" data-action="export-matrix">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    Export
+                </button>
+                <button class="btn btn-amber" data-action="edit-matrix">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Edit
+                </button>
+            </div>
+        </div>        
+        <div class="matrix-wrapper">
+            <table class="ntk-matrix">
+                <thead>
+                    <tr>
+                        <th>Tier \ Compartment</th>
+                        <th>R&D</th>
+                        <th>AI-Core</th>
+                        <th>Data-Ops</th>
+                        <th>Sec-Ops</th>
+                        <th>Analytics</th>
+                        <th>Audit</th>
+                        <th>Legal</th>
+                        <th>Infra</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr data-tier="L5">
+                        <th class="tier-label">L5 - Top Secret</th>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access granted">✓</span></td>
+                    </tr>
+                    <tr data-tier="L4">
+                        <th class="tier-label">L4 - Secret</th>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access conditional" title="Requires manager approval">◐</span></td>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access conditional">◐</span></td>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access conditional">◐</span></td>
+                        <td><span class="access granted">✓</span></td>
+                    </tr>
+                    <tr data-tier="L3">
+                        <th class="tier-label">L3 - Confidential</th>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access conditional">◐</span></td>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access conditional">◐</span></td>
+                        <td><span class="access granted">✓</span></td>
+                    </tr>
+                    <tr data-tier="L2">
+                        <th class="tier-label">L2 - Standard</th>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access conditional">◐</span></td>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access granted">✓</span></td>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access conditional">◐</span></td>
+                    </tr>
+                    <tr data-tier="L1">
+                        <th class="tier-label">L1 - Restricted</th>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access denied">✗</span></td>
+                        <td><span class="access denied">✗</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="matrix-legend">
+                <div class="legend-item"><span class="access granted">✓</span> Granted</div>
+                <div class="legend-item"><span class="access conditional">◐</span> Conditional</div>
+                <div class="legend-item"><span class="access denied">✗</span> Denied</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conflict Visualization -->
+    <div class="clearance-section">
+        <div class="section-header">
+            <h2>Conflict Detection</h2>
+            <div class="conflict-stats">
+                <span class="stat-badge warning">3 warnings</span>
+                <span class="stat-badge error">1 critical</span>
+            </div>
+        </div>
+        <div class="conflicts-list">
+            <div class="conflict-card critical">
+                <div class="conflict-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </div>
+                <div class="conflict-content">
+                    <h4>Clearance Tier Violation</h4>
+                    <p>User <strong>Jordan Lee</strong> (L2) assigned to compartment <strong>AI-Core</strong> requiring L4 minimum</p>
+                    <div class="conflict-meta">
+                        <span>Detected: 2 hours ago</span>
+                        <span>Auto-escalated to Security</span>
+                    </div>
+                </div>
+                <div class="conflict-actions">
+                    <button class="btn btn-amber">Resolve</button>
+                </div>
+            </div>
+            <div class="conflict-card warning">
+                <div class="conflict-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </div>
+                <div class="conflict-content">
+                    <h4>Dual Compartment Risk</h4>
+                    <p>Seat <strong>seat_045</strong> has access to conflicting compartments: <strong>Sec-Ops</strong> and <strong>Audit</strong></p>
+                    <div class="conflict-meta">
+                        <span>Detected: 5 hours ago</span>
+                    </div>
+                </div>
+                <div class="conflict-actions">
+                    <button class="btn">Review</button>
+                </div>
+            </div>
+            <div class="conflict-card warning">
+                <div class="conflict-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                        <line x1="12" y1="9" x2="12" y2="13"/>
+                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                </div>
+                <div class="conflict-content">
+                    <h4>Inactive Compartment Access</h4>
+                    <p><strong>3 users</strong> retain access to compartment <strong>Legacy-Ops</strong> (decommissioned)</p>
+                    <div class="conflict-meta">
+                        <span>Detected: 1 day ago</span>
+                    </div>
+                </div>
+                <div class="conflict-actions">
+                    <button class="btn">Review</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/governance/clearance.js') }}"></script>
+{% endblock %}

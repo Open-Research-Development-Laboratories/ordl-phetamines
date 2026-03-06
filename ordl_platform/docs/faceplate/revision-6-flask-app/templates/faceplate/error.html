@@ -1,0 +1,58 @@
+{% extends "app_base.html" %}
+
+{% block title %}{{ error_code }} | ORDL{% endblock %}
+
+{% block extra_css %}
+<style>
+.error-page {
+  min-height: calc(100vh - var(--header-height));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  text-align: center;
+}
+
+.error-code {
+  font-family: var(--font-mono);
+  font-size: 6rem;
+  font-weight: var(--font-bold);
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: var(--space-4);
+}
+
+.error-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.error-message {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-8);
+}
+
+.error-actions {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="error-page">
+  <div>
+    <div class="error-code">{{ error_code }}</div>
+    <h1 class="error-title">{{ error_title }}</h1>
+    <p class="error-message">{{ error_message }}</p>
+    <div class="error-actions">
+      <a href="{{ url_for('home') }}" class="fp-btn fp-btn-primary">Go Home</a>
+      <a href="{{ url_for('contact') }}" class="fp-btn fp-btn-secondary">Contact Support</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

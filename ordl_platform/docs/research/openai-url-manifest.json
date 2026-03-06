@@ -1,0 +1,649 @@
+{
+  "source": "C:\\Users\\Winsock\\Documents\\GitHub\\ordl-phetamines\\ordl_platform\\docs\\research\\openai_developers_comprehensive_report.md",
+  "url_count": 120,
+  "categories": {
+    "openai_other": 21,
+    "api_guides": 25,
+    "models": 7,
+    "apps_sdk": 20,
+    "codex": 31,
+    "cookbook": 9,
+    "evals": 1,
+    "fine_tuning": 1,
+    "openai_github": 5
+  },
+  "urls": [
+    {
+      "url": "https://developers.openai.com/",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/agent-builder",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/agent-builder-safety",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/agent-evals",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/agents",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/agents-sdk",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/audio",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/chatkit",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/chatkit-themes",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/code-generation",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/function-calling",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/images-vision",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/latest-model",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/migrate-to-responses",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/node-reference",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/prompt-guidance",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/structured-outputs",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/text",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/tools",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/tools-connectors-mcp",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/tools-web-search",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/guides/voice-agents",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/libraries",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/models",
+      "category": "models",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/models/gpt-4.1",
+      "category": "models",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/models/gpt-5",
+      "category": "models",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/models/gpt-5-mini",
+      "category": "models",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/models/gpt-5-nano",
+      "category": "models",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/models/gpt-5.4",
+      "category": "models",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/models/gpt-5.4-pro",
+      "category": "models",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/pricing",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/api/docs/quickstart",
+      "category": "api_guides",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/app-submission-guidelines",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/build/auth",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/build/chatgpt-ui",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/build/examples",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/build/mcp-server",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/build/monetization",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/build/state-management",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/concepts/mcp-server",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/concepts/ui-guidelines",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/concepts/ux-principles",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/deploy",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/deploy/connect-chatgpt",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/deploy/submission",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/deploy/testing",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/mcp-apps-in-chatgpt",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/plan/components",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/plan/tools",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/plan/use-case",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/apps-sdk/quickstart",
+      "category": "apps_sdk",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/chatgpt",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/agent-approvals-security",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/app",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/app/automations",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/app/commands",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/app/features",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/app/local-environments",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/app/review",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/app/settings",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/app/troubleshooting",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/app/windows",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/app/worktrees",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/auth",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/community/meetups",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/concepts/customization",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/concepts/cyber-safety",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/concepts/multi-agents",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/explore",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/guides/agents-md",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/mcp",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/models",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/multi-agent",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/pricing",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/prompting",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/quickstart",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/rules",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/skills",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/speed",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/codex/workflows",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/commerce",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/cookbook",
+      "category": "cookbook",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/cookbook/topic/agents",
+      "category": "cookbook",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/cookbook/topic/chatgpt",
+      "category": "cookbook",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/cookbook/topic/codex",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/cookbook/topic/evals",
+      "category": "cookbook",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/cookbook/topic/gpt-oss",
+      "category": "cookbook",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/cookbook/topic/guardrails",
+      "category": "cookbook",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/cookbook/topic/multimodal",
+      "category": "cookbook",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/cookbook/topic/optimization",
+      "category": "cookbook",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/cookbook/topic/text",
+      "category": "cookbook",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/agents",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/audio",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/code",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/codex",
+      "category": "codex",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/cua",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/evals",
+      "category": "evals",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/fine-tuning",
+      "category": "fine_tuning",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/gpt-oss",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/guides",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/imagegen",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/scaling",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/tools",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/videogen",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/resources/videos",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/tracks/ai-application-development",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/tracks/building-agents",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://developers.openai.com/tracks/model-optimization",
+      "category": "openai_other",
+      "host": "developers.openai.com"
+    },
+    {
+      "url": "https://github.com/openai/openai-apps-sdk-examples",
+      "category": "openai_github",
+      "host": "github.com"
+    },
+    {
+      "url": "https://github.com/openai/openai-chatkit-starter-app",
+      "category": "openai_github",
+      "host": "github.com"
+    },
+    {
+      "url": "https://github.com/openai/openai-cookbook",
+      "category": "openai_github",
+      "host": "github.com"
+    },
+    {
+      "url": "https://github.com/openai/openai-node",
+      "category": "openai_github",
+      "host": "github.com"
+    },
+    {
+      "url": "https://github.com/openai/openai-responses-starter-app",
+      "category": "openai_github",
+      "host": "github.com"
+    },
+    {
+      "url": "https://platform.openai.com/docs/guides/developer-mode",
+      "category": "api_guides",
+      "host": "platform.openai.com"
+    },
+    {
+      "url": "https://platform.openai.com/login",
+      "category": "openai_other",
+      "host": "platform.openai.com"
+    }
+  ],
+  "backlog": [
+    {
+      "id": "OPENAI-001",
+      "title": "Responses API and model policy alignment",
+      "priority": "high",
+      "deliverable": "codified API usage policy, model pinning policy, schema output policy"
+    },
+    {
+      "id": "OPENAI-002",
+      "title": "Evaluation-first release gating",
+      "priority": "high",
+      "deliverable": "mandatory eval gates in release flow with regression thresholds"
+    },
+    {
+      "id": "OPENAI-003",
+      "title": "Fine-tuning governance workflow",
+      "priority": "high",
+      "deliverable": "dataset provenance, runbook templates, and promotion controls"
+    },
+    {
+      "id": "OPENAI-004",
+      "title": "Agent/tool instruction dialect standardization",
+      "priority": "high",
+      "deliverable": "instruction dialect spec and markdown templates for workers and system files"
+    },
+    {
+      "id": "OPENAI-005",
+      "title": "Reference implementation ingestion process",
+      "priority": "medium",
+      "deliverable": "repeatable import/evaluate/adopt workflow for examples and recipes"
+    }
+  ]
+}

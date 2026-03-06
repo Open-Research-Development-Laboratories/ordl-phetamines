@@ -80,6 +80,35 @@
   - `POST /v1/workers/actions/{action_id}/ack` for explicit progress/final acknowledgement.
   - Added terminal-state transition guardrails and audit logging for acknowledged actions.
   - Added regression tests for pending/ack flow and tenant isolation.
+- Implemented dispatch execution lifecycle and stream contracts:
+  - Added persistent execution/event models (`dispatch_executions`, `dispatch_events`).
+  - Added execution endpoints:
+    - `POST /v1/dispatch/{dispatch_request_id}/execute`
+    - `GET /v1/dispatch/{dispatch_request_id}/executions`
+    - `GET /v1/dispatch/executions/{execution_id}/events`
+    - `GET /v1/dispatch/executions/{execution_id}/stream` (SSE).
+  - Provider adapter runtime now emits deterministic event envelopes and supports optional live provider mode via provider metadata + managed secrets.
+  - Added regression tests for execution/event/stream behavior and tenant isolation.
+- Implemented provider credential inventory APIs for runtime adapter control:
+  - `GET /v1/providers/credentials`
+  - `GET /v1/providers/credentials/{provider}`
+  - Added tenant isolation tests for provider credential visibility and mutation.
+- Implemented PostgreSQL RLS hardening baseline:
+  - Added startup policy bootstrap module: `ordl_platform/backend/app/rls.py`.
+  - Added tenant/project scoped row policies for core governance, worker, dispatch, provider, protocol, audit, and digestion tables.
+  - Added session-scoped tenant/user context binding in DB dependency (`set_config` on `app.current_tenant_id`, `app.current_user_id`).
+  - Added explicit per-session RLS bypass control for bootstrap flows (`/v1/auth/token`) only.
+  - Added regression coverage for policy catalog presence and scope-shape expectations.
+- Added release-time contract and faceplate audit tooling:
+  - New `/v1` contract generator: `ordl_platform/scripts/generate-v1-contract.py`.
+  - New Flask revision audit gate: `ordl_platform/scripts/audit-flask-revision.py`.
+  - Release gate now runs contract generation and can enforce Flask revision audit via:
+    - `powershell -ExecutionPolicy Bypass -File ordl_platform/scripts/release-gate.ps1 -FlaskRevisionPath "<path>"`.
+  - Contract artifacts generated to:
+    - `ordl_platform/docs/contracts/api-v1-contract.json`
+    - `ordl_platform/docs/contracts/api-v1-routes.md`
+  - Audit report artifacts generated to:
+    - `ordl_platform/state/reports/*.json`
 
 ## Remaining major implementation items
 
@@ -88,6 +117,6 @@
 - High-volume audit retention and archival tiering strategy.
 - Approval queue UX depth (parallel reviewers, SLA timers, escalations).
 - Signed extension package verification with asymmetric keys (Sigstore/cert chain).
-- Advanced multi-tenant guardrails and row-level security at database level.
+- RLS migration/runtime tooling expansion for external PostgreSQL clusters (drift detection, policy checksum verification, rollout/rollback playbooks).
 - Kubernetes manifests/Helm baseline.
 - Formal control evidence pack generation automation.

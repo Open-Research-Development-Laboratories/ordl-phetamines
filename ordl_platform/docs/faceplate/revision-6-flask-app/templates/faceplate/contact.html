@@ -1,0 +1,225 @@
+{% extends "app_base.html" %}
+
+{% block title %}Contact Us | ORDL{% endblock %}
+{% block page_name %}contact{% endblock %}
+
+{% block breadcrumb %}
+<nav class="fp-breadcrumb" aria-label="Breadcrumb">
+  <div class="fp-container">
+    <ol class="fp-breadcrumb-list">
+      <li class="fp-breadcrumb-item"><a href="{{ url_for('home') }}">Home</a> <span class="fp-breadcrumb-separator">›</span></li>
+      <li class="fp-breadcrumb-item">Contact</li>
+    </ol>
+  </div>
+</nav>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/faceplate/contact.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Contact Header -->
+<section class="contact-header">
+  <div class="fp-container">
+    <div class="contact-intro" data-animate>
+      <h1>Get in Touch</h1>
+      <p>We're here to help. Choose the right channel for your inquiry and we'll get back to you as soon as possible.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Contact Channels -->
+<section class="fp-section contact-channels">
+  <div class="fp-container">
+    <div class="channels-grid">
+      <!-- Sales -->
+      <div class="channel-card" data-animate>
+        <div class="channel-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+        </div>
+        <h3>Sales</h3>
+        <p>Learn about pricing, enterprise features, and procurement options.</p>
+        
+        <div class="channel-meta">
+          <span class="meta-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Response in 24h</span>
+        </div>
+        
+        <a href="mailto:sales@ordl.io" class="channel-email">sales@ordl.io</a>
+      </div>
+
+      <!-- Support -->
+      <div class="channel-card" data-animate>
+        <div class="channel-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <h3>Technical Support</h3>
+        <p>Get help with technical issues, integrations, and troubleshooting.</p>
+        
+        <div class="channel-meta">
+          <span class="meta-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 24/7 availability</span>
+        </div>
+        
+        <a href="mailto:support@ordl.io" class="channel-email">support@ordl.io</a>
+      </div>
+
+      <!-- Security -->
+      <div class="channel-card" data-animate>
+        <div class="channel-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+        </div>
+        <h3>Security</h3>
+        <p>Report vulnerabilities or request security documentation.</p>
+        
+        <div class="channel-meta">
+          <span class="meta-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Response in 4h</span>
+        </div>
+        
+        <a href="mailto:security@ordl.io" class="channel-email">security@ordl.io</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Contact Form -->
+<section class="fp-section fp-section-alt">
+  <div class="fp-container">
+    <div class="contact-layout">
+      <!-- Form -->
+      <div class="contact-form-wrapper" data-animate>
+        <h2>Send us a message</h2>
+        
+        <form class="contact-form" action="/contact" method="POST" data-validate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName" class="fp-label">First Name *</label>
+              <input type="text" id="firstName" name="firstName" class="fp-input" required>
+            </div>
+
+            <div class="form-group">
+              <label for="lastName" class="fp-label">Last Name *</label>
+              <input type="text" id="lastName" name="lastName" class="fp-input" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="fp-label">Work Email *</label>
+            <input type="email" id="email" name="email" class="fp-input" required>
+          </div>
+
+          <div class="form-group">
+            <label for="organization" class="fp-label">Organization *</label>
+            <input type="text" id="organization" name="organization" class="fp-input" required>
+          </div>
+
+          <div class="form-group">
+            <label for="department" class="fp-label">Department</label>
+            <select id="department" name="department" class="fp-input">
+              <option value="">Select a department...</option>
+              <option value="sales">Sales Inquiry</option>
+              <option value="support">Technical Support</option>
+              <option value="security">Security</option>
+              <option value="partners">Partnerships</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="message" class="fp-label">Message *</label>
+            <textarea id="message" name="message" class="fp-input" rows="5" placeholder="How can we help you?" required></textarea>
+          </div>
+
+          <button type="submit" class="fp-btn fp-btn-primary fp-btn-lg">Send Message</button>
+        </form>
+      </div>
+
+      <!-- SLA Panel -->
+      <div class="sla-panel" data-animate>
+        <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Response Times</h3>
+
+        <div class="sla-list">
+          <div class="sla-item">
+            <div class="sla-header">
+              <span class="sla-type">Sales Inquiries</span>
+              <span class="sla-time">24 hours</span>
+            </div>
+            <p class="sla-note">Business days, excluding federal holidays</p>
+          </div>
+
+          <div class="sla-item">
+            <div class="sla-header">
+              <span class="sla-type">Technical Support</span>
+              <span class="sla-time">4 hours</span>
+            </div>
+            <p class="sla-note">Enterprise: 1 hour | Professional: 4 hours</p>
+          </div>
+
+          <div class="sla-item">
+            <div class="sla-header">
+              <span class="sla-type">Security Reports</span>
+              <span class="sla-time">4 hours</span>
+            </div>
+            <p class="sla-note">Critical vulnerabilities: 1 hour</p>
+          </div>
+
+          <div class="sla-item">
+            <div class="sla-header">
+              <span class="sla-type">General Inquiries</span>
+              <span class="sla-time">48 hours</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="escalation-box">
+          <h4>Need faster response?</h4>
+          <p>Enterprise customers have access to dedicated support channels with guaranteed response times.</p>
+          <a href="{{ url_for('pricing') }}" class="fp-btn fp-btn-secondary fp-btn-block">View Enterprise Plans</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Office Locations -->
+<section class="fp-section">
+  <div class="fp-container">
+    <h2 class="section-label">Office Locations</h2>
+
+    <div class="locations-grid">
+      <div class="location-card" data-animate>
+        <h4>Washington, DC</h4>
+        <p>HQ & Federal Sales</p>
+        <address>
+          1200 Pennsylvania Ave NW<br>
+          Suite 400<br>
+          Washington, DC 20004
+        </address>
+      </div>
+
+      <div class="location-card" data-animate>
+        <h4>San Francisco, CA</h4>
+        <p>Engineering</p>
+        <address>
+          555 Mission Street<br>
+          Suite 1200<br>
+          San Francisco, CA 94105
+        </address>
+      </div>
+
+      <div class="location-card" data-animate>
+        <h4>London, UK</h4>
+        <p>EMEA Operations</p>
+        <address>
+          1 Finsbury Square<br>
+          London EC2A 1AE<br>
+          United Kingdom
+        </address>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/faceplate/contact.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,843 @@
+{% extends "app_base.html" %}
+
+{% block title %}Messages Rework — ORDL Control{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item">Control</span>
+<span class="breadcrumb-separator">›</span>
+<span class="breadcrumb-item">Messages</span>
+<span class="breadcrumb-separator">›</span>
+<span class="breadcrumb-item">Rework Queue</span>
+{% endblock %}
+
+{% block extra_styles %}
+<style>
+    .messages-layout {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    /* Lifecycle Board */
+    .lifecycle-board {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 16px;
+        padding: 24px;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-default);
+    }
+
+    .lifecycle-column {
+        display: flex;
+        flex-direction: column;
+        min-height: 400px;
+    }
+
+    .column-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-default);
+        border-radius: 8px 8px 0 0;
+        border-bottom: none;
+    }
+
+    .column-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .column-count {
+        padding: 2px 8px;
+        background: var(--bg-secondary);
+        border-radius: 12px;
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .column-content {
+        flex: 1;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-default);
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        padding: 12px;
+        overflow-y: auto;
+        max-height: 500px;
+    }
+
+    /* Message Card */
+    .message-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 8px;
+        cursor: grab;
+        transition: all var(--transition-fast);
+    }
+
+    .message-card:hover {
+        border-color: var(--border-strong);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .message-card.dragging {
+        opacity: 0.5;
+        cursor: grabbing;
+    }
+
+    .message-card.drag-over {
+        border-color: var(--accent-primary);
+        border-style: dashed;
+    }
+
+    .message-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .message-id {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .message-priority {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+    }
+
+    .priority-high { background: var(--error); }
+    .priority-medium { background: var(--warning); }
+    .priority-low { background: var(--success); }
+
+    .message-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        line-height: 1.4;
+    }
+
+    .message-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .message-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .message-actions {
+        display: flex;
+        gap: 4px;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border-subtle);
+    }
+
+    .message-action {
+        flex: 1;
+        padding: 6px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-default);
+        border-radius: 4px;
+        color: var(--text-secondary);
+        font-size: 11px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .message-action:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        border-color: var(--border-strong);
+    }
+
+    /* Toolbar */
+    .messages-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-default);
+        flex-wrap: wrap;
+    }
+
+    .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-input {
+        padding: 8px 12px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 13px;
+        min-width: 240px;
+    }
+
+    .filter-select {
+        padding: 8px 32px 8px 12px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 13px;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6660' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+    }
+
+    /* Bulk Actions */
+    .bulk-actions {
+        display: none;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 24px;
+        background: var(--accent-dim);
+        border-bottom: 1px solid var(--border-default);
+    }
+
+    .bulk-actions.visible {
+        display: flex;
+    }
+
+    .bulk-count {
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    .bulk-count strong {
+        color: var(--accent-primary);
+    }
+
+    /* Empty State in Column */
+    .column-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        text-align: center;
+        color: var(--text-muted);
+    }
+
+    .column-empty-icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+        opacity: 0.5;
+    }
+
+    .column-empty-text {
+        font-size: 12px;
+    }
+
+    /* Message Detail Modal */
+    .message-detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .message-detail-section {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-default);
+        border-radius: 6px;
+        padding: 16px;
+    }
+
+    .message-detail-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 12px;
+    }
+
+    .message-field {
+        margin-bottom: 12px;
+    }
+
+    .message-field:last-child {
+        margin-bottom: 0;
+    }
+
+    .message-field-label {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+    }
+
+    .message-field-value {
+        font-size: 13px;
+        color: var(--text-primary);
+        font-family: var(--font-mono);
+    }
+
+    .message-content-preview {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-default);
+        border-radius: 4px;
+        padding: 12px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-secondary);
+        max-height: 200px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+    }
+
+    /* Timeline */
+    .message-timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 12px;
+        font-size: 12px;
+    }
+
+    .timeline-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--border-strong);
+        flex-shrink: 0;
+        margin-top: 4px;
+    }
+
+    .timeline-item.completed .timeline-dot {
+        background: var(--success);
+    }
+
+    .timeline-item.current .timeline-dot {
+        background: var(--accent-primary);
+        animation: pulse 2s infinite;
+    }
+
+    .timeline-content {
+        flex: 1;
+    }
+
+    .timeline-title {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    .timeline-time {
+        color: var(--text-muted);
+        font-size: 11px;
+    }
+
+    /* Status indicators */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .status-draft { background: rgba(107, 102, 96, 0.2); color: var(--text-muted); }
+    .status-review { background: var(--accent-dim); color: var(--accent-primary); }
+    .status-approved { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+    .status-dispatched { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .status-superseded { background: rgba(139, 92, 246, 0.15); color: #c084fc; }
+
+    /* Responsive */
+    @media (max-width: 1400px) {
+        .lifecycle-board {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @media (max-width: 900px) {
+        .lifecycle-board {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .lifecycle-board {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="messages-layout">
+    <!-- Toolbar -->
+    <div class="messages-toolbar">
+        <button class="btn btn-primary" onclick="createMessage()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            New Message
+        </button>
+        
+        <div class="toolbar-group" style="margin-left: auto;">
+            <input type="text" class="filter-input" placeholder="Search messages...">
+            <select class="filter-select">
+                <option>All Priorities</option>
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+            </select>
+            <select class="filter-select">
+                <option>All Types</option>
+                <option>Command</option>
+                <option>Config</option>
+                <option>Notification</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div class="bulk-actions" id="bulkActions">
+        <span class="bulk-count"><strong>0</strong> messages selected</span>
+        <button class="btn" onclick="bulkMove('review')">Move to Review</button>
+        <button class="btn" onclick="bulkApprove()">Approve</button>
+        <button class="btn" onclick="bulkDispatch()">Dispatch</button>
+        <button class="btn btn-danger" onclick="bulkDelete()">Delete</button>
+    </div>
+
+    <!-- Lifecycle Board -->
+    <div class="lifecycle-board">
+        <!-- Draft Column -->
+        <div class="lifecycle-column">
+            <div class="column-header">
+                <span class="column-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 20h9"/>
+                        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                    </svg>
+                    Draft
+                </span>
+                <span class="column-count">3</span>
+            </div>
+            <div class="column-content" data-status="draft" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="message-card" draggable="true" ondragstart="drag(event)" data-id="msg-001">
+                    <div class="message-header">
+                        <span class="message-id">#msg-001</span>
+                        <span class="message-priority priority-high"></span>
+                    </div>
+                    <div class="message-title">Restart node-042 in us-east-1</div>
+                    <div class="message-meta">
+                        <span class="message-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            5m ago
+                        </span>
+                        <span class="message-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            sarah.chen
+                        </span>
+                    </div>
+                    <div class="message-actions">
+                        <button class="message-action" onclick="editMessage('msg-001')">Edit</button>
+                        <button class="message-action" onclick="submitForReview('msg-001')">Submit</button>
+                    </div>
+                </div>
+
+                <div class="message-card" draggable="true" ondragstart="drag(event)" data-id="msg-002">
+                    <div class="message-header">
+                        <span class="message-id">#msg-002</span>
+                        <span class="message-priority priority-medium"></span>
+                    </div>
+                    <div class="message-title">Update config for batch processing</div>
+                    <div class="message-meta">
+                        <span class="message-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            1h ago
+                        </span>
+                        <span class="message-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            mike.rodriguez
+                        </span>
+                    </div>
+                    <div class="message-actions">
+                        <button class="message-action" onclick="editMessage('msg-002')">Edit</button>
+                        <button class="message-action" onclick="submitForReview('msg-002')">Submit</button>
+                    </div>
+                </div>
+
+                <div class="message-card" draggable="true" ondragstart="drag(event)" data-id="msg-003">
+                    <div class="message-header">
+                        <span class="message-id">#msg-003</span>
+                        <span class="message-priority priority-low"></span>
+                    </div>
+                    <div class="message-title">Rotate TLS certificates</div>
+                    <div class="message-meta">
+                        <span class="message-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            2h ago
+                        </span>
+                        <span class="message-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            emily.taylor
+                        </span>
+                    </div>
+                    <div class="message-actions">
+                        <button class="message-action" onclick="editMessage('msg-003')">Edit</button>
+                        <button class="message-action" onclick="submitForReview('msg-003')">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Column -->
+        <div class="lifecycle-column">
+            <div class="column-header">
+                <span class="column-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    Review
+                </span>
+                <span class="column-count">2</span>
+            </div>
+            <div class="column-content" data-status="review" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="message-card" draggable="true" ondragstart="drag(event)" data-id="msg-004">
+                    <div class="message-header">
+                        <span class="message-id">#msg-004</span>
+                        <span class="message-priority priority-high"></span>
+                    </div>
+                    <div class="message-title">Emergency stop on prod cluster</div>
+                    <div class="message-meta">
+                        <span class="message-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            30m ago
+                        </span>
+                        <span class="message-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            james.wilson
+                        </span>
+                    </div>
+                    <div class="message-actions">
+                        <button class="message-action" onclick="viewDetails('msg-004')">View</button>
+                        <button class="message-action" onclick="approveMessage('msg-004')">Approve</button>
+                    </div>
+                </div>
+
+                <div class="message-card" draggable="true" ondragstart="drag(event)" data-id="msg-005">
+                    <div class="message-header">
+                        <span class="message-id">#msg-005</span>
+                        <span class="message-priority priority-medium"></span>
+                    </div>
+                    <div class="message-title">Scale gateway cluster in eu-west</div>
+                    <div class="message-meta">
+                        <span class="message-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            1h ago
+                        </span>
+                        <span class="message-meta-item">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            lisa.park
+                        </span>
+                    </div>
+                    <div class="message-actions">
+                        <button class="message-action" onclick="viewDetails('msg-005')">View</button>
+                        <button class="message-action" onclick="approveMessage('msg-005')">Approve</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approved Column -->
+        <div class="lifecycle-column">
+            <div class="column-header">
+                <span class="column-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Approved
+                </span>
+                <span class="column-count">3</span>
+            </div>
+            <div class="column-content" data-status="approved" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="message-card" draggable="true" ondragstart="drag(event)" data-id="msg-006">
+                    <div class="message-header">
+                        <span class="message-id">#msg-006</span>
+                        <span class="message-priority priority-high"></span>
+                    </div>
+                    <div class="message-title">Deploy hotfix for auth service</div>
+                    <div class="message-meta">
+                        <span class="message-meta-item">Approved by: admin</span>
+                        <span class="message-meta-item">15m ago</span>
+                    </div>
+                    <div class="message-actions">
+                        <button class="message-action" onclick="dispatchMessage('msg-006')">Dispatch</button>
+                        <button class="message-action" onclick="revokeApproval('msg-006')">Revoke</button>
+                    </div>
+                </div>
+
+                <div class="message-card" draggable="true" ondragstart="drag(event)" data-id="msg-007">
+                    <div class="message-header">
+                        <span class="message-id">#msg-007</span>
+                        <span class="message-priority priority-medium"></span>
+                    </div>
+                    <div class="message-title">Update monitoring thresholds</div>
+                    <div class="message-meta">
+                        <span class="message-meta-item">Approved by: ops</span>
+                        <span class="message-meta-item">1h ago</span>
+                    </div>
+                    <div class="message-actions">
+                        <button class="message-action" onclick="dispatchMessage('msg-007')">Dispatch</button>
+                        <button class="message-action" onclick="revokeApproval('msg-007')">Revoke</button>
+                    </div>
+                </div>
+
+                <div class="message-card" draggable="true" ondragstart="drag(event)" data-id="msg-008">
+                    <div class="message-header">
+                        <span class="message-id">#msg-008</span>
+                        <span class="message-priority priority-low"></span>
+                    </div>
+                    <div class="message-title">Rotate API keys for staging</div>
+                    <div class="message-meta">
+                        <span class="message-meta-item">Approved by: dev</span>
+                        <span class="message-meta-item">2h ago</span>
+                    </div>
+                    <div class="message-actions">
+                        <button class="message-action" onclick="dispatchMessage('msg-008')">Dispatch</button>
+                        <button class="message-action" onclick="revokeApproval('msg-008')">Revoke</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dispatched Column -->
+        <div class="lifecycle-column">
+            <div class="column-header">
+                <span class="column-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                    </svg>
+                    Dispatched
+                </span>
+                <span class="column-count">2</span>
+            </div>
+            <div class="column-content" data-status="dispatched" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="message-card" draggable="true" ondragstart="drag(event)" data-id="msg-009">
+                    <div class="message-header">
+                        <span class="message-id">#msg-009</span>
+                        <span class="message-priority priority-high"></span>
+                    </div>
+                    <div class="message-title">Database migration - Phase 1</div>
+                    <div class="message-meta">
+                        <span class="message-meta-item">Sent: 5m ago</span>
+                        <span class="message-meta-item status-badge status-dispatched">In Progress</span>
+                    </div>
+                    <div class="message-actions">
+                        <button class="message-action" onclick="trackMessage('msg-009')">Track</button>
+                        <button class="message-action" onclick="cancelMessage('msg-009')">Cancel</button>
+                    </div>
+                </div>
+
+                <div class="message-card" draggable="true" ondragstart="drag(event)" data-id="msg-010">
+                    <div class="message-header">
+                        <span class="message-id">#msg-010</span>
+                        <span class="message-priority priority-medium"></span>
+                    </div>
+                    <div class="message-title">Update node labels</div>
+                    <div class="message-meta">
+                        <span class="message-meta-item">Sent: 15m ago</span>
+                        <span class="message-meta-item status-badge status-dispatched">Complete</span>
+                    </div>
+                    <div class="message-actions">
+                        <button class="message-action" onclick="viewResults('msg-010')">Results</button>
+                        <button class="message-action" onclick="archiveMessage('msg-010')">Archive</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Superseded Column -->
+        <div class="lifecycle-column">
+            <div class="column-header">
+                <span class="column-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                    Superseded
+                </span>
+                <span class="column-count">2</span>
+            </div>
+            <div class="column-content" data-status="superseded" ondrop="drop(event)" ondragover="allowDrop(event)">
+                <div class="message-card" draggable="true" ondragstart="drag(event)" data-id="msg-011">
+                    <div class="message-header">
+                        <span class="message-id">#msg-011</span>
+                        <span class="message-priority priority-low"></span>
+                    </div>
+                    <div class="message-title">Restart worker nodes - Batch A</div>
+                    <div class="message-meta">
+                        <span class="message-meta-item">By: #msg-001</span>
+                        <span class="message-meta-item">2h ago</span>
+                    </div>
+                    <div class="message-actions">
+                        <button class="message-action" onclick="viewHistory('msg-011')">History</button>
+                        <button class="message-action" onclick="deleteMessage('msg-011')">Delete</button>
+                    </div>
+                </div>
+
+                <div class="message-card" draggable="true" ondragstart="drag(event)" data-id="msg-012">
+                    <div class="message-header">
+                        <span class="message-id">#msg-012</span>
+                        <span class="message-priority priority-medium"></span>
+                    </div>
+                    <div class="message-title">Update config v1.2</div>
+                    <div class="message-meta">
+                        <span class="message-meta-item">By: #msg-003</span>
+                        <span class="message-meta-item">1d ago</span>
+                    </div>
+                    <div class="message-actions">
+                        <button class="message-action" onclick="viewHistory('msg-012')">History</button>
+                        <button class="message-action" onclick="deleteMessage('msg-012')">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Message Detail Modal -->
+<div class="modal-overlay" id="messageDetailModal">
+    <div class="modal" style="max-width: 800px;">
+        <div class="modal-header">Message Details</div>
+        <div class="modal-body">
+            <div class="message-detail-grid">
+                <div class="message-detail-section">
+                    <div class="message-detail-title">Message Info</div>
+                    <div class="message-field">
+                        <div class="message-field-label">ID</div>
+                        <div class="message-field-value">#msg-004</div>
+                    </div>
+                    <div class="message-field">
+                        <div class="message-field-label">Type</div>
+                        <div class="message-field-value">Command</div>
+                    </div>
+                    <div class="message-field">
+                        <div class="message-field-label">Priority</div>
+                        <div class="message-field-value">High</div>
+                    </div>
+                    <div class="message-field">
+                        <div class="message-field-label">Author</div>
+                        <div class="message-field-value">james.wilson</div>
+                    </div>
+                    <div class="message-field">
+                        <div class="message-field-label">Created</div>
+                        <div class="message-field-value">2024-03-06 14:32:18</div>
+                    </div>
+                </div>
+
+                <div class="message-detail-section">
+                    <div class="message-detail-title">Lifecycle Timeline</div>
+                    <div class="message-timeline">
+                        <div class="timeline-item completed">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">Created</div>
+                                <div class="timeline-time">14:32:18</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item completed">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">Submitted for Review</div>
+                                <div class="timeline-time">14:35:42</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item current">
+                            <div class="timeline-dot"></div>
+                            <div class="timeline-content">
+                                <div class="timeline-title">In Review</div>
+                                <div class="timeline-time">Current</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="message-detail-section" style="margin-top: 20px;">
+                <div class="message-detail-title">Message Content</div>
+                <div class="message-content-preview">{
+  "command": "emergency_stop",
+  "target": "prod-cluster",
+  "reason": "Critical security vulnerability detected",
+  "rollback_plan": "automatic",
+  "notify": ["oncall", "security-team"]
+}</div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" onclick="closeMessageModal()">Close</button>
+            <button class="btn btn-primary" onclick="approveMessage('msg-004')">Approve</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/control/messages_rework.js') }}"></script>
+{% endblock %}

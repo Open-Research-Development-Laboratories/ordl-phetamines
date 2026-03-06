@@ -143,11 +143,11 @@ def decode_access_token(token: str, settings: Settings) -> Principal:
     return _decode_local_access_token(token, settings)
 
 
-def get_current_principal(
+def _decode_principal_from_header(
     authorization: str | None = Header(default=None),
     x_principal_json: str | None = Header(default=None),
     settings: Settings = Depends(get_settings),
-) -> Principal:
+) -> Principal | None:
     if authorization and authorization.lower().startswith("bearer "):
         token = authorization.split(" ", 1)[1].strip()
         return decode_access_token(token, settings)
@@ -164,6 +164,21 @@ def get_current_principal(
             clearance_tier=str(payload.get("clearance_tier", "internal")),
             compartments=list(payload.get("compartments", [])),
         )
+    return None
+
+
+def get_optional_principal(
+    principal: Principal | None = Depends(_decode_principal_from_header),
+) -> Principal | None:
+    return principal
+
+
+def get_current_principal(
+    principal: Principal | None = Depends(get_optional_principal),
+    settings: Settings = Depends(get_settings),
+) -> Principal:
+    if principal is not None:
+        return principal
 
     if settings.oidc_required:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="oidc token required")
