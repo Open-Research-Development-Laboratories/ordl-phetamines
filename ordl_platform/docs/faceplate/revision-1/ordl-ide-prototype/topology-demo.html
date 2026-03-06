@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ORDL IDE - Swarm Topology Visualization</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'SF Mono', Monaco, monospace;
+      background: #0d0d0d;
+      color: #F5F5DC;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #2a2a2a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #F5F5DC;
+    }
+
+    .status {
+      font-size: 11px;
+      color: #8a8a7a;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background: #4ECDC4;
+      border-radius: 50%;
+      margin-right: 6px;
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    main {
+      flex: 1;
+      display: flex;
+      padding: 16px;
+      gap: 16px;
+    }
+
+    #topology-container {
+      flex: 1;
+      background: #1a1a1a;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #info-panel {
+      width: 280px;
+      background: #141414;
+      border-radius: 4px;
+      padding: 20px;
+      border: 1px solid #2a2a2a;
+    }
+
+    #info-panel h2 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #8a8a7a;
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+
+    .agent-info {
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .agent-info .label {
+      color: #6a6a5a;
+    }
+
+    .agent-info .value {
+      color: #F5F5DC;
+      float: right;
+    }
+
+    .agent-info .value.role {
+      text-transform: capitalize;
+    }
+
+    .agent-info .value.status {
+      text-transform: uppercase;
+    }
+
+    .agent-info .value.status.active {
+      color: #4ECDC4;
+    }
+
+    .agent-info .value.status.idle {
+      color: #8a8a7a;
+    }
+
+    .no-selection {
+      color: #4a4a4a;
+      font-size: 12px;
+      font-style: italic;
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    .legend {
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid #2a2a2a;
+    }
+
+    .legend h3 {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6a6a5a;
+      margin-bottom: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      color: #8a8a7a;
+      margin-bottom: 8px;
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .legend-dot.coordinator { background: #FF6B6B; }
+    .legend-dot.worker { background: #4ECDC4; }
+    .legend-dot.processor { background: #45B7D1; }
+    .legend-dot.relay { background: #96CEB4; }
+    .legend-dot.storage { background: #FFEAA7; }
+    .legend-dot.monitor { background: #DDA0DD; }
+
+    .controls {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .control-btn {
+      background: rgba(54, 69, 79, 0.8);
+      border: 1px solid #4a5a64;
+      color: #F5F5DC;
+      padding: 6px 12px;
+      font-size: 10px;
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.2s;
+    }
+
+    .control-btn:hover {
+      background: #4a5a64;
+      border-color: #F5F5DC;
+    }
+
+    .tooltip {
+      position: absolute;
+      background: rgba(20, 20, 20, 0.95);
+      border: 1px solid #3a3a3a;
+      padding: 8px 12px;
+      border-radius: 2px;
+      font-size: 10px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ORDL IDE // Swarm Topology</h1>
+    <div class="status">
+      <span class="status-dot"></span>
+      System Operational
+    </div>
+  </header>
+
+  <main>
+    <div id="topology-container"></div>
+    
+    <div id="info-panel">
+      <h2>Agent Details</h2>
+      <div id="agent-details">
+        <div class="no-selection">Select a node to view details</div>
+      </div>
+
+      <div class="legend">
+        <h3>Agent Roles</h3>
+        <div class="legend-item">
+          <span class="legend-dot coordinator"></span>
+          <span>Coordinator</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot worker"></span>
+          <span>Worker</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot processor"></span>
+          <span>Processor</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot relay"></span>
+          <span>Relay</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot storage"></span>
+          <span>Storage</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot monitor"></span>
+          <span>Monitor</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/topology.js"></script>
+  <script>
+    // Initialize the topology visualization
+    const topology = new SwarmTopology('topology-container', {
+      nodeRadius: 22,
+      linkDistance: 140,
+      chargeStrength: -500
+    });
+
+    // Handle node selection
+    topology.on('nodeSelected', (node) => {
+      const detailsEl = document.getElementById('agent-details');
+      detailsEl.innerHTML = `
+        <div class="agent-info">
+          <div>
+            <span class="label">ID</span>
+            <span class="value">${node.id}</span>
+          </div>
+          <div>
+            <span class="label">Role</span>
+            <span class="value role">${node.role}</span>
+          </div>
+          <div>
+            <span class="label">Status</span>
+            <span class="value status ${node.status}">${node.status}</span>
+          </div>
+          <div>
+            <span class="label">Throughput</span>
+            <span class="value">${node.throughput} msg/s</span>
+          </div>
+          <div>
+            <span class="label">Position</span>
+            <span class="value">${Math.round(node.x)}, ${Math.round(node.y)}</span>
+          </div>
+        </div>
+      `;
+    });
+
+    topology.on('nodeDeselected', () => {
+      document.getElementById('agent-details').innerHTML = 
+        '<div class="no-selection">Select a node to view details</div>';
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      const container = document.getElementById('topology-container');
+      topology.resize(container.clientWidth, container.clientHeight);
+    });
+  </script>
+</body>
+</html>

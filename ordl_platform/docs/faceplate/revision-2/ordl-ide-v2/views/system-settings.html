@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings — ORDL IDE</title>
+    <style>
+        :root {
+            /* Monochrome Palette */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1a1a1a;
+            --bg-hover: #222222;
+            --bg-active: #2a2a2a;
+            --border-primary: #2a2a2a;
+            --border-secondary: #333333;
+            --border-hover: #444444;
+            --text-primary: #fafafa;
+            --text-secondary: #a0a0a0;
+            --text-tertiary: #666666;
+            --accent: #ffffff;
+            --accent-dim: rgba(255, 255, 255, 0.1);
+            
+            /* Semantic */
+            --danger: #dc2626;
+            --danger-bg: rgba(220, 38, 38, 0.1);
+            --danger-border: rgba(220, 38, 38, 0.3);
+            --warning: #f59e0b;
+            --success: #22c55e;
+            --info: #3b82f6;
+            
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+            
+            /* Typography */
+            --font-mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            
+            /* Radius */
+            --radius-sm: 4px;
+            --radius-md: 6px;
+            --radius-lg: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .settings-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md) var(--space-xl);
+            border-bottom: 1px solid var(--border-primary);
+            background: var(--bg-secondary);
+        }
+
+        .settings-title {
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }
+
+        .search-container {
+            position: relative;
+            width: 320px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: 8px 12px 8px 36px;
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: all 0.15s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--border-hover);
+            background: var(--bg-hover);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            font-size: 14px;
+        }
+
+        .search-shortcut {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-hover);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-sm);
+            padding: 2px 6px;
+            font-size: 11px;
+            color: var(--text-tertiary);
+            font-family: var(--font-mono);
+        }
+
+        /* Main Layout */
+        .settings-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .settings-sidebar {
+            width: 240px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-primary);
+            padding: var(--space-md) 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: var(--space-lg);
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-tertiary);
+            padding: 0 var(--space-lg);
+            margin-bottom: var(--space-sm);
+        }
+
+        .sidebar-nav {
+            list-style: none;
+        }
+
+        .sidebar-item {
+            position: relative;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: 8px var(--space-lg);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .sidebar-link:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .sidebar-link.active {
+            background: var(--bg-active);
+            color: var(--text-primary);
+        }
+
+        .sidebar-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--accent);
+        }
+
+        .sidebar-icon {
+            width: 16px;
+            height: 16px;
+            opacity: 0.7;
+        }
+
+        .sidebar-link.active .sidebar-icon {
+            opacity: 1;
+        }
+
+        /* Content Area */
+        .settings-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-xl);
+        }
+
+        .settings-section {
+            max-width: 640px;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .section-header {
+            margin-bottom: var(--space-lg);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: var(--space-xs);
+        }
+
+        .section-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Form Elements */
+        .form-group {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+
+        .form-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: var(--space-lg);
+        }
+
+        .form-row:not(:last-child) {
+            border-bottom: 1px solid var(--border-primary);
+            padding-bottom: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .form-info {
+            flex: 1;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .form-description {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .form-control {
+            width: 200px;
+            flex-shrink: 0;
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .toggle-input {
+            display: none;
+        }
+
+        .toggle-track {
+            width: 44px;
+            height: 24px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .toggle-track::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.15s ease;
+        }
+
+        .toggle-input:checked + .toggle-track {
+            background: var(--text-primary);
+            border-color: var(--text-primary);
+        }
+
+        .toggle-input:checked + .toggle-track::after {
+            background: var(--bg-primary);
+            transform: translateX(20px);
+        }
+
+        /* Text Input */
+        .text-input {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            transition: all 0.15s ease;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: var(--border-hover);
+            background: var(--bg-hover);
+        }
+
+        .text-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        /* Select */
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-input {
+            width: 100%;
+            appearance: none;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: 8px 32px 8px 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .select-input:focus {
+            outline: none;
+            border-color: var(--border-hover);
+        }
+
+        .select-arrow {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--text-tertiary);
+            font-size: 10px;
+        }
+
+        /* Number Input with Controls */
+        .number-input-wrapper {
+            display: flex;
+            align-items: center;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .number-input {
+            width: 60px;
+            background: transparent;
+            border: none;
+            padding: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
+            text-align: center;
+            -moz-appearance: textfield;
+        }
+
+        .number-input::-webkit-outer-spin-button,
+        .number-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .number-controls {
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border-secondary);
+        }
+
+        .number-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 8px;
+            line-height: 1;
+            transition: all 0.15s ease;
+        }
+
+        .number-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .number-btn:first-child {
+            border-bottom: 1px solid var(--border-secondary);
+        }
+
+        /* Button Group */
+        .button-group {
+            display: flex;
+            gap: var(--space-xs);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: 4px;
+        }
+
+        .button-group-item {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .button-group-item:hover {
+            color: var(--text-primary);
+        }
+
+        .button-group-item.active {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border: 1px solid var(--border-hover);
+        }
+
+        /* Color Picker */
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .color-input {
+            width: 40px;
+            height: 32px;
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            background: transparent;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        .color-value {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Keybinding */
+        .keybinding-input {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .keybinding-input:hover {
+            border-color: var(--border-hover);
+        }
+
+        .keybinding-input.recording {
+            border-color: var(--accent);
+            background: var(--accent-dim);
+        }
+
+        .keybinding-key {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-sm);
+            padding: 2px 8px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-primary);
+        }
+
+        .keybinding-separator {
+            color: var(--text-tertiary);
+            font-size: 11px;
+        }
+
+        .keybinding-edit {
+            margin-left: auto;
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+
+        /* File Path Input */
+        .path-input-wrapper {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .path-input {
+            flex: 1;
+        }
+
+        .path-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+
+        .path-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+
+        /* Danger Zone */
+        .danger-zone {
+            border: 1px solid var(--danger-border);
+            border-radius: var(--radius-lg);
+            background: var(--danger-bg);
+            padding: var(--space-lg);
+            margin-top: var(--space-2xl);
+        }
+
+        .danger-zone-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .danger-icon {
+            width: 20px;
+            height: 20px;
+            color: var(--danger);
+        }
+
+        .danger-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--danger);
+        }
+
+        .danger-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md) 0;
+            border-bottom: 1px solid var(--danger-border);
+        }
+
+        .danger-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .danger-item:first-of-type {
+            padding-top: 0;
+        }
+
+        .danger-info-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .danger-info-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .danger-btn {
+            background: transparent;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .danger-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .danger-btn-fill {
+            background: var(--danger);
+            color: white;
+        }
+
+        .danger-btn-fill:hover {
+            background: #b91c1c;
+            border-color: #b91c1c;
+        }
+
+        /* Tags Input */
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-xs);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: 6px 8px;
+            min-height: 38px;
+        }
+
+        .tags-input:focus-within {
+            border-color: var(--border-hover);
+        }
+
+        .tag {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            background: var(--bg-hover);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-sm);
+            padding: 2px 8px;
+            font-size: 12px;
+        }
+
+        .tag-remove {
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .tag-remove:hover {
+            color: var(--text-primary);
+        }
+
+        .tags-input-field {
+            flex: 1;
+            min-width: 60px;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 13px;
+            outline: none;
+        }
+
+        /* Tooltip */
+        .tooltip-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .tooltip-trigger {
+            color: var(--text-tertiary);
+            cursor: help;
+            font-size: 12px;
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm) var(--space-md);
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.15s ease;
+            z-index: 100;
+            margin-bottom: 8px;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--border-secondary);
+        }
+
+        .tooltip-wrapper:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Info Badge */
+        .info-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            background: var(--accent-dim);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-sm);
+            padding: 2px 8px;
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        /* Progress/Status */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .status-dot.warning {
+            background: var(--warning);
+        }
+
+        .status-dot.error {
+            background: var(--danger);
+        }
+
+        /* Hint Text */
+        .form-hint {
+            margin-top: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-tertiary);
+            border-left: 2px solid var(--border-hover);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .settings-sidebar {
+                display: none;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: var(--space-md);
+            }
+
+            .form-control {
+                width: 100%;
+            }
+
+            .search-container {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="settings-header">
+        <h1 class="settings-title">Settings</h1>
+        <div class="search-container">
+            <span class="search-icon">⌘</span>
+            <input type="text" class="search-input" placeholder="Search settings...">
+            <span class="search-shortcut">⌘K</span>
+        </div>
+    </header>
+
+    <div class="settings-layout">
+        <aside class="settings-sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">Configuration</h3>
+                <nav class="sidebar-nav">
+                    <div class="sidebar-item">
+                        <a class="sidebar-link active" data-section="general">
+                            <svg class="sidebar-icon" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                                <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319z"/>
+                            </svg>
+                            General
+                        </a>
+                    </div>
+                    <div class="sidebar-item">
+                        <a class="sidebar-link" data-section="fleet">
+                            <svg class="sidebar-icon" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M5 3a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm5 0a2 2 0 1 0-4 0 2 2 0 0 0 4 0z"/>
+                                <path d="M4.096 7.5A2.5 2.5 0 0 0 2 10c0 1.105.622 2 1.5 2.5-.253.485-.413 1.019-.469 1.5h10.938a5.475 5.475 0 0 0-.47-1.5c.878-.5 1.5-1.395 1.5-2.5a2.5 2.5 0 0 0-2.096-2.5 4.992 4.992 0 0 1-9.808 0zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm9.5-.5a.5.5 0 0 1 0 1h-1a.5.5 0 0 1 0-1h1z"/>
+                            </svg>
+                            Fleet
+                        </a>
+                    </div>
+                    <div class="sidebar-item">
+                        <a class="sidebar-link" data-section="security">
+                            <svg class="sidebar-icon" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/>
+                            </svg>
+                            Security
+                        </a>
+                    </div>
+                    <div class="sidebar-item">
+                        <a class="sidebar-link" data-section="integrations">
+                            <svg class="sidebar-icon" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M4.5 1A1.5 1.5 0 0 0 3 2.5V3h4v-.5A1.5 1.5 0 0 0 5.5 1h-1zM7 4v1h2V4h4v.882a.5.5 0 0 0 .276.447l.895.447A1.5 1.5 0 0 1 15 7.118V13H9v-1.5a.5.5 0 0 1 .146-.354l.854-.853V9.5a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v.793l.854.853A.5.5 0 0 1 7 11.5V13H1V7.118a1.5 1.5 0 0 1 .83-1.342l.894-.447A.5.5 0 0 0 3 4.882V4h4zM1 14v.5A1.5 1.5 0 0 0 2.5 16h3A1.5 1.5 0 0 0 7 14.5V14H1zm8 0v.5a1.5 1.5 0 0 0 1.5 1.5h3a1.5 1.5 0 0 0 1.5-1.5V14H9z"/>
+                            </svg>
+                            Integrations
+                        </a>
+                    </div>
+                    <div class="sidebar-item">
+                        <a class="sidebar-link" data-section="appearance">
+                            <svg class="sidebar-icon" viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z"/>
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                            </svg>
+                            Appearance
+                        </a>
+                    </div>
+                </nav>
+            </div>
+        </aside>
+
+        <main class="settings-content">
+            <!-- General Section -->
+            <section class="settings-section" id="general-section">
+                <header class="section-header">
+                    <h2 class="section-title">General Settings</h2>
+                    <p class="section-description">Configure basic IDE behavior and workspace preferences.</p>
+                </header>
+
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">
+                                Auto-save
+                                <span class="tooltip-wrapper">
+                                    <span class="tooltip-trigger">ⓘ</span>
+                                    <span class="tooltip">Automatically save changes when you stop typing</span>
+                                </span>
+                            </label>
+                            <p class="form-description">Save files automatically after a period of inactivity</p>
+                        </div>
+                        <div class="form-control">
+                            <label class="toggle">
+                                <input type="checkbox" class="toggle-input" checked>
+                                <span class="toggle-track"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Auto-save Delay</label>
+                            <p class="form-description">Milliseconds to wait before auto-saving</p>
+                        </div>
+                        <div class="form-control">
+                            <div class="number-input-wrapper">
+                                <input type="number" class="number-input" value="1000" min="500" max="10000" step="100">
+                                <div class="number-controls">
+                                    <button class="number-btn">▲</button>
+                                    <button class="number-btn">▼</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Default Workspace</label>
+                            <p class="form-description">Location for new project files</p>
+                        </div>
+                        <div class="form-control" style="width: 280px;">
+                            <div class="path-input-wrapper">
+                                <input type="text" class="text-input path-input" value="~/ordl-workspace">
+                                <button class="path-btn">Browse...</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Fleet Section -->
+            <section class="settings-section" id="fleet-section">
+                <header class="section-header">
+                    <h2 class="section-title">Fleet Configuration</h2>
+                    <p class="section-description">Manage agent fleet behavior and connection settings.</p>
+                </header>
+
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Heartbeat Interval</label>
+                            <p class="form-description">Frequency of agent health checks</p>
+                        </div>
+                        <div class="form-control">
+                            <div class="select-wrapper">
+                                <select class="select-input">
+                                    <option>5 seconds</option>
+                                    <option selected>15 seconds</option>
+                                    <option>30 seconds</option>
+                                    <option>1 minute</option>
+                                </select>
+                                <span class="select-arrow">▼</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Auto-reconnect Agents</label>
+                            <p class="form-description">Automatically reconnect dropped agents</p>
+                        </div>
+                        <div class="form-control">
+                            <label class="toggle">
+                                <input type="checkbox" class="toggle-input" checked>
+                                <span class="toggle-track"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Max Concurrent Tasks</label>
+                            <p class="form-description">Maximum tasks per agent</p>
+                        </div>
+                        <div class="form-control">
+                            <div class="number-input-wrapper">
+                                <input type="number" class="number-input" value="4" min="1" max="16">
+                                <div class="number-controls">
+                                    <button class="number-btn">▲</button>
+                                    <button class="number-btn">▼</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Allowed Hosts</label>
+                            <p class="form-description">IP patterns permitted to connect</p>
+                        </div>
+                        <div class="form-control" style="width: 280px;">
+                            <div class="tags-input">
+                                <span class="tag">
+                                    192.168.1.*
+                                    <button class="tag-remove">×</button>
+                                </span>
+                                <span class="tag">
+                                    10.0.0.*
+                                    <button class="tag-remove">×</button>
+                                </span>
+                                <input type="text" class="tags-input-field" placeholder="Add host...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Security Section -->
+            <section class="settings-section" id="security-section">
+                <header class="section-header">
+                    <h2 class="section-title">Security</h2>
+                    <p class="section-description">Authentication and access control settings.</p>
+                </header>
+
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">API Key Authentication</label>
+                            <p class="form-description">Require API keys for agent connections</p>
+                        </div>
+                        <div class="form-control">
+                            <label class="toggle">
+                                <input type="checkbox" class="toggle-input" checked>
+                                <span class="toggle-track"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Session Timeout</label>
+                            <p class="form-description">Minutes before inactive sessions expire</p>
+                        </div>
+                        <div class="form-control">
+                            <div class="number-input-wrapper">
+                                <input type="number" class="number-input" value="60" min="5" max="1440">
+                                <div class="number-controls">
+                                    <button class="number-btn">▲</button>
+                                    <button class="number-btn">▼</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Encryption Mode</label>
+                            <p class="form-description">Transport layer security</p>
+                        </div>
+                        <div class="form-control">
+                            <div class="button-group">
+                                <button class="button-group-item">Off</button>
+                                <button class="button-group-item">TLS</button>
+                                <button class="button-group-item active">mTLS</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Integrations Section -->
+            <section class="settings-section" id="integrations-section">
+                <header class="section-header">
+                    <h2 class="section-title">Integrations</h2>
+                    <p class="section-description">Connect external services and tools.</p>
+                </header>
+
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Git Provider</label>
+                            <p class="form-description">Repository hosting service</p>
+                        </div>
+                        <div class="form-control">
+                            <div class="select-wrapper">
+                                <select class="select-input">
+                                    <option>GitHub</option>
+                                    <option>GitLab</option>
+                                    <option>Bitbucket</option>
+                                    <option>Self-hosted</option>
+                                </select>
+                                <span class="select-arrow">▼</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Webhook URL</label>
+                            <p class="form-description">Endpoint for deployment notifications</p>
+                        </div>
+                        <div class="form-control" style="width: 280px;">
+                            <input type="text" class="text-input" value="https://api.example.com/webhook">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Appearance Section -->
+            <section class="settings-section" id="appearance-section">
+                <header class="section-header">
+                    <h2 class="section-title">Appearance</h2>
+                    <p class="section-description">Customize the IDE visual theme.</p>
+                </header>
+
+                <div class="form-group">
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Theme</label>
+                            <p class="form-description">Color scheme preference</p>
+                        </div>
+                        <div class="form-control">
+                            <div class="button-group">
+                                <button class="button-group-item active">Dark</button>
+                                <button class="button-group-item">Light</button>
+                                <button class="button-group-item">System</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Accent Color</label>
+                            <p class="form-description">Primary interface highlight</p>
+                        </div>
+                        <div class="form-control">
+                            <div class="color-picker-wrapper">
+                                <input type="color" class="color-input" value="#ffffff">
+                                <span class="color-value">#FFFFFF</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Font Size</label>
+                            <p class="form-description">Editor text size in pixels</p>
+                        </div>
+                        <div class="form-control">
+                            <div class="number-input-wrapper">
+                                <input type="number" class="number-input" value="14" min="10" max="24">
+                                <div class="number-controls">
+                                    <button class="number-btn">▲</button>
+                                    <button class="number-btn">▼</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-info">
+                            <label class="form-label">Show Line Numbers</label>
+                            <p class="form-description">Display line numbers in editor</p>
+                        </div>
+                        <div class="form-control">
+                            <label class="toggle">
+                                <input type="checkbox" class="toggle-input" checked>
+                                <span class="toggle-track"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Danger Zone -->
+            <section class="danger-zone">
+                <div class="danger-zone-header">
+                    <svg class="danger-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    <h3 class="danger-title">Danger Zone</h3>
+                </div>
+
+                <div class="danger-item">
+                    <div>
+                        <div class="danger-info-title">Reset All Settings</div>
+                        <div class="danger-info-desc">Restore default configuration</div>
+                    </div>
+                    <button class="danger-btn">Reset</button>
+                </div>
+
+                <div class="danger-item">
+                    <div>
+                        <div class="danger-info-title">Clear Cache</div>
+                        <div class="danger-info-desc">Remove temporary files and data</div>
+                    </div>
+                    <button class="danger-btn">Clear</button>
+                </div>
+
+                <div class="danger-item">
+                    <div>
+                        <div class="danger-info-title">Delete Account</div>
+                        <div class="danger-info-desc">Permanently remove all data</div>
+                    </div>
+                    <button class="danger-btn danger-btn-fill">Delete</button>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

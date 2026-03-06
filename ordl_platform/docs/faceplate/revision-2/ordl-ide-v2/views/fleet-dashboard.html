@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORDL IDE - Fleet Dashboard</title>
+    <style>
+        /* === DESIGN SYSTEM === */
+        :root {
+            /* Palette */
+            --charcoal: #0a0a0a;
+            --charcoal-light: #111111;
+            --charcoal-lighter: #1a1a1a;
+            --charcoal-border: #2a2a2a;
+            --cream: #f5f2e9;
+            --cream-dim: #c4c0b3;
+            --cream-muted: #8a8680;
+            --amber: #ffb347;
+            --amber-dim: #c9841e;
+            --amber-glow: rgba(255, 179, 71, 0.15);
+            
+            /* Semantic colors */
+            --status-ok: #4ade80;
+            --status-warn: #ffb347;
+            --status-error: #ef4444;
+            --status-unknown: #6b7280;
+            
+            /* Typography */
+            --font-mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            --font-sans: system-ui, -apple-system, sans-serif;
+            
+            /* Spacing */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+            
+            /* Radii */
+            --radius-sm: 4px;
+            --radius-md: 6px;
+            --radius-lg: 8px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            height: 100%;
+            background: var(--charcoal);
+            color: var(--cream);
+            font-family: var(--font-sans);
+            font-size: 14px;
+            line-height: 1.5;
+            overflow: hidden;
+        }
+        
+        /* === LAYOUT === */
+        .dashboard {
+            display: grid;
+            grid-template-rows: auto auto 1fr auto;
+            grid-template-columns: 1fr 320px;
+            grid-template-areas:
+                "header header"
+                "health alerts"
+                "main sidebar"
+                "footer footer";
+            height: 100vh;
+            gap: 1px;
+            background: var(--charcoal-border);
+        }
+        
+        /* === HEADER === */
+        .header {
+            grid-area: header;
+            background: var(--charcoal);
+            padding: var(--space-md) var(--space-xl);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--charcoal-border);
+        }
+        
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        
+        .header-logo {
+            width: 32px;
+            height: 32px;
+            background: var(--amber);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--charcoal);
+            font-size: 12px;
+        }
+        
+        .header-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        
+        .header-subtitle {
+            color: var(--cream-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-left: var(--space-sm);
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+        }
+        
+        /* === TIME RANGE SELECTOR === */
+        .time-selector {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            background: var(--charcoal-lighter);
+            padding: var(--space-xs);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--charcoal-border);
+        }
+        
+        .time-btn {
+            background: transparent;
+            border: none;
+            color: var(--cream-dim);
+            padding: var(--space-sm) var(--space-md);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: all 150ms ease;
+            font-family: var(--font-mono);
+        }
+        
+        .time-btn:hover {
+            color: var(--cream);
+            background: var(--charcoal-light);
+        }
+        
+        .time-btn.active {
+            color: var(--amber);
+            background: var(--amber-glow);
+            font-weight: 600;
+        }
+        
+        .time-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--charcoal-border);
+            margin: 0 var(--space-xs);
+        }
+        
+        .time-custom {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: 0 var(--space-sm);
+        }
+        
+        .time-input {
+            background: var(--charcoal);
+            border: 1px solid var(--charcoal-border);
+            color: var(--cream);
+            padding: var(--space-xs) var(--space-sm);
+            font-size: 0.75rem;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            width: 100px;
+        }
+        
+        .time-input:focus {
+            outline: none;
+            border-color: var(--amber);
+        }
+        
+        /* === HEALTH INDICATORS === */
+        .health-section {
+            grid-area: health;
+            background: var(--charcoal);
+            padding: var(--space-lg) var(--space-xl);
+            display: flex;
+            gap: var(--space-xl);
+            align-items: stretch;
+        }
+        
+        .health-card {
+            flex: 1;
+            background: var(--charcoal-lighter);
+            border: 1px solid var(--charcoal-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            min-width: 0;
+            transition: border-color 200ms ease;
+        }
+        
+        .health-card:hover {
+            border-color: var(--cream-dim);
+        }
+        
+        .health-card.critical {
+            border-color: var(--status-error);
+            background: linear-gradient(135deg, var(--charcoal-lighter) 0%, rgba(239, 68, 68, 0.05) 100%);
+        }
+        
+        .health-card.warning {
+            border-color: var(--status-warn);
+            background: linear-gradient(135deg, var(--charcoal-lighter) 0%, rgba(255, 179, 71, 0.05) 100%);
+        }
+        
+        .health-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .health-label {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--cream-muted);
+            font-weight: 500;
+        }
+        
+        .health-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .status-dot.ok { background: var(--status-ok); }
+        .status-dot.warn { background: var(--status-warn); }
+        .status-dot.error { background: var(--status-error); animation: pulse-alert 1s ease-in-out infinite; }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @keyframes pulse-alert {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 4px rgba(239, 68, 68, 0); }
+        }
+        
+        .health-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            letter-spacing: -0.02em;
+        }
+        
+        .health-value.ok { color: var(--status-ok); }
+        .health-value.warn { color: var(--status-warn); }
+        .health-value.error { color: var(--status-error); }
+        
+        .health-subtext {
+            font-size: 0.75rem;
+            color: var(--cream-muted);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .health-trend {
+            font-family: var(--font-mono);
+            font-size: 0.6875rem;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            background: var(--charcoal-light);
+        }
+        
+        .health-trend.up { color: var(--status-ok); }
+        .health-trend.down { color: var(--status-error); }
+        
+        /* Health sparkline */
+        .sparkline {
+            height: 40px;
+            margin-top: auto;
+        }
+        
+        /* === ALERT SYSTEM === */
+        .alerts-section {
+            grid-area: alerts;
+            background: var(--charcoal);
+            padding: var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            border-left: 1px solid var(--charcoal-border);
+        }
+        
+        .alerts-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .alerts-title {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--cream-muted);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .alerts-badge {
+            background: var(--status-error);
+            color: var(--charcoal);
+            font-size: 0.625rem;
+            font-weight: 700;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 999px;
+            min-width: 20px;
+            text-align: center;
+        }
+        
+        .alerts-clear {
+            background: transparent;
+            border: none;
+            color: var(--cream-muted);
+            font-size: 0.6875rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: color 150ms ease;
+        }
+        
+        .alerts-clear:hover {
+            color: var(--cream);
+        }
+        
+        .alerts-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .alert-item {
+            background: var(--charcoal-lighter);
+            border: 1px solid var(--charcoal-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            display: flex;
+            gap: var(--space-md);
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+        
+        .alert-item:hover {
+            border-color: var(--cream-dim);
+            transform: translateX(2px);
+        }
+        
+        .alert-item.critical {
+            border-left: 3px solid var(--status-error);
+        }
+        
+        .alert-item.warning {
+            border-left: 3px solid var(--status-warn);
+        }
+        
+        .alert-item.info {
+            border-left: 3px solid var(--cream-dim);
+        }
+        
+        .alert-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        
+        .alert-item.critical .alert-icon { background: rgba(239, 68, 68, 0.1); color: var(--status-error); }
+        .alert-item.warning .alert-icon { background: rgba(255, 179, 71, 0.1); color: var(--status-warn); }
+        .alert-item.info .alert-icon { background: rgba(196, 192, 179, 0.1); color: var(--cream-dim); }
+        
+        .alert-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .alert-message {
+            font-size: 0.8125rem;
+            line-height: 1.4;
+            margin-bottom: var(--space-xs);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .alert-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 0.6875rem;
+            color: var(--cream-muted);
+            font-family: var(--font-mono);
+        }
+        
+        .alert-time::before {
+            content: '●';
+            margin-right: var(--space-sm);
+        }
+        
+        .alert-item.critical .alert-time::before { color: var(--status-error); }
+        .alert-item.warning .alert-time::before { color: var(--status-warn); }
+        .alert-item.info .alert-time::before { color: var(--cream-dim); }
+        
+        /* === MAIN CONTENT === */
+        .main-section {
+            grid-area: main;
+            background: var(--charcoal);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* === ACTIVITY STREAMS === */
+        .activity-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: var(--space-lg) var(--space-xl);
+            overflow: hidden;
+        }
+        
+        .activity-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-lg);
+        }
+        
+        .activity-title {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--cream-muted);
+            font-weight: 500;
+        }
+        
+        .activity-filters {
+            display: flex;
+            gap: var(--space-xs);
+        }
+        
+        .filter-btn {
+            background: transparent;
+            border: 1px solid var(--charcoal-border);
+            color: var(--cream-dim);
+            padding: var(--space-xs) var(--space-md);
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: all 150ms ease;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            border-color: var(--amber);
+            color: var(--amber);
+        }
+        
+        .activity-panels {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .activity-panel {
+            background: var(--charcoal-lighter);
+            border: 1px solid var(--charcoal-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: border-color 200ms ease;
+        }
+        
+        .activity-panel:hover {
+            border-color: var(--charcoal-border);
+        }
+        
+        .activity-panel.collapsed .panel-content {
+            display: none;
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md) var(--space-lg);
+            cursor: pointer;
+            user-select: none;
+            transition: background 150ms ease;
+        }
+        
+        .panel-header:hover {
+            background: var(--charcoal-light);
+        }
+        
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        
+        .panel-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--charcoal);
+            border: 1px solid var(--charcoal-border);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .panel-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .panel-count {
+            font-size: 0.6875rem;
+            color: var(--cream-muted);
+            font-family: var(--font-mono);
+            background: var(--charcoal);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+        }
+        
+        .panel-toggle {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cream-muted);
+            transition: transform 200ms ease;
+        }
+        
+        .activity-panel.collapsed .panel-toggle {
+            transform: rotate(-90deg);
+        }
+        
+        .panel-content {
+            border-top: 1px solid var(--charcoal-border);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-md);
+            padding: var(--space-md) var(--space-lg);
+            border-bottom: 1px solid var(--charcoal-border);
+            transition: background 150ms ease;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-item:hover {
+            background: var(--charcoal-light);
+        }
+        
+        .activity-timestamp {
+            font-family: var(--font-mono);
+            font-size: 0.6875rem;
+            color: var(--cream-muted);
+            white-space: nowrap;
+            padding-top: 2px;
+            min-width: 60px;
+        }
+        
+        .activity-body {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .activity-text {
+            font-size: 0.8125rem;
+            line-height: 1.5;
+            margin-bottom: var(--space-xs);
+        }
+        
+        .activity-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 0.6875rem;
+            color: var(--cream-muted);
+        }
+        
+        .activity-tag {
+            background: var(--charcoal);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .activity-tag.deploy { color: var(--status-ok); }
+        .activity-tag.rollback { color: var(--status-warn); }
+        .activity-tag.alert { color: var(--status-error); }
+        .activity-tag.system { color: var(--cream-dim); }
+        
+        /* === SIDEBAR === */
+        .sidebar {
+            grid-area: sidebar;
+            background: var(--charcoal-light);
+            border-left: 1px solid var(--charcoal-border);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* === QUICK ACTIONS === */
+        .actions-section {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--charcoal-border);
+        }
+        
+        .actions-title {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--cream-muted);
+            font-weight: 500;
+            margin-bottom: var(--space-md);
+        }
+        
+        .actions-grid {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            background: var(--charcoal-lighter);
+            border: 1px solid var(--charcoal-border);
+            color: var(--cream);
+            padding: var(--space-md);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 150ms ease;
+            text-align: left;
+        }
+        
+        .action-btn:hover {
+            background: var(--charcoal);
+            border-color: var(--cream-dim);
+            transform: translateX(2px);
+        }
+        
+        .action-btn:active {
+            transform: translateX(0);
+        }
+        
+        .action-btn.primary {
+            border-color: var(--amber);
+            background: var(--amber-glow);
+        }
+        
+        .action-btn.primary:hover {
+            background: rgba(255, 179, 71, 0.1);
+        }
+        
+        .action-btn.danger {
+            border-color: var(--status-error);
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        .action-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .action-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .action-btn.primary .action-icon { background: var(--amber-glow); color: var(--amber); }
+        .action-btn.danger .action-icon { background: rgba(239, 68, 68, 0.1); color: var(--status-error); }
+        .action-btn.secondary .action-icon { background: var(--charcoal); color: var(--cream-dim); }
+        
+        .action-content {
+            flex: 1;
+        }
+        
+        .action-label {
+            font-weight: 600;
+            font-size: 0.8125rem;
+            margin-bottom: var(--space-xs);
+        }
+        
+        .action-desc {
+            font-size: 0.6875rem;
+            color: var(--cream-muted);
+        }
+        
+        .action-shortcut {
+            font-family: var(--font-mono);
+            font-size: 0.625rem;
+            color: var(--cream-muted);
+            background: var(--charcoal);
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--charcoal-border);
+        }
+        
+        /* === FOOTER === */
+        .footer {
+            grid-area: footer;
+            background: var(--charcoal);
+            padding: var(--space-sm) var(--space-xl);
+            border-top: 1px solid var(--charcoal-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.6875rem;
+            color: var(--cream-muted);
+        }
+        
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-lg);
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .connection-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--status-ok);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .footer-stats {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            font-family: var(--font-mono);
+        }
+        
+        .footer-stat {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+        
+        .footer-stat-value {
+            color: var(--cream);
+            font-weight: 600;
+        }
+        
+        .footer-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+        
+        .footer-link {
+            color: var(--cream-muted);
+            text-decoration: none;
+            transition: color 150ms ease;
+        }
+        
+        .footer-link:hover {
+            color: var(--amber);
+        }
+        
+        /* === SCROLLBAR === */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--charcoal);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--charcoal-border);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--cream-muted);
+        }
+        
+        /* === UTILITIES === */
+        .text-amber { color: var(--amber); }
+        .text-ok { color: var(--status-ok); }
+        .text-warn { color: var(--status-warn); }
+        .text-error { color: var(--status-error); }
+        
+        /* === RESPONSIVE === */
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr 280px;
+            }
+            
+            .health-section {
+                flex-wrap: wrap;
+            }
+            
+            .health-card {
+                flex: 1 1 calc(50% - var(--space-xl));
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "header"
+                    "health"
+                    "alerts"
+                    "main"
+                    "sidebar"
+                    "footer";
+            }
+            
+            .sidebar {
+                border-left: none;
+                border-top: 1px solid var(--charcoal-border);
+            }
+            
+            .alerts-section {
+                border-left: none;
+                border-top: 1px solid var(--charcoal-border);
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-brand">
+                <div class="header-logo">ORDL</div>
+                <div>
+                    <span class="header-title">Fleet Dashboard</span>
+                    <span class="header-subtitle">Mission Control</span>
+                </div>
+            </div>
+            <div class="header-controls">
+                <div class="time-selector">
+                    <button class="time-btn active">1h</button>
+                    <button class="time-btn">6h</button>
+                    <button class="time-btn">24h</button>
+                    <button class="time-btn">7d</button>
+                    <div class="time-divider"></div>
+                    <div class="time-custom">
+                        <input type="text" class="time-input" placeholder="From" value="">
+                        <span style="color: var(--cream-muted);">→</span>
+                        <input type="text" class="time-input" placeholder="To" value="">
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Global Health Indicators -->
+        <section class="health-section">
+            <div class="health-card">
+                <div class="health-header">
+                    <span class="health-label">Fleet Availability</span>
+                    <div class="health-status">
+                        <span class="status-dot ok"></span>
+                        <span class="text-ok">HEALTHY</span>
+                    </div>
+                </div>
+                <div class="health-value ok">99.97%</div>
+                <div class="health-subtext">
+                    <span>of 247 nodes responding</span>
+                    <span class="health-trend up">↑ 0.02%</span>
+                </div>
+                <svg class="sparkline" viewBox="0 0 100 20" preserveAspectRatio="none">
+                    <path d="M0,15 L10,14 L20,16 L30,13 L40,15 L50,12 L60,14 L70,11 L80,13 L90,10 L100,8" 
+                          fill="none" stroke="var(--status-ok)" stroke-width="1.5" opacity="0.6"/>
+                    <path d="M0,15 L10,14 L20,16 L30,13 L40,15 L50,12 L60,14 L70,11 L80,13 L90,10 L100,8 L100,20 L0,20 Z" 
+                          fill="var(--status-ok)" opacity="0.1"/>
+                </svg>
+            </div>
+            
+            <div class="health-card">
+                <div class="health-header">
+                    <span class="health-label">Response Time</span>
+                    <div class="health-status">
+                        <span class="status-dot ok"></span>
+                        <span class="text-ok">OPTIMAL</span>
+                    </div>
+                </div>
+                <div class="health-value ok">24<span style="font-size:1rem; color:var(--cream-muted);">ms</span></div>
+                <div class="health-subtext">
+                    <span>p95 latency</span>
+                    <span class="health-trend up">↓ 3ms</span>
+                </div>
+                <svg class="sparkline" viewBox="0 0 100 20" preserveAspectRatio="none">
+                    <path d="M0,18 L10,17 L20,18 L30,16 L40,17 L50,15 L60,16 L70,14 L80,15 L90,12 L100,10" 
+                          fill="none" stroke="var(--status-ok)" stroke-width="1.5" opacity="0.6"/>
+                    <path d="M0,18 L10,17 L20,18 L30,16 L40,17 L50,15 L60,16 L70,14 L80,15 L90,12 L100,10 L100,20 L0,20 Z" 
+                          fill="var(--status-ok)" opacity="0.1"/>
+                </svg>
+            </div>
+            
+            <div class="health-card">
+                <div class="health-header">
+                    <span class="health-label">Active Deployments</span>
+                    <div class="health-status">
+                        <span class="status-dot warn"></span>
+                        <span class="text-warn">IN PROGRESS</span>
+                    </div>
+                </div>
+                <div class="health-value warn">3</div>
+                <div class="health-subtext">
+                    <span>across 2 environments</span>
+                    <span class="health-trend down">↑ 2</span>
+                </div>
+                <svg class="sparkline" viewBox="0 0 100 20" preserveAspectRatio="none">
+                    <path d="M0,19 L10,19 L20,18 L30,18 L40,17 L50,16 L60,15 L70,14 L80,12 L90,10 L100,8" 
+                          fill="none" stroke="var(--status-warn)" stroke-width="1.5" opacity="0.6"/>
+                    <path d="M0,19 L10,19 L20,18 L30,18 L40,17 L50,16 L60,15 L70,14 L80,12 L90,10 L100,8 L100,20 L0,20 Z" 
+                          fill="var(--status-warn)" opacity="0.1"/>
+                </svg>
+            </div>
+            
+            <div class="health-card">
+                <div class="health-header">
+                    <span class="health-label">Error Rate</span>
+                    <div class="health-status">
+                        <span class="status-dot ok"></span>
+                        <span class="text-ok">NORMAL</span>
+                    </div>
+                </div>
+                <div class="health-value ok">0.03%</div>
+                <div class="health-subtext">
+                    <span>12 errors / 40k req</span>
+                    <span class="health-trend up">↓ 0.01%</span>
+                </div>
+                <svg class="sparkline" viewBox="0 0 100 20" preserveAspectRatio="none">
+                    <path d="M0,5 L10,6 L20,5 L30,7 L40,6 L50,8 L60,7 L70,9 L80,8 L90,10 L100,12" 
+                          fill="none" stroke="var(--status-ok)" stroke-width="1.5" opacity="0.6"/>
+                    <path d="M0,5 L10,6 L20,5 L30,7 L40,6 L50,8 L60,7 L70,9 L80,8 L90,10 L100,12 L100,20 L0,20 Z" 
+                          fill="var(--status-ok)" opacity="0.1"/>
+                </svg>
+            </div>
+        </section>
+        
+        <!-- Alert System -->
+        <section class="alerts-section">
+            <div class="alerts-header">
+                <div class="alerts-title">
+                    Active Alerts
+                    <span class="alerts-badge">3</span>
+                </div>
+                <button class="alerts-clear">Clear All</button>
+            </div>
+            <div class="alerts-list">
+                <div class="alert-item critical">
+                    <div class="alert-icon">!</div>
+                    <div class="alert-content">
+                        <div class="alert-message">High memory usage on fleet segment us-east-1b</div>
+                        <div class="alert-meta">
+                            <span class="alert-time">2 min ago</span>
+                            <span>us-east-1b</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert-item warning">
+                    <div class="alert-icon">⚠</div>
+                    <div class="alert-content">
+                        <div class="alert-message">Deployment lag detected in eu-west-1a</div>
+                        <div class="alert-meta">
+                            <span class="alert-time">5 min ago</span>
+                            <span>eu-west-1a</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert-item info">
+                    <div class="alert-icon">i</div>
+                    <div class="alert-content">
+                        <div class="alert-message">Scheduled maintenance window approaching</div>
+                        <div class="alert-meta">
+                            <span class="alert-time">12 min ago</span>
+                            <span>Global</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Activity Streams -->
+        <main class="main-section">
+            <section class="activity-section">
+                <div class="activity-header">
+                    <span class="activity-title">Activity Streams</span>
+                    <div class="activity-filters">
+                        <button class="filter-btn active">All</button>
+                        <button class="filter-btn">Deploy</button>
+                        <button class="filter-btn">System</button>
+                        <button class="filter-btn">Alerts</button>
+                    </div>
+                </div>
+                <div class="activity-panels">
+                    <!-- Deployments Panel -->
+                    <div class="activity-panel">
+                        <div class="panel-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                            <div class="panel-title">
+                                <div class="panel-icon">🚀</div>
+                                <span class="panel-name">Recent Deployments</span>
+                                <span class="panel-count">4 active</span>
+                            </div>
+                            <div class="panel-toggle">▼</div>
+                        </div>
+                        <div class="panel-content">
+                            <div class="activity-item">
+                                <span class="activity-timestamp">14:32</span>
+                                <div class="activity-body">
+                                    <div class="activity-text">Deployment <strong>v2.4.1-hotfix</strong> completed successfully on <strong>production-us</strong></div>
+                                    <div class="activity-meta">
+                                        <span class="activity-tag deploy">deploy</span>
+                                        <span>deployed by admin</span>
+                                        <span>→ 247 nodes</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <span class="activity-timestamp">14:28</span>
+                                <div class="activity-body">
+                                    <div class="activity-text">Rolling update initiated for <strong>api-gateway</strong> service</div>
+                                    <div class="activity-meta">
+                                        <span class="activity-tag deploy">deploy</span>
+                                        <span>in progress</span>
+                                        <span>→ 142/247 nodes</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <span class="activity-timestamp">13:45</span>
+                                <div class="activity-body">
+                                    <div class="activity-text">Deployment <strong>v2.4.0</strong> rolled back on <strong>staging-eu</strong></div>
+                                    <div class="activity-meta">
+                                        <span class="activity-tag rollback">rollback</span>
+                                        <span>auto-triggered</span>
+                                        <span>health check failed</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- System Events Panel -->
+                    <div class="activity-panel">
+                        <div class="panel-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                            <div class="panel-title">
+                                <div class="panel-icon">⚙</div>
+                                <span class="panel-name">System Events</span>
+                                <span class="panel-count">12 today</span>
+                            </div>
+                            <div class="panel-toggle">▼</div>
+                        </div>
+                        <div class="panel-content">
+                            <div class="activity-item">
+                                <span class="activity-timestamp">14:30</span>
+                                <div class="activity-body">
+                                    <div class="activity-text">Auto-scaling triggered: added <strong>12 nodes</strong> to handle load spike</div>
+                                    <div class="activity-meta">
+                                        <span class="activity-tag system">system</span>
+                                        <span>us-east-1</span>
+                                        <span>CPU avg: 78% → 42%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <span class="activity-timestamp">13:12</span>
+                                <div class="activity-body">
+                                    <div class="activity-text">Certificate rotation completed for <strong>*.ordl.io</strong></div>
+                                    <div class="activity-meta">
+                                        <span class="activity-tag system">system</span>
+                                        <span>all regions</span>
+                                        <span>expires: 2026-06-04</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <span class="activity-timestamp">11:58</span>
+                                <div class="activity-body">
+                                    <div class="activity-text">Backup snapshot created: <strong>fleet-db-20250306-115800</strong></div>
+                                    <div class="activity-meta">
+                                        <span class="activity-tag system">system</span>
+                                        <span>scheduled</span>
+                                        <span>3.2 GB</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Node Health Panel -->
+                    <div class="activity-panel collapsed">
+                        <div class="panel-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                            <div class="panel-title">
+                                <div class="panel-icon">●</div>
+                                <span class="panel-name">Node Status Changes</span>
+                                <span class="panel-count">2 today</span>
+                            </div>
+                            <div class="panel-toggle">▼</div>
+                        </div>
+                        <div class="panel-content">
+                            <div class="activity-item">
+                                <span class="activity-timestamp">09:15</span>
+                                <div class="activity-body">
+                                    <div class="activity-text">Node <strong>worker-8f3d-a92b</strong> recovered from unreachable state</div>
+                                    <div class="activity-meta">
+                                        <span class="activity-tag system">node</span>
+                                        <span>eu-west-1c</span>
+                                        <span>downtime: 4m 32s</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- Sidebar with Quick Actions -->
+        <aside class="sidebar">
+            <section class="actions-section">
+                <div class="actions-title">Quick Actions</div>
+                <div class="actions-grid">
+                    <button class="action-btn primary">
+                        <div class="action-icon">▶</div>
+                        <div class="action-content">
+                            <div class="action-label">Deploy Fleet</div>
+                            <div class="action-desc">Push new version to all nodes</div>
+                        </div>
+                        <span class="action-shortcut">⌘D</span>
+                    </button>
+                    <button class="action-btn secondary">
+                        <div class="action-icon">↩</div>
+                        <div class="action-content">
+                            <div class="action-label">Rollback</div>
+                            <div class="action-desc">Revert to previous stable</div>
+                        </div>
+                        <span class="action-shortcut">⌘R</span>
+                    </button>
+                    <button class="action-btn danger">
+                        <div class="action-icon">⏹</div>
+                        <div class="action-content">
+                            <div class="action-label">Emergency Stop</div>
+                            <div class="action-desc">Halt all active operations</div>
+                        </div>
+                        <span class="action-shortcut">⌘.</span>
+                    </button>
+                    <button class="action-btn secondary">
+                        <div class="action-icon">🔄</div>
+                        <div class="action-content">
+                            <div class="action-label">Refresh Status</div>
+                            <div class="action-desc">Force health check sync</div>
+                        </div>
+                        <span class="action-shortcut">⌘↵</span>
+                    </button>
+                </div>
+            </section>
+        </aside>
+        
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-left">
+                <div class="connection-status">
+                    <span class="connection-dot"></span>
+                    <span>Connected</span>
+                </div>
+                <div class="footer-stats">
+                    <div class="footer-stat">
+                        <span>Nodes</span>
+                        <span class="footer-stat-value">247/247</span>
+                    </div>
+                    <div class="footer-stat">
+                        <span>Regions</span>
+                        <span class="footer-stat-value">6</span>
+                    </div>
+                    <div class="footer-stat">
+                        <span>Last Sync</span>
+                        <span class="footer-stat-value">2s ago</span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-right">
+                <a href="#" class="footer-link">Documentation</a>
+                <a href="#" class="footer-link">Support</a>
+                <span>ORDL IDE v2.4.1</span>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

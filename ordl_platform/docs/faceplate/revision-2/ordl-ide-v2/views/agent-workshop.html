@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Workshop — ORDL IDE</title>
+    <link rel="stylesheet" href="../assets/ordl-theme.css">
+    <style>
+        /* ============================================================
+           ORDL THEME — Monochrome Machinery Aesthetic
+           ============================================================ */
+        :root {
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1a1a1a;
+            --bg-panel: #111111;
+            --bg-input: #0a0a0a;
+            
+            --border-primary: #2a2a2a;
+            --border-secondary: #333333;
+            --border-accent: #444444;
+            --border-glow: #555555;
+            
+            --text-primary: #e0e0e0;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --text-accent: #ffffff;
+            
+            --accent-metal: #666666;
+            --accent-steel: #4a4a4a;
+            --accent-warn: #888855;
+            --accent-error: #884444;
+            --accent-success: #448844;
+            --accent-active: #aaaaaa;
+            
+            --font-mono: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+            --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            
+            --toolbar-height: 44px;
+            --breadcrumb-height: 32px;
+            --tab-height: 34px;
+            --panel-header-height: 28px;
+            --sidebar-width: 280px;
+            --properties-width: 260px;
+            
+            --transition-fast: 0.12s ease;
+            --transition-medium: 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-ui);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ============================================================
+           HEADER & BREADCRUMBS
+           ============================================================ */
+        .top-bar {
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid var(--border-primary);
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+        }
+
+        /* --- Toolbar --- */
+        .toolbar {
+            height: var(--toolbar-height);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .toolbar-section {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 8px;
+            border-right: 1px solid var(--border-secondary);
+        }
+
+        .toolbar-section:last-child {
+            border-right: none;
+            margin-left: auto;
+        }
+
+        .toolbar-btn {
+            height: 28px;
+            padding: 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+            border: 1px solid var(--border-secondary);
+            border-radius: 3px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .toolbar-btn:hover {
+            background: linear-gradient(180deg, #222 0%, #1a1a1a 100%);
+            border-color: var(--border-accent);
+            color: var(--text-primary);
+        }
+
+        .toolbar-btn:active {
+            background: var(--bg-primary);
+            transform: translateY(1px);
+        }
+
+        .toolbar-btn.primary {
+            background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+            border-color: var(--border-accent);
+            color: var(--text-accent);
+        }
+
+        .toolbar-btn.primary:hover {
+            background: linear-gradient(180deg, #444 0%, #333 100%);
+            border-color: var(--border-glow);
+        }
+
+        .toolbar-btn.success {
+            background: linear-gradient(180deg, #2a3a2a 0%, #1a2a1a 100%);
+            border-color: #3a5a3a;
+            color: #8ab88a;
+        }
+
+        .toolbar-btn.warning {
+            background: linear-gradient(180deg, #3a3a2a 0%, #2a2a1a 100%);
+            border-color: #5a5a3a;
+            color: #b8b88a;
+        }
+
+        .toolbar-btn .icon {
+            width: 14px;
+            height: 14px;
+            opacity: 0.8;
+        }
+
+        .toolbar-divider {
+            width: 1px;
+            height: 20px;
+            background: var(--border-secondary);
+            margin: 0 4px;
+        }
+
+        .toolbar-spacer {
+            flex: 1;
+        }
+
+        /* --- Breadcrumbs --- */
+        .breadcrumbs {
+            height: var(--breadcrumb-height);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            font-size: 12px;
+            background: var(--bg-primary);
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            color: var(--text-secondary);
+            transition: color var(--transition-fast);
+        }
+
+        .breadcrumb-item:not(:last-child) {
+            cursor: pointer;
+        }
+
+        .breadcrumb-item:not(:last-child):hover {
+            color: var(--text-primary);
+        }
+
+        .breadcrumb-item.current {
+            color: var(--text-accent);
+            font-weight: 500;
+        }
+
+        .breadcrumb-separator {
+            margin: 0 8px;
+            color: var(--text-muted);
+            font-size: 10px;
+        }
+
+        /* ============================================================
+           TAB SYSTEM
+           ============================================================ */
+        .tab-container {
+            height: var(--tab-height);
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: flex-end;
+            padding: 0 8px;
+            gap: 2px;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .tab {
+            height: calc(var(--tab-height) - 2px);
+            min-width: 120px;
+            max-width: 200px;
+            padding: 0 28px 0 12px;
+            display: flex;
+            align-items: center;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            position: relative;
+            transition: all var(--transition-fast);
+        }
+
+        .tab:hover {
+            background: #222;
+            color: var(--text-primary);
+        }
+
+        .tab.active {
+            background: var(--bg-panel);
+            border-color: var(--border-secondary);
+            color: var(--text-accent);
+            height: var(--tab-height);
+            margin-bottom: -1px;
+            z-index: 1;
+        }
+
+        .tab.unsaved::after {
+            content: '●';
+            position: absolute;
+            right: 24px;
+            font-size: 8px;
+            color: var(--accent-warn);
+        }
+
+        .tab-close {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 2px;
+            font-size: 14px;
+            line-height: 1;
+            opacity: 0.5;
+            transition: all var(--transition-fast);
+        }
+
+        .tab:hover .tab-close {
+            opacity: 1;
+        }
+
+        .tab-close:hover {
+            background: var(--accent-error);
+            color: white;
+        }
+
+        .tab-new {
+            width: 28px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid var(--border-secondary);
+            border-radius: 3px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 4px;
+            transition: all var(--transition-fast);
+        }
+
+        .tab-new:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-accent);
+            color: var(--text-primary);
+        }
+
+        /* ============================================================
+           WORKSPACE — Split Pane Layout
+           ============================================================ */
+        .workspace {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- Panel Base Styles --- */
+        .panel {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-panel);
+            min-width: 160px;
+            min-height: 100px;
+        }
+
+        .panel-header {
+            height: var(--panel-header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-primary);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-secondary);
+        }
+
+        .panel-content {
+            flex: 1;
+            overflow: auto;
+            position: relative;
+        }
+
+        /* --- Code Editor Panel (Left) --- */
+        .panel-editor {
+            width: 40%;
+            min-width: 300px;
+        }
+
+        .editor-container {
+            position: relative;
+            height: 100%;
+            display: flex;
+        }
+
+        .line-numbers {
+            width: 48px;
+            padding: 12px 8px;
+            background: var(--bg-input);
+            border-right: 1px solid var(--border-primary);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.6;
+            text-align: right;
+            color: var(--text-muted);
+            user-select: none;
+        }
+
+        .code-editor {
+            flex: 1;
+            padding: 12px 16px;
+            background: var(--bg-input);
+            border: none;
+            outline: none;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            resize: none;
+            white-space: pre;
+            overflow: auto;
+            tab-size: 2;
+        }
+
+        /* --- Preview Panel (Center) --- */
+        .panel-preview {
+            flex: 1;
+            min-width: 300px;
+            border-left: 1px solid var(--border-primary);
+            border-right: 1px solid var(--border-primary);
+        }
+
+        .preview-toolbar {
+            height: var(--panel-header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 8px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .preview-mode {
+            display: flex;
+            gap: 1px;
+            background: var(--bg-primary);
+            border-radius: 3px;
+            padding: 2px;
+        }
+
+        .preview-mode-btn {
+            padding: 2px 10px;
+            background: transparent;
+            border: none;
+            border-radius: 2px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .preview-mode-btn:hover {
+            color: var(--text-secondary);
+        }
+
+        .preview-mode-btn.active {
+            background: var(--bg-tertiary);
+            color: var(--text-accent);
+            border: 1px solid var(--border-secondary);
+        }
+
+        .preview-status {
+            margin-left: auto;
+            font-size: 10px;
+            color: var(--accent-success);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .preview-status::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--accent-success);
+            border-radius: 50%;
+            box-shadow: 0 0 4px var(--accent-success);
+        }
+
+        .preview-viewport {
+            flex: 1;
+            background: var(--bg-input);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .preview-content {
+            width: 80%;
+            height: 60%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-secondary);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* --- Properties Panel (Right) --- */
+        .panel-properties {
+            width: var(--properties-width);
+            min-width: 220px;
+        }
+
+        .properties-section {
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .properties-header {
+            height: 26px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            background: var(--bg-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+
+        .properties-header:hover {
+            background: #1e1e1e;
+        }
+
+        .properties-header::before {
+            content: '▶';
+            font-size: 8px;
+            margin-right: 8px;
+            transition: transform var(--transition-fast);
+        }
+
+        .properties-section.expanded .properties-header::before {
+            transform: rotate(90deg);
+        }
+
+        .properties-content {
+            padding: 8px 12px;
+            display: none;
+        }
+
+        .properties-section.expanded .properties-content {
+            display: block;
+        }
+
+        .property-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            font-size: 12px;
+        }
+
+        .property-label {
+            width: 80px;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .property-input {
+            flex: 1;
+            height: 24px;
+            padding: 0 8px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-primary);
+            border-radius: 2px;
+            color: var(--text-primary);
+            font-size: 12px;
+            font-family: var(--font-mono);
+            transition: border-color var(--transition-fast);
+        }
+
+        .property-input:focus {
+            outline: none;
+            border-color: var(--border-accent);
+        }
+
+        .property-select {
+            flex: 1;
+            height: 24px;
+            padding: 0 6px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-primary);
+            border-radius: 2px;
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .property-toggle {
+            width: 32px;
+            height: 16px;
+            background: var(--border-secondary);
+            border-radius: 8px;
+            position: relative;
+            cursor: pointer;
+            transition: background var(--transition-fast);
+        }
+
+        .property-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 12px;
+            height: 12px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            transition: transform var(--transition-fast);
+        }
+
+        .property-toggle.active {
+            background: var(--accent-success);
+        }
+
+        .property-toggle.active::after {
+            transform: translateX(16px);
+            background: white;
+        }
+
+        /* ============================================================
+           SPLITTER / RESIZE HANDLES
+           ============================================================ */
+        .splitter {
+            width: 6px;
+            background: var(--bg-primary);
+            cursor: col-resize;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+            transition: background var(--transition-fast);
+        }
+
+        .splitter:hover,
+        .splitter.dragging {
+            background: var(--border-secondary);
+        }
+
+        .splitter::after {
+            content: '';
+            width: 2px;
+            height: 24px;
+            background: var(--border-secondary);
+            border-radius: 1px;
+        }
+
+        .splitter:hover::after,
+        .splitter.dragging::after {
+            background: var(--border-accent);
+        }
+
+        /* ============================================================
+           STATUS BAR
+           ============================================================ */
+        .status-bar {
+            height: 24px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-primary);
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .status-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 12px;
+            border-right: 1px solid var(--border-primary);
+        }
+
+        .status-section:last-child {
+            border-right: none;
+            margin-left: auto;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-indicator::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--accent-success);
+        }
+
+        .status-indicator.warning::before {
+            background: var(--accent-warn);
+        }
+
+        .status-indicator.error::before {
+            background: var(--accent-error);
+        }
+
+        /* ============================================================
+           UTILITY CLASSES
+           ============================================================ */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .gap-2 { gap: 8px; }
+        .truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-secondary);
+            border: 2px solid var(--bg-secondary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border-accent);
+        }
+
+        ::-webkit-scrollbar-corner {
+            background: var(--bg-secondary);
+        }
+
+        /* Selection */
+        ::selection {
+            background: rgba(100, 100, 100, 0.4);
+            color: var(--text-accent);
+        }
+    </style>
+</head>
+<body>
+    <!-- ============================================================
+         TOP BAR: Toolbar + Breadcrumbs
+         ============================================================ -->
+    <div class="top-bar">
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="toolbar-section">
+                <button class="toolbar-btn primary" id="btn-run">
+                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+                    Run
+                </button>
+                <button class="toolbar-btn" id="btn-debug">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                    Debug
+                </button>
+                <button class="toolbar-btn" id="btn-test">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                    Test
+                </button>
+            </div>
+            
+            <div class="toolbar-section">
+                <button class="toolbar-btn success" id="btn-save">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save
+                </button>
+                <button class="toolbar-btn" id="btn-undo">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13"/></svg>
+                </button>
+                <button class="toolbar-btn" id="btn-redo">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 019-9 9 9 0 016 2.3L21 13"/></svg>
+                </button>
+            </div>
+            
+            <div class="toolbar-section">
+                <button class="toolbar-btn warning" id="btn-stop">
+                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+                    Stop
+                </button>
+                <button class="toolbar-btn" id="btn-restart">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                    Restart
+                </button>
+            </div>
+            
+            <div class="toolbar-section">
+                <button class="toolbar-btn" id="btn-deploy">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l7 4-7 4-7-4 7-4z"/><path d="M19 12l-7 4-7-4"/><path d="M12 22l7-4-7-4-7 4 7 4z"/></svg>
+                    Deploy
+                </button>
+            </div>
+        </div>
+        
+        <!-- Breadcrumbs -->
+        <div class="breadcrumbs">
+            <span class="breadcrumb-item" data-level="fleet">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Production Fleet
+            </span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item" data-level="agent">
+                DataProcessor_v3
+            </span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-item current" data-level="function">
+                validate_schema
+            </span>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         TAB SYSTEM
+         ============================================================ -->
+    <div class="tab-container" id="tab-container">
+        <div class="tab active" data-tab="1">
+            <span class="truncate">DataProcessor_v3</span>
+            <span class="tab-close">×</span>
+        </div>
+        <div class="tab unsaved" data-tab="2">
+            <span class="truncate">LoggerModule.js</span>
+            <span class="tab-close">×</span>
+        </div>
+        <div class="tab" data-tab="3">
+            <span class="truncate">config.yaml</span>
+            <span class="tab-close">×</span>
+        </div>
+        <button class="tab-new" id="btn-new-tab">+</button>
+    </div>
+
+    <!-- ============================================================
+         WORKSPACE — Three-Panel Split Layout
+         ============================================================ -->
+    <div class="workspace" id="workspace">
+        
+        <!-- LEFT: Code Editor -->
+        <div class="panel panel-editor" id="panel-editor">
+            <div class="panel-header">
+                <span>Source Editor</span>
+                <span style="margin-left:auto; font-weight:400; text-transform:none; color:var(--text-muted);">JavaScript</span>
+            </div>
+            <div class="panel-content">
+                <div class="editor-container">
+                    <div class="line-numbers">
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+                    </div>
+                    <textarea class="code-editor" spellcheck="false">/**
+ * validate_schema — DataProcessor v3
+ * Validates incoming data against defined schema
+ */
+
+function validate_schema(data, schema) {
+  const errors = [];
+  
+  for (const [key, rule] of Object.entries(schema)) {
+    const value = data[key];
+    
+    if (rule.required && value === undefined) {
+      errors.push(`Missing required field: ${key}`);
+      continue;
+    }
+    
+    if (value !== undefined && rule.type) {
+      const actualType = Array.isArray(value) ? 'array' : typeof value;
+      if (actualType !== rule.type) {
+        errors.push(`Type mismatch for ${key}: expected ${rule.type}, got ${actualType}`);
+      }
+    }
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Splitter 1 -->
+        <div class="splitter" id="splitter-1"></div>
+
+        <!-- CENTER: Live Preview / Simulation -->
+        <div class="panel panel-preview" id="panel-preview">
+            <div class="preview-toolbar">
+                <span style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-secondary);">Preview</span>
+                <div class="preview-mode">
+                    <button class="preview-mode-btn active">Live</button>
+                    <button class="preview-mode-btn">Debug</button>
+                    <button class="preview-mode-btn">Log</button>
+                </div>
+                <div class="preview-status">Running</div>
+            </div>
+            <div class="preview-viewport">
+                <div class="preview-grid"></div>
+                <div class="preview-content">
+                    <div style="text-align:center;">
+                        <div style="font-size:48px; margin-bottom:16px; opacity:0.3;">◈</div>
+                        <div>Simulation Viewport</div>
+                        <div style="font-size:11px; margin-top:8px; opacity:0.5;">Execute agent to render output</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Splitter 2 -->
+        <div class="splitter" id="splitter-2"></div>
+
+        <!-- RIGHT: Properties Inspector -->
+        <div class="panel panel-properties" id="panel-properties">
+            <div class="panel-header">
+                <span>Properties</span>
+            </div>
+            <div class="panel-content">
+                <!-- Agent Properties -->
+                <div class="properties-section expanded">
+                    <div class="properties-header">Agent Configuration</div>
+                    <div class="properties-content">
+                        <div class="property-row">
+                            <label class="property-label">Name</label>
+                            <input type="text" class="property-input" value="DataProcessor_v3">
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">Runtime</label>
+                            <select class="property-select">
+                                <option>Node.js 20</option>
+                                <option>Python 3.11</option>
+                                <option>Deno</option>
+                            </select>
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">Timeout</label>
+                            <input type="text" class="property-input" value="30000ms">
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">Auto-restart</label>
+                            <div class="property-toggle active"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Environment -->
+                <div class="properties-section expanded">
+                    <div class="properties-header">Environment</div>
+                    <div class="properties-content">
+                        <div class="property-row">
+                            <label class="property-label">NODE_ENV</label>
+                            <input type="text" class="property-input" value="production">
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">LOG_LEVEL</label>
+                            <select class="property-select">
+                                <option>debug</option>
+                                <option selected>info</option>
+                                <option>warn</option>
+                                <option>error</option>
+                            </select>
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">Workers</label>
+                            <input type="text" class="property-input" value="4">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schema Definition -->
+                <div class="properties-section">
+                    <div class="properties-header">Input Schema</div>
+                    <div class="properties-content">
+                        <div class="property-row">
+                            <label class="property-label">Type</label>
+                            <select class="property-select">
+                                <option>JSON</option>
+                                <option>YAML</option>
+                                <option>Protobuf</option>
+                            </select>
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">Strict</label>
+                            <div class="property-toggle active"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deployment -->
+                <div class="properties-section">
+                    <div class="properties-header">Deployment</div>
+                    <div class="properties-content">
+                        <div class="property-row">
+                            <label class="property-label">Target</label>
+                            <input type="text" class="property-input" value="fleet-alpha">
+                        </div>
+                        <div class="property-row">
+                            <label class="property-label">Strategy</label>
+                            <select class="property-select">
+                                <option>Rolling</option>
+                                <option>Blue/Green</option>
+                                <option>Canary</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         STATUS BAR
+         ============================================================ -->
+    <div class="status-bar">
+        <div class="status-section">
+            <span class="status-indicator">Agent Active</span>
+        </div>
+        <div class="status-section">
+            <span>Ln 12, Col 24</span>
+        </div>
+        <div class="status-section">
+            <span>UTF-8</span>
+            <span>JavaScript</span>
+        </div>
+        <div class="status-section">
+            <span>ORDL v2.1.0</span>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // SPLIT PANE RESIZING
+        // ============================================================
+        const splitter1 = document.getElementById('splitter-1');
+        const splitter2 = document.getElementById('splitter-2');
+        const panelEditor = document.getElementById('panel-editor');
+        const panelPreview = document.getElementById('panel-preview');
+        const panelProperties = document.getElementById('panel-properties');
+        const workspace = document.getElementById('workspace');
+
+        let isDragging = null;
+        let startX = 0;
+        let startWidthEditor = 0;
+        let startWidthProperties = 0;
+
+        function initSplitter(splitter, targetPanel, isLeftSplitter) {
+            splitter.addEventListener('mousedown', (e) => {
+                isDragging = isLeftSplitter ? 'editor' : 'properties';
+                startX = e.clientX;
+                startWidthEditor = panelEditor.offsetWidth;
+                startWidthProperties = panelProperties.offsetWidth;
+                splitter.classList.add('dragging');
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            });
+        }
+
+        initSplitter(splitter1, panelEditor, true);
+        initSplitter(splitter2, panelProperties, false);
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const deltaX = e.clientX - startX;
+
+            if (isDragging === 'editor') {
+                const newWidth = Math.max(200, startWidthEditor + deltaX);
+                panelEditor.style.width = newWidth + 'px';
+            } else if (isDragging === 'properties') {
+                const newWidth = Math.max(180, startWidthProperties - deltaX);
+                panelProperties.style.width = newWidth + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = null;
+                splitter1.classList.remove('dragging');
+                splitter2.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+
+        // ============================================================
+        // TAB MANAGEMENT
+        // ============================================================
+        const tabContainer = document.getElementById('tab-container');
+        const tabNewBtn = document.getElementById('btn-new-tab');
+
+        tabContainer.addEventListener('click', (e) => {
+            const tab = e.target.closest('.tab');
+            if (!tab) return;
+
+            if (e.target.classList.contains('tab-close')) {
+                // Close tab
+                if (tab.classList.contains('active') && tabContainer.querySelectorAll('.tab').length > 1) {
+                    const nextTab = tab.nextElementSibling?.classList.contains('tab') 
+                        ? tab.nextElementSibling 
+                        : tab.previousElementSibling;
+                    if (nextTab) nextTab.classList.add('active');
+                }
+                tab.remove();
+                return;
+            }
+
+            // Activate tab
+            tabContainer.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+        });
+
+        tabNewBtn.addEventListener('click', () => {
+            const newTab = document.createElement('div');
+            newTab.className = 'tab unsaved';
+            newTab.innerHTML = `
+                <span class="truncate">Untitled-${Math.floor(Math.random() * 100)}</span>
+                <span class="tab-close">×</span>
+            `;
+            tabContainer.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            tabContainer.insertBefore(newTab, tabNewBtn);
+            newTab.classList.add('active');
+        });
+
+        // ============================================================
+        // PROPERTIES PANEL - COLLAPSIBLE SECTIONS
+        // ============================================================
+        document.querySelectorAll('.properties-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const section = header.parentElement;
+                section.classList.toggle('expanded');
+            });
+        });
+
+        // ============================================================
+        // PREVIEW MODE SWITCHING
+        // ============================================================
+        document.querySelectorAll('.preview-mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.preview-mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // ============================================================
+        // TOGGLE CONTROLS
+        // ============================================================
+        document.querySelectorAll('.property-toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                toggle.classList.toggle('active');
+            });
+        });
+
+        // ============================================================
+        // BREADCRUMB NAVIGATION
+        // ============================================================
+        document.querySelectorAll('.breadcrumb-item').forEach(crumb => {
+            crumb.addEventListener('click', () => {
+                const level = crumb.dataset.level;
+                if (level === 'fleet') {
+                    console.log('Navigate to fleet overview');
+                } else if (level === 'agent') {
+                    console.log('Navigate to agent detail');
+                }
+            });
+        });
+
+        // ============================================================
+        // TOOLBAR ACTIONS
+        // ============================================================
+        document.getElementById('btn-save').addEventListener('click', () => {
+            document.querySelectorAll('.tab.unsaved').forEach(tab => {
+                tab.classList.remove('unsaved');
+            });
+        });
+
+        document.getElementById('btn-run').addEventListener('click', () => {
+            const status = document.querySelector('.preview-status');
+            status.textContent = 'Executing...';
+            status.style.color = 'var(--accent-warn)';
+            setTimeout(() => {
+                status.textContent = 'Running';
+                status.style.color = 'var(--accent-success)';
+            }, 1000);
+        });
+
+        document.getElementById('btn-stop').addEventListener('click', () => {
+            const status = document.querySelector('.preview-status');
+            status.textContent = 'Stopped';
+            status.style.color = 'var(--accent-error)';
+        });
+    </script>
+</body>
+</html>

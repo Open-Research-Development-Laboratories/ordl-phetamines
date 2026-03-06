@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORDL IDE — Deployment Pipeline</title>
+    <style>
+        :root {
+            /* Monochrome palette */
+            --color-bg: #0a0a0a;
+            --color-bg-elevated: #111111;
+            --color-bg-card: #141414;
+            --color-bg-hover: #1a1a1a;
+            --color-bg-active: #1f1f1f;
+            --color-border: #262626;
+            --color-border-hover: #333333;
+            --color-text-primary: #fafafa;
+            --color-text-secondary: #a3a3a3;
+            --color-text-muted: #525252;
+            --color-text-disabled: #404040;
+            
+            /* Amber accents */
+            --color-amber: #f59e0b;
+            --color-amber-dark: #d97706;
+            --color-amber-light: #fbbf24;
+            --color-amber-glow: rgba(245, 158, 11, 0.3);
+            --color-amber-subtle: rgba(245, 158, 11, 0.1);
+            
+            /* Status colors */
+            --color-success: #22c55e;
+            --color-success-subtle: rgba(34, 197, 94, 0.1);
+            --color-error: #ef4444;
+            --color-error-subtle: rgba(239, 68, 68, 0.1);
+            --color-warning: #f59e0b;
+            --color-info: #3b82f6;
+            --color-info-subtle: rgba(59, 130, 246, 0.1);
+            
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 12px;
+            --space-lg: 16px;
+            --space-xl: 24px;
+            --space-2xl: 32px;
+            --space-3xl: 48px;
+            
+            /* Typography */
+            --font-mono: 'SF Mono', Monaco, Inconsolata, 'Fira Code', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            
+            /* Border radius */
+            --radius-sm: 4px;
+            --radius-md: 6px;
+            --radius-lg: 8px;
+            
+            /* Transitions */
+            --transition-fast: 150ms ease;
+            --transition-base: 250ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--color-bg);
+            color: var(--color-text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .pipeline-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-lg) var(--space-2xl);
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-bg-elevated);
+        }
+
+        .pipeline-title {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .pipeline-title h1 {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .pipeline-title .badge {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: var(--space-xs) var(--space-sm);
+            background: var(--color-amber-subtle);
+            color: var(--color-amber);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--color-amber-glow);
+        }
+
+        .pipeline-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xl);
+            font-size: 13px;
+            color: var(--color-text-secondary);
+        }
+
+        .pipeline-meta span {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .pipeline-meta .mono {
+            font-family: var(--font-mono);
+            color: var(--color-text-primary);
+        }
+
+        /* Main container */
+        .pipeline-container {
+            padding: var(--space-2xl);
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* Pipeline flow - horizontal by default */
+        .pipeline-flow {
+            display: flex;
+            gap: 0;
+            position: relative;
+            margin-bottom: var(--space-3xl);
+        }
+
+        /* Stage connector lines */
+        .stage-connector {
+            flex: 1;
+            min-width: 40px;
+            max-width: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .stage-connector::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--color-border);
+            transition: background var(--transition-base);
+        }
+
+        .stage-connector.active::before {
+            background: var(--color-amber);
+            box-shadow: 0 0 8px var(--color-amber-glow);
+        }
+
+        .stage-connector.completed::before {
+            background: var(--color-success);
+        }
+
+        .stage-connector.error::before {
+            background: var(--color-error);
+        }
+
+        .connector-arrow {
+            position: absolute;
+            top: 36px;
+            color: var(--color-border);
+            font-size: 10px;
+            transition: color var(--transition-base);
+        }
+
+        .stage-connector.active .connector-arrow {
+            color: var(--color-amber);
+        }
+
+        .stage-connector.completed .connector-arrow {
+            color: var(--color-success);
+        }
+
+        /* Stage card */
+        .stage-card {
+            flex: 0 0 200px;
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            position: relative;
+            transition: all var(--transition-base);
+        }
+
+        .stage-card:hover {
+            border-color: var(--color-border-hover);
+            background: var(--color-bg-hover);
+        }
+
+        .stage-card.active {
+            border-color: var(--color-amber);
+            box-shadow: 0 0 0 1px var(--color-amber), 0 0 20px var(--color-amber-glow);
+        }
+
+        .stage-card.completed {
+            border-color: var(--color-success);
+        }
+
+        .stage-card.error {
+            border-color: var(--color-error);
+        }
+
+        .stage-card.pending {
+            opacity: 0.7;
+        }
+
+        /* Stage header */
+        .stage-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+        }
+
+        .stage-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            background: var(--color-bg-active);
+            border: 1px solid var(--color-border);
+        }
+
+        .stage-card.active .stage-icon {
+            background: var(--color-amber-subtle);
+            border-color: var(--color-amber);
+            color: var(--color-amber);
+            animation: pulse-amber 2s ease-in-out infinite;
+        }
+
+        .stage-card.completed .stage-icon {
+            background: var(--color-success-subtle);
+            border-color: var(--color-success);
+            color: var(--color-success);
+        }
+
+        .stage-card.error .stage-icon {
+            background: var(--color-error-subtle);
+            border-color: var(--color-error);
+            color: var(--color-error);
+        }
+
+        @keyframes pulse-amber {
+            0%, 100% { box-shadow: 0 0 0 0 var(--color-amber-glow); }
+            50% { box-shadow: 0 0 0 8px transparent; }
+        }
+
+        .stage-status-badge {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+        }
+
+        .stage-status-badge.running {
+            background: var(--color-amber-subtle);
+            color: var(--color-amber);
+        }
+
+        .stage-status-badge.completed {
+            background: var(--color-success-subtle);
+            color: var(--color-success);
+        }
+
+        .stage-status-badge.error {
+            background: var(--color-error-subtle);
+            color: var(--color-error);
+        }
+
+        .stage-status-badge.pending {
+            background: var(--color-bg-active);
+            color: var(--color-text-muted);
+        }
+
+        .stage-status-badge.waiting {
+            background: var(--color-info-subtle);
+            color: var(--color-info);
+        }
+
+        /* Stage content */
+        .stage-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+            color: var(--color-text-primary);
+        }
+
+        .stage-description {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-lg);
+            line-height: 1.4;
+        }
+
+        /* Progress indicator - deterministic */
+        .stage-progress {
+            margin-bottom: var(--space-lg);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-sm);
+            font-size: 11px;
+        }
+
+        .progress-label {
+            color: var(--color-text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        .progress-value {
+            color: var(--color-text-primary);
+            font-family: var(--font-mono);
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--color-bg-active);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--color-amber);
+            border-radius: 2px;
+            transition: width var(--transition-base);
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 20px;
+            background: linear-gradient(90deg, transparent, var(--color-amber-light));
+            animation: shimmer 1.5s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(20px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateX(-20px); opacity: 0; }
+        }
+
+        .stage-card.completed .progress-fill {
+            background: var(--color-success);
+        }
+
+        .stage-card.error .progress-fill {
+            background: var(--color-error);
+        }
+
+        /* Stage actions */
+        .stage-actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .stage-action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--color-bg-active);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            color: var(--color-text-secondary);
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-family: var(--font-sans);
+        }
+
+        .stage-action-btn:hover {
+            background: var(--color-bg-hover);
+            border-color: var(--color-border-hover);
+            color: var(--color-text-primary);
+        }
+
+        .stage-action-btn.primary {
+            background: var(--color-amber);
+            border-color: var(--color-amber);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .stage-action-btn.primary:hover {
+            background: var(--color-amber-light);
+            border-color: var(--color-amber-light);
+        }
+
+        .stage-action-btn.danger {
+            background: var(--color-error-subtle);
+            border-color: var(--color-error);
+            color: var(--color-error);
+        }
+
+        .stage-action-btn.danger:hover {
+            background: var(--color-error);
+            color: #fff;
+        }
+
+        /* Approval gate overlay */
+        .approval-gate {
+            position: absolute;
+            inset: -1px;
+            background: rgba(10, 10, 10, 0.95);
+            border: 1px solid var(--color-amber);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
+            text-align: center;
+            gap: var(--space-md);
+            backdrop-filter: blur(4px);
+        }
+
+        .approval-gate-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--color-amber-subtle);
+            border: 2px solid var(--color-amber);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: var(--color-amber);
+            animation: pulse-amber 2s ease-in-out infinite;
+        }
+
+        .approval-gate-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .approval-gate-desc {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            max-width: 160px;
+        }
+
+        .approval-gate-actions {
+            display: flex;
+            gap: var(--space-sm);
+            width: 100%;
+        }
+
+        .approval-gate-actions button {
+            flex: 1;
+        }
+
+        /* Parallel execution section */
+        .parallel-section {
+            margin-top: var(--space-3xl);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-lg);
+            padding-bottom: var(--space-md);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .section-subtitle {
+            font-size: 12px;
+            color: var(--color-text-secondary);
+        }
+
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        /* Agent card */
+        .agent-card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            transition: all var(--transition-fast);
+        }
+
+        .agent-card:hover {
+            border-color: var(--color-border-hover);
+            background: var(--color-bg-hover);
+        }
+
+        .agent-card.deploying {
+            border-color: var(--color-amber);
+            box-shadow: 0 0 0 1px var(--color-amber-glow);
+        }
+
+        .agent-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .agent-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            background: var(--color-bg-active);
+            border: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+        }
+
+        .agent-card.deploying .agent-avatar {
+            background: var(--color-amber-subtle);
+            border-color: var(--color-amber);
+            color: var(--color-amber);
+        }
+
+        .agent-info {
+            flex: 1;
+        }
+
+        .agent-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .agent-status {
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        .agent-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-text-muted);
+        }
+
+        .agent-card.deploying .agent-indicator {
+            background: var(--color-amber);
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .agent-progress {
+            margin-bottom: var(--space-md);
+        }
+
+        .agent-tasks {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .agent-task {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            padding: var(--space-sm);
+            background: var(--color-bg);
+            border-radius: var(--radius-sm);
+        }
+
+        .agent-task.completed {
+            color: var(--color-success);
+        }
+
+        .agent-task.running {
+            color: var(--color-amber);
+        }
+
+        .task-icon {
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        .task-name {
+            flex: 1;
+        }
+
+        .task-time {
+            font-family: var(--font-mono);
+            color: var(--color-text-muted);
+        }
+
+        /* Rollback point indicator */
+        .rollback-point {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm);
+            background: var(--color-bg);
+            border: 1px dashed var(--color-border);
+            border-radius: var(--radius-sm);
+            margin-top: var(--space-md);
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .rollback-point:hover {
+            border-color: var(--color-amber);
+            background: var(--color-amber-subtle);
+            color: var(--color-amber);
+        }
+
+        .rollback-point-icon {
+            font-size: 12px;
+        }
+
+        .rollback-point-text {
+            flex: 1;
+            font-family: var(--font-mono);
+        }
+
+        /* Logs access button */
+        .logs-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-xs) var(--space-sm);
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            color: var(--color-text-muted);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-family: var(--font-mono);
+        }
+
+        .logs-btn:hover {
+            border-color: var(--color-amber);
+            color: var(--color-amber);
+            background: var(--color-amber-subtle);
+        }
+
+        /* Pipeline summary */
+        .pipeline-summary {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xl);
+            padding: var(--space-lg) var(--space-2xl);
+            background: var(--color-bg-elevated);
+            border-top: 1px solid var(--color-border);
+            margin-top: var(--space-3xl);
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-size: 12px;
+            color: var(--color-text-secondary);
+        }
+
+        .summary-value {
+            font-family: var(--font-mono);
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .summary-separator {
+            width: 1px;
+            height: 16px;
+            background: var(--color-border);
+        }
+
+        /* Responsive - vertical layout on smaller screens */
+        @media (max-width: 1024px) {
+            .pipeline-flow {
+                flex-direction: column;
+                gap: var(--space-lg);
+            }
+
+            .stage-connector {
+                min-width: auto;
+                max-width: none;
+                height: 40px;
+                flex: none;
+            }
+
+            .stage-connector::before {
+                top: 0;
+                left: 40px;
+                right: auto;
+                width: 2px;
+                height: 100%;
+            }
+
+            .connector-arrow {
+                top: 50%;
+                left: 36px;
+                transform: translateY(-50%) rotate(90deg);
+            }
+
+            .stage-card {
+                flex: none;
+                width: 100%;
+            }
+
+            .agent-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Utility classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-amber {
+            color: var(--color-amber);
+        }
+
+        .text-success {
+            color: var(--color-success);
+        }
+
+        .text-error {
+            color: var(--color-error);
+        }
+
+        .text-muted {
+            color: var(--color-text-muted);
+        }
+    </style>
+</head>
+<body>
+    <!-- Pipeline Header -->
+    <header class="pipeline-header">
+        <div class="pipeline-title">
+            <h1>Deployment Pipeline</h1>
+            <span class="badge">v2.4.1</span>
+        </div>
+        <div class="pipeline-meta">
+            <span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Started: <span class="mono">14:32:07</span>
+            </span>
+            <span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+                Duration: <span class="mono">4m 23s</span>
+            </span>
+            <span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                Commit: <span class="mono">a7f3d2e</span>
+            </span>
+        </div>
+    </header>
+
+    <!-- Pipeline Container -->
+    <main class="pipeline-container">
+        <!-- Pipeline Flow -->
+        <div class="pipeline-flow">
+            <!-- Build Stage -->
+            <div class="stage-card completed" data-stage="build">
+                <div class="stage-header">
+                    <div class="stage-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <span class="stage-status-badge completed">Done</span>
+                </div>
+                <h3 class="stage-name">Build</h3>
+                <p class="stage-description">Compile source, bundle assets, generate artifacts</p>
+                
+                <div class="stage-progress">
+                    <div class="progress-header">
+                        <span class="progress-label">Artifacts</span>
+                        <span class="progress-value">12/12</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <div class="stage-actions">
+                    <button class="logs-btn">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        View Logs
+                    </button>
+                </div>
+
+                <div class="rollback-point">
+                    <span class="rollback-point-icon">⟲</span>
+                    <span class="rollback-point-text">build-20240306143207</span>
+                </div>
+            </div>
+
+            <!-- Connector -->
+            <div class="stage-connector completed">
+                <span class="connector-arrow">▶</span>
+            </div>
+
+            <!-- Test Stage -->
+            <div class="stage-card completed" data-stage="test">
+                <div class="stage-header">
+                    <div class="stage-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                        </svg>
+                    </div>
+                    <span class="stage-status-badge completed">Pass</span>
+                </div>
+                <h3 class="stage-name">Test</h3>
+                <p class="stage-description">Unit tests, integration tests, coverage report</p>
+                
+                <div class="stage-progress">
+                    <div class="progress-header">
+                        <span class="progress-label">Tests</span>
+                        <span class="progress-value">847/847</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 100%"></div>
+                    </div>
+                </div>
+
+                <div class="stage-actions">
+                    <button class="logs-btn">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        View Logs
+                    </button>
+                </div>
+
+                <div class="rollback-point">
+                    <span class="rollback-point-icon">⟲</span>
+                    <span class="rollback-point-text">test-20240306143422</span>
+                </div>
+            </div>
+
+            <!-- Connector -->
+            <div class="stage-connector completed">
+                <span class="connector-arrow">▶</span>
+            </div>
+
+            <!-- Stage (Staging) Stage -->
+            <div class="stage-card active" data-stage="stage">
+                <div class="stage-header">
+                    <div class="stage-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                            <line x1="12" y1="22.08" x2="12" y2="12"/>
+                        </svg>
+                    </div>
+                    <span class="stage-status-badge running">Running</span>
+                </div>
+                <h3 class="stage-name">Stage</h3>
+                <p class="stage-description">Deploy to staging environment for QA validation</p>
+                
+                <div class="stage-progress">
+                    <div class="progress-header">
+                        <span class="progress-label">Deployments</span>
+                        <span class="progress-value">3/4</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 75%"></div>
+                    </div>
+                </div>
+
+                <div class="stage-actions">
+                    <button class="logs-btn">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        View Logs
+                    </button>
+                </div>
+            </div>
+
+            <!-- Connector -->
+            <div class="stage-connector active">
+                <span class="connector-arrow">▶</span>
+            </div>
+
+            <!-- Deploy Stage with Approval Gate -->
+            <div class="stage-card pending" data-stage="deploy">
+                <div class="stage-header">
+                    <div class="stage-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M2 12h20"/>
+                        </svg>
+                    </div>
+                    <span class="stage-status-badge waiting">Waiting</span>
+                </div>
+                <h3 class="stage-name">Deploy</h3>
+                <p class="stage-description">Production deployment with blue-green strategy</p>
+                
+                <div class="stage-progress">
+                    <div class="progress-header">
+                        <span class="progress-label">Progress</span>
+                        <span class="progress-value">—</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="stage-actions">
+                    <button class="logs-btn">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        View Logs
+                    </button>
+                </div>
+
+                <!-- Approval Gate Overlay -->
+                <div class="approval-gate">
+                    <div class="approval-gate-icon">✋</div>
+                    <div class="approval-gate-title">Approval Required</div>
+                    <div class="approval-gate-desc">Review staging results before proceeding to production</div>
+                    <div class="approval-gate-actions">
+                        <button class="stage-action-btn danger">Reject</button>
+                        <button class="stage-action-btn primary">Approve</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connector -->
+            <div class="stage-connector">
+                <span class="connector-arrow">▶</span>
+            </div>
+
+            <!-- Verify Stage -->
+            <div class="stage-card pending" data-stage="verify">
+                <div class="stage-header">
+                    <div class="stage-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 12l2 2 4-4"/>
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                    </div>
+                    <span class="stage-status-badge pending">Pending</span>
+                </div>
+                <h3 class="stage-name">Verify</h3>
+                <p class="stage-description">Smoke tests, health checks, traffic validation</p>
+                
+                <div class="stage-progress">
+                    <div class="progress-header">
+                        <span class="progress-label">Checks</span>
+                        <span class="progress-value">—</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="stage-actions">
+                    <button class="logs-btn">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
+                        </svg>
+                        View Logs
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parallel Execution Section -->
+        <section class="parallel-section">
+            <div class="section-header">
+                <div>
+                    <div class="section-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                        Active Deployments
+                    </div>
+                    <div class="section-subtitle">4 agents executing deployment tasks in parallel</div>
+                </div>
+                <button class="logs-btn">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10 9 9 9 8 9"/>
+                    </svg>
+                    View All Logs
+                </button>
+            </div>
+
+            <div class="agent-grid">
+                <!-- Agent 1 -->
+                <div class="agent-card deploying">
+                    <div class="agent-header">
+                        <div class="agent-avatar">A1</div>
+                        <div class="agent-info">
+                            <div class="agent-name">
+                                Agent-01
+                                <span class="agent-indicator"></span>
+                            </div>
+                            <div class="agent-status">Deploying to us-east-1</div>
+                        </div>
+                    </div>
+
+                    <div class="agent-progress">
+                        <div class="progress-header">
+                            <span class="progress-label">Tasks</span>
+                            <span class="progress-value">5/7</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 71%"></div>
+                        </div>
+                    </div>
+
+                    <div class="agent-tasks">
+                        <div class="agent-task completed">
+                            <span class="task-icon">✓</span>
+                            <span class="task-name">Pull image</span>
+                            <span class="task-time">2.3s</span>
+                        </div>
+                        <div class="agent-task completed">
+                            <span class="task-icon">✓</span>
+                            <span class="task-name">Health check</span>
+                            <span class="task-time">1.1s</span>
+                        </div>
+                        <div class="agent-task running">
+                            <span class="task-icon">◐</span>
+                            <span class="task-name">Drain connections</span>
+                            <span class="task-time">—</span>
+                        </div>
+                    </div>
+
+                    <div class="rollback-point">
+                        <span class="rollback-point-icon">⟲</span>
+                        <span class="rollback-point-text">rev-a7f3d2e-01</span>
+                    </div>
+                </div>
+
+                <!-- Agent 2 -->
+                <div class="agent-card deploying">
+                    <div class="agent-header">
+                        <div class="agent-avatar">A2</div>
+                        <div class="agent-info">
+                            <div class="agent-name">
+                                Agent-02
+                                <span class="agent-indicator"></span>
+                            </div>
+                            <div class="agent-status">Deploying to us-west-2</div>
+                        </div>
+                    </div>
+
+                    <div class="agent-progress">
+                        <div class="progress-header">
+                            <span class="progress-label">Tasks</span>
+                            <span class="progress-value">6/7</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 86%"></div>
+                        </div>
+                    </div>
+
+                    <div class="agent-tasks">
+                        <div class="agent-task completed">
+                            <span class="task-icon">✓</span>
+                            <span class="task-name">Pull image</span>
+                            <span class="task-time">2.1s</span>
+                        </div>
+                        <div class="agent-task completed">
+                            <span class="task-icon">✓</span>
+                            <span class="task-name">Health check</span>
+                            <span class="task-time">1.0s</span>
+                        </div>
+                        <div class="agent-task running">
+                            <span class="task-icon">◐</span>
+                            <span class="task-name">Switch traffic</span>
+                            <span class="task-time">—</span>
+                        </div>
+                    </div>
+
+                    <div class="rollback-point">
+                        <span class="rollback-point-icon">⟲</span>
+                        <span class="rollback-point-text">rev-a7f3d2e-02</span>
+                    </div>
+                </div>
+
+                <!-- Agent 3 -->
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-avatar">A3</div>
+                        <div class="agent-info">
+                            <div class="agent-name">
+                                Agent-03
+                                <span class="agent-indicator"></span>
+                            </div>
+                            <div class="agent-status">Deploying to eu-west-1</div>
+                        </div>
+                    </div>
+
+                    <div class="agent-progress">
+                        <div class="progress-header">
+                            <span class="progress-label">Tasks</span>
+                            <span class="progress-value">7/7</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <div class="agent-tasks">
+                        <div class="agent-task completed">
+                            <span class="task-icon">✓</span>
+                            <span class="task-name">Pull image</span>
+                            <span class="task-time">2.5s</span>
+                        </div>
+                        <div class="agent-task completed">
+                            <span class="task-icon">✓</span>
+                            <span class="task-name">Health check</span>
+                            <span class="task-time">1.2s</span>
+                        </div>
+                        <div class="agent-task completed">
+                            <span class="task-icon">✓</span>
+                            <span class="task-name">Verify deployment</span>
+                            <span class="task-time">3.1s</span>
+                        </div>
+                    </div>
+
+                    <div class="rollback-point">
+                        <span class="rollback-point-icon">⟲</span>
+                        <span class="rollback-point-text">rev-a7f3d2e-03</span>
+                    </div>
+                </div>
+
+                <!-- Agent 4 -->
+                <div class="agent-card">
+                    <div class="agent-header">
+                        <div class="agent-avatar">A4</div>
+                        <div class="agent-info">
+                            <div class="agent-name">
+                                Agent-04
+                                <span class="agent-indicator"></span>
+                            </div>
+                            <div class="agent-status">Deploying to ap-southeast-1</div>
+                        </div>
+                    </div>
+
+                    <div class="agent-progress">
+                        <div class="progress-header">
+                            <span class="progress-label">Tasks</span>
+                            <span class="progress-value">7/7</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 100%"></div>
+                        </div>
+                    </div>
+
+                    <div class="agent-tasks">
+                        <div class="agent-task completed">
+                            <span class="task-icon">✓</span>
+                            <span class="task-name">Pull image</span>
+                            <span class="task-time">2.8s</span>
+                        </div>
+                        <div class="agent-task completed">
+                            <span class="task-icon">✓</span>
+                            <span class="task-name">Health check</span>
+                            <span class="task-time">1.3s</span>
+                        </div>
+                        <div class="agent-task completed">
+                            <span class="task-icon">✓</span>
+                            <span class="task-name">Verify deployment</span>
+                            <span class="task-time">3.4s</span>
+                        </div>
+                    </div>
+
+                    <div class="rollback-point">
+                        <span class="rollback-point-icon">⟲</span>
+                        <span class="rollback-point-text">rev-a7f3d2e-04</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Pipeline Summary Footer -->
+    <footer class="pipeline-summary">
+        <div class="summary-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <span>Status: <span class="summary-value text-amber">In Progress</span></span>
+        </div>
+        <div class="summary-separator"></div>
+        <div class="summary-item">
+            <span>Stages: <span class="summary-value">2/5</span></span>
+        </div>
+        <div class="summary-separator"></div>
+        <div class="summary-item">
+            <span>Agents: <span class="summary-value">2 active</span></span>
+        </div>
+        <div class="summary-separator"></div>
+        <div class="summary-item">
+            <span>ETA: <span class="summary-value">~3m 12s</span></span>
+        </div>
+    </footer>
+</body>
+</html>

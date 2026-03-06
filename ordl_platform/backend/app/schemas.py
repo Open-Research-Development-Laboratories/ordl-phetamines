@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -296,6 +297,109 @@ class WorkerConnectivityOut(BaseModel):
     reconnect_targets: list[str]
 
 
+class WorkerUpdateCampaignCreate(BaseModel):
+    project_id: str
+    name: str
+    bundle_id: str | None = None
+    target_selector: dict[str, Any] = Field(default_factory=dict)
+    desired_version: str
+    rollout_strategy: Literal["canary", "rolling", "blue_green", "all_at_once"] = "rolling"
+    preflight_required: bool = True
+    backup_required: bool = True
+    canary_batch_size: int = Field(default=1, ge=1, le=100)
+    max_allowed_failures: int = Field(default=0, ge=0, le=1000)
+    auto_rollback_on_halt: bool = True
+
+
+class WorkerUpdateCampaignStart(BaseModel):
+    worker_ids: list[str] = Field(default_factory=list)
+    policy_token: str
+
+
+class WorkerUpdateCampaignRollback(BaseModel):
+    reason: str = ""
+
+
+class WorkerUpdateCampaignOut(BaseModel):
+    id: str
+    project_id: str
+    name: str
+    bundle_id: str | None
+    target_selector: dict[str, Any]
+    desired_version: str
+    rollout_strategy: str
+    preflight_required: bool
+    backup_required: bool
+    canary_batch_size: int
+    max_allowed_failures: int
+    auto_rollback_on_halt: bool
+    halt_reason: str
+    state: str
+    created_by_user_id: str
+    started_at: str | None
+    completed_at: str | None
+    rolled_back_at: str | None
+
+
+class WorkerUpdateExecutionOut(BaseModel):
+    id: str
+    campaign_id: str
+    worker_id: str
+    state: str
+    preflight_ok: bool
+    backup_ref: str
+    applied_version: str
+    failure_reason: str
+    rollback_state: str
+    started_at: str | None
+    completed_at: str | None
+
+
+class WorkerUpdateBundleCreate(BaseModel):
+    project_id: str
+    name: str
+    version: str
+    digest: str
+    signature: str
+    signer: str = ""
+    artifact_uri: str = ""
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class WorkerUpdateBundleOut(BaseModel):
+    id: str
+    project_id: str
+    name: str
+    version: str
+    digest: str
+    signature: str
+    signer: str
+    artifact_uri: str
+    metadata: dict[str, Any]
+    status: str
+    created_by_user_id: str
+
+
+class WorkerDiscoveryScanCreate(BaseModel):
+    project_id: str
+    network_scope: str = "local"
+    candidate_hosts: list[str] = Field(default_factory=list)
+    auto_enroll: bool = False
+    notes: str = ""
+
+
+class WorkerDiscoveryScanOut(BaseModel):
+    id: str
+    project_id: str
+    initiated_by_user_id: str
+    network_scope: str
+    status: str
+    findings: list[dict[str, Any]]
+    notes: str
+    started_at: str | None
+    completed_at: str | None
+
+
 class WorkerGroupCreate(BaseModel):
     project_id: str
     name: str
@@ -461,6 +565,90 @@ class JobDeliveryOut(BaseModel):
     status: str
     detail: dict[str, Any]
     delivered_at: str | None
+
+
+class ProgramCreate(BaseModel):
+    org_id: str
+    team_id: str | None = None
+    code: str
+    name: str
+    status: str = "active"
+    summary: str = ""
+
+
+class ProgramOut(BaseModel):
+    id: str
+    org_id: str
+    team_id: str | None
+    code: str
+    name: str
+    status: str
+    summary: str
+    owner_user_id: str
+
+
+class ProgramMilestoneCreate(BaseModel):
+    title: str
+    target_at: datetime | None = None
+    status: str = "planned"
+    owner_user_id: str | None = None
+    notes: str = ""
+
+
+class ProgramMilestoneOut(BaseModel):
+    id: str
+    program_id: str
+    title: str
+    target_at: str | None
+    status: str
+    owner_user_id: str | None
+    notes: str
+
+
+class ProgramRiskCreate(BaseModel):
+    title: str
+    severity: Literal["low", "medium", "high", "critical"] = "medium"
+    probability: Literal["low", "medium", "high"] = "medium"
+    impact: Literal["low", "medium", "high"] = "medium"
+    status: str = "open"
+    owner_user_id: str | None = None
+    mitigation: str = ""
+
+
+class ProgramRiskOut(BaseModel):
+    id: str
+    program_id: str
+    title: str
+    severity: str
+    probability: str
+    impact: str
+    status: str
+    owner_user_id: str | None
+    mitigation: str
+
+
+class ChangeRequestCreate(BaseModel):
+    title: str
+    description: str = ""
+    priority: Literal["low", "medium", "high", "critical"] = "medium"
+    reviewer_user_id: str | None = None
+
+
+class ChangeRequestDecision(BaseModel):
+    status: Literal["approved", "rejected", "needs_rework"]
+    decision_notes: str = ""
+
+
+class ChangeRequestOut(BaseModel):
+    id: str
+    project_id: str
+    requested_by_user_id: str
+    reviewer_user_id: str | None
+    title: str
+    description: str
+    priority: str
+    status: str
+    decision_notes: str
 
 
 class ProtocolStandardCreate(BaseModel):

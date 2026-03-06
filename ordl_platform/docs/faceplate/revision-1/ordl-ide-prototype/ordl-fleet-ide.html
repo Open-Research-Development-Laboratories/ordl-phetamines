@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORDL Fleet IDE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* ============================================
+           ORDL FLEET IDE - CONSOLIDATED STYLES
+           Monochrome Machinery Aesthetic
+           ============================================ */
+        :root {
+            --charcoal-deep: #0a0a0a;
+            --charcoal-mid: #141414;
+            --charcoal-light: #1e1e1e;
+            --charcoal-surface: #2a2a2a;
+            --cream-primary: #f5f2e9;
+            --cream-muted: #d4d0c5;
+            --cream-dim: #9a958a;
+            --cream-dark: #6a655a;
+            --amber-alert: #ff9500;
+            --amber-glow: rgba(255, 149, 0, 0.3);
+            --amber-dim: rgba(255, 149, 0, 0.15);
+            --phosphor-primary: rgba(245, 242, 233, 0.08);
+            --phosphor-glow: rgba(245, 242, 233, 0.15);
+            --phosphor-bright: rgba(245, 242, 233, 0.25);
+            --border-subtle: rgba(245, 242, 233, 0.06);
+            --border-medium: rgba(245, 242, 233, 0.12);
+            --border-strong: rgba(245, 242, 233, 0.2);
+            --font-mono: 'IBM Plex Mono', 'Fira Code', 'Consolas', monospace;
+            --font-ui: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --header-height: 3.5rem;
+            --timeline-height: 12rem;
+            --panel-gap: 1px;
+            --transition-fast: 0.1s ease;
+            --transition-medium: 0.2s ease;
+            --crt-scanline-opacity: 0.03;
+            --crt-flicker-opacity: 0.02;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 14px; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        body { font-family: var(--font-ui); background: var(--charcoal-deep); color: var(--cream-primary); min-height: 100vh; overflow: hidden; line-height: 1.5; }
+        ::selection { background: var(--amber-dim); color: var(--cream-primary); }
+
+        /* CRT Effects */
+        .crt-overlay { position: fixed; inset: 0; pointer-events: none; z-index: 1000; overflow: hidden; }
+        .crt-overlay::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, var(--crt-scanline-opacity)) 2px, rgba(0, 0, 0, var(--crt-scanline-opacity)) 4px); background-size: 100% 4px; }
+        .crt-overlay::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, var(--crt-flicker-opacity)) 50%, rgba(255, 255, 255, 0) 100%); background-size: 100% 200%; animation: flicker 8s linear infinite; }
+        @keyframes flicker { 0%, 100% { transform: translateY(-100%); } 50% { transform: translateY(100%); } }
+        .screen-glow { position: fixed; inset: 0; pointer-events: none; z-index: 999; background: radial-gradient(ellipse at center, transparent 0%, transparent 60%, rgba(0, 0, 0, 0.4) 100%); }
+
+        /* Phosphor Glow */
+        .phosphor-glow { box-shadow: 0 0 20px var(--phosphor-glow), 0 0 40px var(--phosphor-primary), inset 0 0 20px var(--phosphor-primary); }
+        .phosphor-text { text-shadow: 0 0 5px var(--phosphor-glow), 0 0 10px var(--phosphor-primary); }
+        .focused-element { position: relative; }
+        .focused-element::before { content: ''; position: absolute; inset: -2px; border: 1px solid var(--cream-muted); opacity: 0.5; box-shadow: 0 0 15px var(--phosphor-bright), inset 0 0 15px var(--phosphor-glow); pointer-events: none; }
+
+        /* Layout Grid */
+        .app-container { display: grid; grid-template-areas: "header header" "topology topology" "agent-panel fleet-panel" "mentality mentality" "timeline timeline"; grid-template-rows: var(--header-height) auto 1fr auto var(--timeline-height); grid-template-columns: 1fr 1fr; height: 100vh; gap: var(--panel-gap); background: var(--charcoal-deep); }
+
+        /* Header */
+        .app-header { grid-area: header; display: flex; align-items: center; justify-content: space-between; padding: 0 var(--space-lg); background: var(--charcoal-mid); border-bottom: 1px solid var(--border-medium); z-index: 100; }
+        .header-brand { display: flex; align-items: center; gap: var(--space-md); }
+        .brand-logo { font-family: var(--font-mono); font-weight: 600; font-size: 1.125rem; letter-spacing: 0.05em; color: var(--cream-primary); }
+        .brand-tagline { font-family: var(--font-mono); font-size: 0.75rem; color: var(--cream-dim); text-transform: uppercase; letter-spacing: 0.1em; }
+        .header-status { display: flex; align-items: center; gap: var(--space-lg); }
+        .status-indicator { display: flex; align-items: center; gap: var(--space-sm); font-family: var(--font-mono); font-size: 0.75rem; color: var(--cream-muted); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--amber-alert); box-shadow: 0 0 8px var(--amber-glow); animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .status-dot.active { background: #4ade80; box-shadow: 0 0 8px rgba(74, 222, 128, 0.4); }
+
+        /* Panels */
+        .panel { background: var(--charcoal-mid); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .panel-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-sm) var(--space-md); background: var(--charcoal-light); border-bottom: 1px solid var(--border-subtle); font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--cream-dim); }
+        .panel-title { display: flex; align-items: center; gap: var(--space-sm); }
+        .panel-icon { width: 12px; height: 12px; opacity: 0.6; }
+        .panel-actions { display: flex; gap: var(--space-xs); }
+        .panel-btn { background: none; border: none; color: var(--cream-dim); cursor: pointer; padding: var(--space-xs); font-size: 0.75rem; transition: color var(--transition-fast); }
+        .panel-btn:hover { color: var(--cream-primary); }
+        .panel-content { flex: 1; overflow: auto; padding: var(--space-md); }
+        .panel-content::-webkit-scrollbar { width: 6px; height: 6px; }
+        .panel-content::-webkit-scrollbar-track { background: var(--charcoal-deep); }
+        .panel-content::-webkit-scrollbar-thumb { background: var(--charcoal-surface); border-radius: 3px; }
+        .panel-content::-webkit-scrollbar-thumb:hover { background: var(--cream-dark); }
+
+        /* Topology View */
+        .topology-view { grid-area: topology; min-height: 200px; max-height: 35vh; background: var(--charcoal-mid); border-bottom: 1px solid var(--border-medium); position: relative; overflow: hidden; }
+        .topology-canvas { width: 100%; height: 100%; position: relative; }
+        .topology-grid { position: absolute; inset: 0; background-image: linear-gradient(var(--border-subtle) 1px, transparent 1px), linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px); background-size: 20px 20px; opacity: 0.5; }
+
+        /* Agent Panel */
+        .agent-panel { grid-area: agent-panel; }
+        .agent-details { display: grid; gap: var(--space-md); }
+        .agent-meta { display: grid; grid-template-columns: auto 1fr; gap: var(--space-sm) var(--space-md); font-family: var(--font-mono); font-size: 0.75rem; }
+        .meta-label { color: var(--cream-dim); }
+        .meta-value { color: var(--cream-primary); }
+        .meta-value.highlight { color: var(--amber-alert); }
+        .agent-state { background: var(--charcoal-deep); border: 1px solid var(--border-subtle); padding: var(--space-md); font-family: var(--font-mono); font-size: 0.75rem; }
+        .state-header { color: var(--cream-dim); margin-bottom: var(--space-sm); text-transform: uppercase; letter-spacing: 0.05em; }
+        .state-value { color: var(--cream-primary); padding: var(--space-sm); background: var(--charcoal-light); border-left: 2px solid var(--amber-alert); }
+
+        /* Fleet Panel */
+        .fleet-panel { grid-area: fleet-panel; }
+        .fleet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: var(--space-sm); }
+        .fleet-node { background: var(--charcoal-light); border: 1px solid var(--border-subtle); padding: var(--space-sm); cursor: pointer; transition: all var(--transition-medium); }
+        .fleet-node:hover { border-color: var(--border-medium); background: var(--charcoal-surface); }
+        .fleet-node.active { border-color: var(--cream-muted); box-shadow: 0 0 15px var(--phosphor-glow); }
+        .fleet-node.alert { border-color: var(--amber-alert); background: var(--amber-dim); }
+        .node-id { font-family: var(--font-mono); font-size: 0.625rem; color: var(--cream-dim); text-transform: uppercase; }
+        .node-status { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--cream-primary); margin-top: var(--space-xs); }
+        .node-load { height: 2px; background: var(--charcoal-surface); margin-top: var(--space-sm); overflow: hidden; }
+        .node-load-bar { height: 100%; background: var(--cream-muted); transition: width var(--transition-medium); }
+        .fleet-node.alert .node-load-bar { background: var(--amber-alert); }
+
+        /* Mentality Controls */
+        .mentality-panel { grid-area: mentality; background: var(--charcoal-light); border-top: 1px solid var(--border-medium); border-bottom: 1px solid var(--border-medium); padding: var(--space-md); }
+        .mentality-controls { display: flex; align-items: center; gap: var(--space-lg); flex-wrap: wrap; }
+        .control-group { display: flex; align-items: center; gap: var(--space-sm); }
+        .control-label { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--cream-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+        .slider-container { display: flex; align-items: center; gap: var(--space-sm); }
+        input[type="range"] { -webkit-appearance: none; appearance: none; width: 120px; height: 3px; background: var(--charcoal-surface); border-radius: 2px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 12px; height: 12px; background: var(--cream-primary); border-radius: 50%; cursor: pointer; transition: all var(--transition-fast); }
+        input[type="range"]::-webkit-slider-thumb:hover { box-shadow: 0 0 10px var(--phosphor-glow); }
+        input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; background: var(--cream-primary); border-radius: 50%; cursor: pointer; border: none; }
+        .slider-value { font-family: var(--font-mono); font-size: 0.75rem; color: var(--cream-muted); min-width: 2.5rem; }
+        .mentality-actions { display: flex; gap: var(--space-sm); margin-left: auto; }
+        .btn { font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; padding: var(--space-sm) var(--space-md); border: 1px solid var(--border-medium); background: var(--charcoal-mid); color: var(--cream-muted); cursor: pointer; transition: all var(--transition-fast); }
+        .btn:hover { border-color: var(--cream-dim); color: var(--cream-primary); }
+        .btn:active { background: var(--charcoal-deep); }
+        .btn.alert { border-color: var(--amber-alert); color: var(--amber-alert); background: var(--amber-dim); }
+        .btn.alert:hover { background: rgba(255, 149, 0, 0.25); box-shadow: 0 0 15px var(--amber-glow); }
+
+        /* Timeline */
+        .timeline-area { grid-area: timeline; background: var(--charcoal-mid); border-top: 1px solid var(--border-medium); display: flex; flex-direction: column; overflow: hidden; }
+        .timeline-header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-sm) var(--space-md); background: var(--charcoal-light); border-bottom: 1px solid var(--border-subtle); }
+        .timeline-tabs { display: flex; gap: var(--space-xs); }
+        .tab { font-family: var(--font-mono); font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.05em; padding: var(--space-xs) var(--space-sm); background: none; border: none; color: var(--cream-dim); cursor: pointer; transition: all var(--transition-fast); }
+        .tab:hover { color: var(--cream-primary); }
+        .tab.active { color: var(--cream-primary); background: var(--charcoal-surface); }
+        .timeline-controls { display: flex; align-items: center; gap: var(--space-sm); }
+        .timeline-content { flex: 1; overflow: auto; padding: var(--space-md); font-family: var(--font-mono); font-size: 0.75rem; }
+        .log-entry { display: flex; gap: var(--space-md); padding: var(--space-xs) 0; border-bottom: 1px solid var(--border-subtle); opacity: 0.7; }
+        .log-entry:hover { opacity: 1; background: var(--charcoal-light); }
+        .log-timestamp { color: var(--cream-dark); white-space: nowrap; }
+        .log-level { color: var(--amber-alert); min-width: 3rem; }
+        .log-level.info { color: #4ade80; }
+        .log-level.warn { color: var(--amber-alert); }
+        .log-level.error { color: #ef4444; }
+        .log-message { color: var(--cream-muted); }
+        .timeline-slider-container { padding: var(--space-sm) var(--space-md); background: var(--charcoal-light); border-top: 1px solid var(--border-subtle); }
+        .timeline-slider { width: 100%; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .app-container { grid-template-areas: "header" "topology" "agent-panel" "fleet-panel" "mentality" "timeline"; grid-template-columns: 1fr; grid-template-rows: var(--header-height) 200px auto auto auto 200px; }
+            .topology-view { max-height: 200px; }
+            .mentality-controls { flex-direction: column; align-items: stretch; gap: var(--space-md); }
+            .mentality-actions { margin-left: 0; justify-content: flex-end; }
+        }
+        @media (max-width: 640px) {
+            :root { --header-height: 3rem; --timeline-height: 160px; }
+            .brand-tagline { display: none; }
+            .fleet-grid { grid-template-columns: repeat(2, 1fr); }
+            .log-entry { flex-direction: column; gap: var(--space-xs); }
+        }
+    </style>
+</head>
+<body>
+    <div class="crt-overlay"></div>
+    <div class="screen-glow"></div>
+
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-brand">
+                <span class="brand-logo">ORDL</span>
+                <span class="brand-tagline">Fleet Orchestration Environment</span>
+            </div>
+            <div class="header-status">
+                <div class="status-indicator">
+                    <span class="status-dot active"></span>
+                    <span>SYSTEM ONLINE</span>
+                </div>
+                <div class="status-indicator">
+                    <span class="mono text-muted">v0.1.0-alpha</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="topology-view" id="topologyView">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                    </svg>
+                    Swarm Topology
+                </div>
+                <div class="panel-actions">
+                    <button class="panel-btn">+</button>
+                    <button class="panel-btn">−</button>
+                    <button class="panel-btn">⌂</button>
+                </div>
+            </div>
+            <div class="topology-canvas" id="topology-canvas">
+                <div class="topology-grid"></div>
+            </div>
+        </section>
+
+        <section class="panel agent-panel" id="agentPanel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Individual Agent
+                </div>
+                <div class="panel-actions">
+                    <select class="ordl-selector" id="agent-selector" style="background: var(--charcoal-light); border: 1px solid var(--border-subtle); color: var(--cream-primary); padding: 4px 8px; font-family: var(--font-mono); font-size: 11px;">
+                        <option value="alpha">alpha (coordinator)</option>
+                        <option value="beta">beta (worker)</option>
+                        <option value="gamma">gamma (worker)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="panel-content" id="agent-content">
+                <div class="agent-details">
+                    <div class="agent-meta">
+                        <span class="meta-label">ID:</span>
+                        <span class="meta-value">agent-alpha-01</span>
+                        <span class="meta-label">Type:</span>
+                        <span class="meta-value">coordinator</span>
+                        <span class="meta-label">Status:</span>
+                        <span class="meta-value highlight">ACTIVE</span>
+                        <span class="meta-label">Uptime:</span>
+                        <span class="meta-value">14h 23m 07s</span>
+                    </div>
+                    <div class="agent-state">
+                        <div class="state-header">Current Mentality</div>
+                        <div class="state-value">balanced</div>
+                    </div>
+                    <div class="agent-state">
+                        <div class="state-header">Task Progress</div>
+                        <div class="state-value" style="border-left-color: #4ade80;">67% - rebalancing fleet topology</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel fleet-panel" id="fleetPanel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <svg class="panel-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                    Collective Fleet
+                </div>
+                <div class="panel-actions">
+                    <button class="panel-btn">⊕</button>
+                    <button class="panel-btn">⚙</button>
+                </div>
+            </div>
+            <div class="panel-content">
+                <div class="fleet-grid" id="fleet-grid">
+                    <div class="fleet-node active">
+                        <div class="node-id">alpha-01</div>
+                        <div class="node-status">coordinator</div>
+                        <div class="node-load"><div class="node-load-bar" style="width: 45%"></div></div>
+                    </div>
+                    <div class="fleet-node">
+                        <div class="node-id">beta-01</div>
+                        <div class="node-status">worker - idle</div>
+                        <div class="node-load"><div class="node-load-bar" style="width: 12%"></div></div>
+                    </div>
+                    <div class="fleet-node alert">
+                        <div class="node-id">gamma-01</div>
+                        <div class="node-status">worker - high-load</div>
+                        <div class="node-load"><div class="node-load-bar" style="width: 89%"></div></div>
+                    </div>
+                    <div class="fleet-node">
+                        <div class="node-id">delta-01</div>
+                        <div class="node-status">worker - active</div>
+                        <div class="node-load"><div class="node-load-bar" style="width: 67%"></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mentality-panel" id="mentalityPanel">
+            <div class="mentality-controls">
+                <div class="control-group">
+                    <span class="control-label">Autonomy</span>
+                    <div class="slider-container">
+                        <input type="range" id="autonomySlider" min="0" max="100" value="65">
+                        <span class="slider-value" id="autonomyValue">65%</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <span class="control-label">Coordination</span>
+                    <div class="slider-container">
+                        <input type="range" id="coordinationSlider" min="0" max="100" value="80">
+                        <span class="slider-value" id="coordinationValue">80%</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <span class="control-label">Exploration</span>
+                    <div class="slider-container">
+                        <input type="range" id="explorationSlider" min="0" max="100" value="40">
+                        <span class="slider-value" id="explorationValue">40%</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <span class="control-label">Consensus</span>
+                    <div class="slider-container">
+                        <input type="range" id="consensusSlider" min="0" max="100" value="66">
+                        <span class="slider-value" id="consensusValue">66%</span>
+                    </div>
+                </div>
+                <div class="mentality-actions">
+                    <button class="btn" id="resetMentality">Reset</button>
+                    <button class="btn alert" id="applyMentality">Apply</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="timeline-area" id="timelineArea">
+            <div class="timeline-header">
+                <div class="timeline-tabs">
+                    <button class="tab active" data-tab="logs">Event Log</button>
+                    <button class="tab" data-tab="debug">Debug</button>
+                    <button class="tab" data-tab="metrics">Metrics</button>
+                </div>
+                <div class="timeline-controls">
+                    <button class="panel-btn">◀</button>
+                    <button class="panel-btn">▶</button>
+                    <button class="panel-btn">⏸</button>
+                </div>
+            </div>
+            <div class="timeline-content" id="logContent">
+                <div class="log-entry">
+                    <span class="log-timestamp">19:41:23.142</span>
+                    <span class="log-level info">INFO</span>
+                    <span class="log-message">Fleet IDE initialized successfully</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">19:41:23.089</span>
+                    <span class="log-level info">INFO</span>
+                    <span class="log-message">Connected to 6 active nodes</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">19:41:22.945</span>
+                    <span class="log-level warn">WARN</span>
+                    <span class="log-message">NODE-03 reporting high memory usage (87%)</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">19:41:22.701</span>
+                    <span class="log-level info">INFO</span>
+                    <span class="log-message">Topology sync completed in 23ms</span>
+                </div>
+                <div class="log-entry">
+                    <span class="log-timestamp">19:41:22.512</span>
+                    <span class="log-level info">INFO</span>
+                    <span class="log-message">Agent state updated: balanced</span>
+                </div>
+            </div>
+            <div class="timeline-slider-container">
+                <input type="range" class="timeline-slider" id="timelineSlider" min="0" max="100" value="100">
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ============================================
+        // ORDL Fleet IDE - Interactive Components
+        // ============================================
+
+        const AppState = {
+            selectedAgent: 'alpha',
+            selectedNodes: new Set(),
+            mentality: { autonomy: 65, coordination: 80, exploration: 40, consensus: 66 },
+            logs: [],
+            isPlaying: true
+        };
+
+        // Mentality Controls
+        function bindSlider(slider, key) {
+            slider.addEventListener('input', (e) => {
+                AppState.mentality[key] = parseInt(e.target.value);
+                document.getElementById(`${key}Value`).textContent = `${e.target.value}%`;
+            });
+        }
+
+        bindSlider(document.getElementById('autonomySlider'), 'autonomy');
+        bindSlider(document.getElementById('coordinationSlider'), 'coordination');
+        bindSlider(document.getElementById('explorationSlider'), 'exploration');
+        bindSlider(document.getElementById('consensusSlider'), 'consensus');
+
+        document.getElementById('resetMentality').addEventListener('click', () => {
+            const defaults = { autonomy: 65, coordination: 80, exploration: 40, consensus: 66 };
+            Object.entries(defaults).forEach(([key, value]) => {
+                const slider = document.getElementById(`${key}Slider`);
+                if (slider) {
+                    slider.value = value;
+                    document.getElementById(`${key}Value`).textContent = `${value}%`;
+                    AppState.mentality[key] = value;
+                }
+            });
+            addLog('INFO', 'Mentality parameters reset to defaults');
+        });
+
+        document.getElementById('applyMentality').addEventListener('click', () => {
+            addLog('INFO', `Mentality applied: ${JSON.stringify(AppState.mentality)}`);
+            const btn = document.getElementById('applyMentality');
+            btn.style.boxShadow = '0 0 20px var(--amber-glow)';
+            setTimeout(() => btn.style.boxShadow = '', 300);
+        });
+
+        // Fleet Node Selection
+        document.querySelectorAll('.fleet-node').forEach(node => {
+            node.addEventListener('click', () => {
+                const nodeId = node.querySelector('.node-id').textContent;
+                document.querySelectorAll('.fleet-node').forEach(n => n.classList.remove('active'));
+                node.classList.add('active');
+                addLog('INFO', `Node ${nodeId} selected`);
+            });
+        });
+
+        // Tab Switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
+        });
+
+        // Topology Visualization with D3
+        function initTopology() {
+            const container = document.getElementById('topology-canvas');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            const svg = d3.select('#topology-canvas')
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height)
+                .attr('viewBox', [0, 0, width, height]);
+
+            const g = svg.append('g');
+
+            const nodes = [
+                { id: 'alpha-01', role: 'coordinator', x: width/2, y: height/3 },
+                { id: 'beta-01', role: 'worker', x: width/3, y: height*2/3 },
+                { id: 'gamma-01', role: 'worker', x: width*2/3, y: height*2/3 },
+                { id: 'delta-01', role: 'worker', x: width/2, y: height*0.8 }
+            ];
+
+            const links = [
+                { source: nodes[0], target: nodes[1] },
+                { source: nodes[0], target: nodes[2] },
+                { source: nodes[0], target: nodes[3] },
+                { source: nodes[1], target: nodes[2] }
+            ];
+
+            // Draw links
+            const link = g.selectAll('.link')
+                .data(links)
+                .join('line')
+                .attr('class', 'link')
+                .attr('stroke', '#9a958a')
+                .attr('stroke-width', 1)
+                .attr('stroke-opacity', 0.5)
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+
+            // Draw nodes
+            const node = g.selectAll('.node')
+                .data(nodes)
+                .join('g')
+                .attr('class', 'node')
+                .attr('transform', d => `translate(${d.x},${d.y})`);
+
+            node.append('circle')
+                .attr('r', 20)
+                .attr('fill', '#36454F')
+                .attr('stroke', '#f5f2e9')
+                .attr('stroke-width', 2);
+
+            node.append('text')
+                .attr('dy', 35)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#f5f2e9')
+                .attr('font-family', 'monospace')
+                .attr('font-size', '10px')
+                .text(d => d.id);
+
+            node.append('circle')
+                .attr('r', 4)
+                .attr('cx', 12)
+                .attr('cy', -12)
+                .attr('fill', d => d.role === 'coordinator' ? '#ff6b6b' : '#4ecdc4');
+
+            // Animated message packets
+            function spawnPacket() {
+                const randomLink = links[Math.floor(Math.random() * links.length)];
+                const packet = g.append('circle')
+                    .attr('r', 3)
+                    .attr('fill', '#f5f2e9')
+                    .attr('opacity', 0.9);
+
+                packet.attr('cx', randomLink.source.x)
+                    .attr('cy', randomLink.source.y)
+                    .transition()
+                    .duration(1500)
+                    .ease(d3.easeLinear)
+                    .attr('cx', randomLink.target.x)
+                    .attr('cy', randomLink.target.y)
+                    .on('end', function() { d3.select(this).remove(); });
+            }
+
+            setInterval(spawnPacket, 800);
+
+            // Zoom
+            const zoom = d3.zoom()
+                .scaleExtent([0.3, 4])
+                .on('zoom', (e) => g.attr('transform', e.transform));
+
+            svg.call(zoom);
+        }
+
+        // Log System
+        function addLog(level, message) {
+            const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
+            const logContent = document.getElementById('logContent');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-timestamp">${timestamp}</span>
+                <span class="log-level ${level.toLowerCase()}">${level}</span>
+                <span class="log-message">${message}</span>
+            `;
+            logContent.insertBefore(entry, logContent.firstChild);
+            while (logContent.children.length > 20) {
+                logContent.removeChild(logContent.lastChild);
+            }
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                e.preventDefault();
+                document.getElementById('resetMentality').click();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                document.getElementById('applyMentality').click();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initTopology();
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    const messages = [
+                        'Heartbeat received from beta-01',
+                        'Task distributed to gamma-01',
+                        'Memory usage stable at 64%',
+                        'Network latency check: OK (23ms)',
+                        'Sync cycle completed'
+                    ];
+                    addLog('INFO', messages[Math.floor(Math.random() * messages.length)]);
+                }
+            }, 5000);
+        });
+
+        window.ORDL = { state: AppState, log: addLog };
+    </script>
+</body>
+</html>

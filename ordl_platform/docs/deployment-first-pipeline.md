@@ -85,11 +85,18 @@ At `mount=secret`, `path=ordl`, provision:
 
 1. Run release gate:
    - `powershell -ExecutionPolicy Bypass -File ordl_platform/scripts/release-gate.ps1`
-2. Start production stack profile.
-3. Bootstrap ORDL pilot principals and tenant/project.
-4. Bootstrap adopted standards.
-5. Validate protocol compatibility + conformance runs.
-6. Enable external ingress policy.
+2. Run sneak-preview preflight (env validation + compose validation + fleet pairing gate):
+   - `powershell -ExecutionPolicy Bypass -File ordl_platform/scripts/sneak-preview-preflight.ps1 -InitEnvFile`
+   - Fill `ordl_platform/infra/.env.prod`
+   - Re-run:
+   - `powershell -ExecutionPolicy Bypass -File ordl_platform/scripts/sneak-preview-preflight.ps1`
+   - For immediate local sneak preview (no container runtime required):
+   - `powershell -ExecutionPolicy Bypass -File ordl_platform/scripts/launch-sneak-preview-local.ps1`
+3. Start production stack profile.
+4. Bootstrap ORDL pilot principals and tenant/project.
+5. Bootstrap adopted standards.
+6. Validate protocol compatibility + conformance runs.
+7. Enable external ingress policy.
 
 ## Local no-dependency bootstrap mode
 

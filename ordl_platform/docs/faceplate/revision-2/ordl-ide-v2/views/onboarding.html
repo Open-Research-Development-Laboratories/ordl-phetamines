@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding — ORDL IDE</title>
+    <style>
+        :root {
+            /* Monochrome Palette */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-tertiary: #1a1a1a;
+            --bg-hover: #222222;
+            --bg-active: #2a2a2a;
+            --bg-elevated: #151515;
+            --border-primary: #2a2a2a;
+            --border-secondary: #333333;
+            --border-hover: #444444;
+            --text-primary: #fafafa;
+            --text-secondary: #a0a0a0;
+            --text-tertiary: #666666;
+            --text-muted: #444444;
+            --accent: #ffffff;
+            --accent-dim: rgba(255, 255, 255, 0.1);
+            --accent-subtle: rgba(255, 255, 255, 0.05);
+            
+            /* Semantic */
+            --danger: #dc2626;
+            --danger-bg: rgba(220, 38, 38, 0.1);
+            --warning: #f59e0b;
+            --warning-bg: rgba(245, 158, 11, 0.1);
+            --success: #22c55e;
+            --success-bg: rgba(34, 197, 94, 0.1);
+            --info: #3b82f6;
+            --info-bg: rgba(59, 130, 246, 0.1);
+            
+            /* Spacing */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+            --space-3xl: 64px;
+            
+            /* Typography */
+            --font-mono: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            
+            /* Radius */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-full: 9999px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Onboarding Container */
+        .onboarding-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 960px;
+            width: 100%;
+            margin: 0 auto;
+            padding: var(--space-2xl) var(--space-xl);
+        }
+
+        /* Header */
+        .onboarding-header {
+            text-align: center;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--bg-primary);
+        }
+
+        .brand-name {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .onboarding-title {
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            margin-bottom: var(--space-sm);
+        }
+
+        .onboarding-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        /* Step Indicator */
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            margin-bottom: var(--space-2xl);
+            padding: var(--space-md);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-full);
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .step-dot-wrapper {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .step-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            cursor: default;
+        }
+
+        .step-dot.completed {
+            background: var(--success);
+            border-color: var(--success);
+            color: var(--bg-primary);
+        }
+
+        .step-dot.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+            box-shadow: 0 0 0 4px var(--accent-dim);
+        }
+
+        .step-connector {
+            width: 40px;
+            height: 2px;
+            background: var(--border-secondary);
+            transition: all 0.3s ease;
+        }
+
+        .step-connector.completed {
+            background: var(--success);
+        }
+
+        .step-labels {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin-top: var(--space-sm);
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+            width: 80px;
+            text-align: center;
+        }
+
+        .step-label.active {
+            color: var(--text-primary);
+        }
+
+        /* Wizard Content */
+        .wizard-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .wizard-step {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .wizard-step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Step Header */
+        .step-header {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+        }
+
+        .step-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+
+        .step-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Card Container */
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-lg);
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-3xl) var(--space-xl);
+            background: var(--bg-secondary);
+            border: 2px dashed var(--border-secondary);
+            border-radius: var(--radius-lg);
+            transition: all 0.2s ease;
+        }
+
+        .empty-state:hover {
+            border-color: var(--border-hover);
+            background: var(--bg-tertiary);
+        }
+
+        .empty-state-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto var(--space-lg);
+            color: var(--text-tertiary);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-state-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: var(--space-sm);
+        }
+
+        .empty-state-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-lg);
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        /* Connection Grid */
+        .connection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .connection-option {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--space-lg);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .connection-option:hover {
+            border-color: var(--border-hover);
+            background: var(--bg-hover);
+        }
+
+        .connection-option.selected {
+            border-color: var(--accent);
+            background: var(--accent-subtle);
+        }
+
+        .connection-option-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto var(--space-md);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .connection-option-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--text-secondary);
+        }
+
+        .connection-option.selected .connection-option-icon {
+            border-color: var(--accent);
+        }
+
+        .connection-option.selected .connection-option-icon svg {
+            color: var(--accent);
+        }
+
+        .connection-option-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: var(--space-xs);
+        }
+
+        .connection-option-description {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: var(--space-lg);
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-sm);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .text-input {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.15s ease;
+        }
+
+        .text-input:focus {
+            outline: none;
+            border-color: var(--border-hover);
+            background: var(--bg-hover);
+        }
+
+        .text-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .input-hint {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            margin-top: var(--space-sm);
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* Help Box */
+        .help-box {
+            display: flex;
+            gap: var(--space-md);
+            background: var(--info-bg);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-top: var(--space-md);
+        }
+
+        .help-box-icon {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            color: var(--info);
+        }
+
+        .help-box-content {
+            flex: 1;
+        }
+
+        .help-box-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .help-box-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .help-box-code {
+            display: inline-block;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-sm);
+            padding: 2px 6px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--accent);
+            margin-top: var(--space-xs);
+        }
+
+        /* Progress List */
+        .progress-list {
+            list-style: none;
+        }
+
+        .progress-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md) 0;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .progress-item:last-child {
+            border-bottom: none;
+        }
+
+        .progress-status {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-status.pending {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+        }
+
+        .progress-status.processing {
+            background: var(--info-bg);
+            border: 1px solid var(--info);
+            animation: pulse 1.5s infinite;
+        }
+
+        .progress-status.success {
+            background: var(--success-bg);
+            border: 1px solid var(--success);
+        }
+
+        .progress-status.error {
+            background: var(--danger-bg);
+            border: 1px solid var(--danger);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .progress-info {
+            flex: 1;
+        }
+
+        .progress-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .progress-description {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        /* Tooltip */
+        .tooltip-wrapper {
+            position: relative;
+            display: inline-flex;
+        }
+
+        .tooltip-trigger {
+            color: var(--text-tertiary);
+            cursor: help;
+            margin-left: var(--space-xs);
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm) var(--space-md);
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.15s ease;
+            z-index: 100;
+            margin-bottom: 8px;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: var(--border-secondary);
+        }
+
+        .tooltip-wrapper:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Action Buttons */
+        .wizard-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: var(--space-xl);
+            padding-top: var(--space-lg);
+            border-top: 1px solid var(--border-primary);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: none;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-secondary);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .btn-primary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        /* Verification Success */
+        .verification-success {
+            text-align: center;
+            padding: var(--space-2xl);
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto var(--space-lg);
+            background: var(--success-bg);
+            border: 2px solid var(--success);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .success-icon svg {
+            width: 40px;
+            height: 40px;
+            color: var(--success);
+        }
+
+        .success-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: var(--space-sm);
+        }
+
+        .success-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-xl);
+        }
+
+        /* Agent List (Empty & Populated) */
+        .agent-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .agent-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+        }
+
+        .agent-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--accent-subtle);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .agent-avatar svg {
+            width: 20px;
+            height: 20px;
+            color: var(--accent);
+        }
+
+        .agent-info {
+            flex: 1;
+        }
+
+        .agent-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .agent-meta {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .agent-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            font-size: 12px;
+            color: var(--success);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: var(--radius-full);
+            background: currentColor;
+        }
+
+        /* Inline Guidance */
+        .inline-guidance {
+            display: flex;
+            gap: var(--space-md);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .guidance-icon {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--accent-subtle);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .guidance-icon svg {
+            width: 16px;
+            height: 16px;
+            color: var(--accent);
+        }
+
+        .guidance-content h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: var(--space-xs);
+        }
+
+        .guidance-content p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Skip Link */
+        .skip-link {
+            text-align: center;
+            margin-top: var(--space-lg);
+        }
+
+        .skip-link a {
+            color: var(--text-tertiary);
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .skip-link a:hover {
+            color: var(--text-secondary);
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .onboarding-container {
+                padding: var(--space-lg);
+            }
+
+            .onboarding-title {
+                font-size: 24px;
+            }
+
+            .connection-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step-labels {
+                display: none;
+            }
+
+            .wizard-actions {
+                flex-direction: column-reverse;
+                gap: var(--space-sm);
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="onboarding-container">
+        <!-- Header -->
+        <header class="onboarding-header">
+            <div class="brand-logo">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <span class="brand-name">ORDL IDE</span>
+            </div>
+            <h1 class="onboarding-title">Welcome to ORDL IDE</h1>
+            <p class="onboarding-subtitle">Let's get your development environment set up</p>
+        </header>
+
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step-dot-wrapper">
+                <div class="step-dot active" data-step="1">1</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-dot-wrapper">
+                <div class="step-dot" data-step="2">2</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-dot-wrapper">
+                <div class="step-dot" data-step="3">3</div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-dot-wrapper">
+                <div class="step-dot" data-step="4">4</div>
+            </div>
+        </div>
+
+        <div class="step-labels">
+            <span class="step-label active">Connect</span>
+            <span class="step-label">Configure</span>
+            <span class="step-label">Deploy</span>
+            <span class="step-label">Verify</span>
+        </div>
+
+        <!-- Wizard Content -->
+        <div class="wizard-content">
+            
+            <!-- Step 1: Connect -->
+            <div class="wizard-step active" data-step="1">
+                <div class="step-header">
+                    <h2 class="step-title">Connect Your First Agent</h2>
+                    <p class="step-description">Choose how you want to add agents to your fleet</p>
+                </div>
+
+                <div class="inline-guidance">
+                    <div class="guidance-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 16v-4M12 8h.01"/>
+                        </svg>
+                    </div>
+                    <div class="guidance-content">
+                        <h4>What is an agent?</h4>
+                        <p>Agents are worker nodes that execute your deployment tasks. You can run them on local machines, remote servers, or cloud instances.</p>
+                    </div>
+                </div>
+
+                <div class="connection-grid">
+                    <div class="connection-option selected">
+                        <div class="connection-option-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                <path d="M8 21h8M12 17v4"/>
+                            </svg>
+                        </div>
+                        <div class="connection-option-title">Local Agent</div>
+                        <div class="connection-option-description">Run on this machine</div>
+                    </div>
+
+                    <div class="connection-option">
+                        <div class="connection-option-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                            </svg>
+                        </div>
+                        <div class="connection-option-title">Remote Agent</div>
+                        <div class="connection-option-description">Connect to SSH host</div>
+                    </div>
+
+                    <div class="connection-option">
+                        <div class="connection-option-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/>
+                            </svg>
+                        </div>
+                        <div class="connection-option-title">Cloud Agent</div>
+                        <div class="connection-option-description">AWS, GCP, Azure</div>
+                    </div>
+                </div>
+
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                        </svg>
+                    </div>
+                    <h3 class="empty-state-title">No fleets yet</h3>
+                    <p class="empty-state-description">Connect your first agent to create a fleet and start deploying</p>
+                    <button class="btn btn-primary">
+                        Connect Agent
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Configure -->
+            <div class="wizard-step" data-step="2">
+                <div class="step-header">
+                    <h2 class="step-title">Configure Your Agent</h2>
+                    <p class="step-description">Set up connection parameters and authentication</p>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">
+                        Connection Details
+                        <span class="tooltip-wrapper">
+                            <svg class="tooltip-trigger" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="M12 16v-4M12 8h.01"/>
+                            </svg>
+                            <span class="tooltip">These settings define how the IDE connects to your agent</span>
+                        </span>
+                    </h3>
+
+                    <div class="form-group">
+                        <label class="form-label">Agent Name</label>
+                        <div class="input-wrapper">
+                            <input type="text" class="text-input" placeholder="e.g., production-web-01" value="local-dev-agent">
+                        </div>
+                        <div class="input-hint">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                            Use a descriptive name to identify this agent in your fleet
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Host Address</label>
+                        <div class="input-wrapper">
+                            <input type="text" class="text-input" placeholder="localhost" value="localhost">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Port</label>
+                        <div class="input-wrapper">
+                            <input type="text" class="text-input" placeholder="8080" value="8080">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="help-box">
+                    <svg class="help-box-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/>
+                    </svg>
+                    <div class="help-box-content">
+                        <div class="help-box-title">Need to install the agent? </div>
+                        <div class="help-box-text">
+                            Run this command on your target machine:
+                            <br>
+                            <span class="help-box-code">curl -fsSL ordl.dev/install | sh</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="skip-link">
+                    <a href="#">Skip configuration, use defaults →</a>
+                </div>
+            </div>
+
+            <!-- Step 3: Deploy -->
+            <div class="wizard-step" data-step="3">
+                <div class="step-header">
+                    <h2 class="step-title">Deploy Configuration</h2>
+                    <p class="step-description">Applying settings and establishing connection</p>
+                </div>
+
+                <div class="card">
+                    <ul class="progress-list">
+                        <li class="progress-item">
+                            <div class="progress-status success">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </div>
+                            <div class="progress-info">
+                                <div class="progress-title">Validate configuration</div>
+                                <div class="progress-description">Settings verified</div>
+                            </div>
+                        </li>
+
+                        <li class="progress-item">
+                            <div class="progress-status success">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </div>
+                            <div class="progress-info">
+                                <div class="progress-title">Generate API key</div>
+                                <div class="progress-description">Key created and secured</div>
+                            </div>
+                        </li>
+
+                        <li class="progress-item">
+                            <div class="progress-status processing">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                                </svg>
+                            </div>
+                            <div class="progress-info">
+                                <div class="progress-title">Establish connection</div>
+                                <div class="progress-description">Connecting to localhost:8080...</div>
+                            </div>
+                        </li>
+
+                        <li class="progress-item">
+                            <div class="progress-status pending"></div>
+                            <div class="progress-info">
+                                <div class="progress-title">Register agent</div>
+                                <div class="progress-description">Waiting for connection...</div>
+                            </div>
+                        </li>
+
+                        <li class="progress-item">
+                            <div class="progress-status pending"></div>
+                            <div class="progress-info">
+                                <div class="progress-title">Sync capabilities</div>
+                                <div class="progress-description">Waiting for registration...</div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="inline-guidance">
+                    <div class="guidance-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                    </div>
+                    <div class="guidance-content">
+                        <h4>Deployment in progress</h4>
+                        <p>This may take a few moments. The agent will perform a self-check and report its capabilities back to the IDE.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Verify -->
+            <div class="wizard-step" data-step="4">
+                <div class="verification-success">
+                    <div class="success-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </div>
+                    <h2 class="success-title">Agent Connected</h2>
+                    <p class="success-description">Your first agent is ready to receive deployments</p>
+                </div>
+
+                <div class="card">
+                    <h3 class="card-title">Connected Agents</h3>
+                    
+                    <div class="agent-list">
+                        <div class="agent-item">
+                            <div class="agent-avatar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="3" width="20" height="14" rx="2"/>
+                                    <path d="M8 21h8M12 17v4"/>
+                                </svg>
+                            </div>
+                            <div class="agent-info">
+                                <div class="agent-name">local-dev-agent</div>
+                                <div class="agent-meta">localhost:8080 • Linux x64</div>
+                            </div>
+                            <div class="agent-status">
+                                <span class="status-dot"></span>
+                                Online
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inline-guidance">
+                    <div class="guidance-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <div class="guidance-content">
+                        <h4>What's next?</h4>
+                        <p>You can now create deployment pipelines, add more agents to your fleet, or explore the IDE features.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wizard Actions -->
+        <div class="wizard-actions">
+            <button class="btn btn-secondary" id="prevBtn" style="visibility: hidden;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Back
+            </button>
+            
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="skipBtn">Skip</button>
+                <button class="btn btn-primary" id="nextBtn">
+                    Continue
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple wizard navigation for demo
+        let currentStep = 1;
+        const totalSteps = 4;
+
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const skipBtn = document.getElementById('skipBtn');
+
+        function updateWizard() {
+            // Update step visibility
+            document.querySelectorAll('.wizard-step').forEach(step => {
+                step.classList.remove('active');
+            });
+            document.querySelector(`.wizard-step[data-step="${currentStep}"]`).classList.add('active');
+
+            // Update step indicator
+            document.querySelectorAll('.step-dot').forEach((dot, index) => {
+                const stepNum = index + 1;
+                dot.classList.remove('active', 'completed');
+                if (stepNum === currentStep) {
+                    dot.classList.add('active');
+                } else if (stepNum < currentStep) {
+                    dot.classList.add('completed');
+                    dot.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+                } else {
+                    dot.textContent = stepNum;
+                }
+            });
+
+            // Update step labels
+            document.querySelectorAll('.step-label').forEach((label, index) => {
+                label.classList.remove('active');
+                if (index + 1 === currentStep) {
+                    label.classList.add('active');
+                }
+            });
+
+            // Update connectors
+            document.querySelectorAll('.step-connector').forEach((connector, index) => {
+                connector.classList.remove('completed');
+                if (index < currentStep - 1) {
+                    connector.classList.add('completed');
+                }
+            });
+
+            // Update buttons
+            prevBtn.style.visibility = currentStep === 1 ? 'hidden' : 'visible';
+            
+            if (currentStep === totalSteps) {
+                nextBtn.innerHTML = 'Get Started <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+                skipBtn.style.display = 'none';
+            } else {
+                nextBtn.innerHTML = 'Continue <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+                skipBtn.style.display = 'inline-flex';
+            }
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateWizard();
+            }
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateWizard();
+            }
+        });
+
+        skipBtn.addEventListener('click', () => {
+            currentStep = totalSteps;
+            updateWizard();
+        });
+
+        // Connection option selection
+        document.querySelectorAll('.connection-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.connection-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+    </script>
+</body>
+</html>

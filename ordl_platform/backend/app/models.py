@@ -123,6 +123,85 @@ class WorkerAction(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+class WorkerUpdateBundle(Base):
+    __tablename__ = "worker_update_bundles"
+    __table_args__ = (UniqueConstraint("project_id", "name", "version", name="uq_worker_update_bundle_project_name_version"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    version: Mapped[str] = mapped_column(String(64), nullable=False)
+    digest: Mapped[str] = mapped_column(String(128), nullable=False)
+    signature: Mapped[str] = mapped_column(String(256), nullable=False)
+    signer: Mapped[str] = mapped_column(String(200), default="")
+    artifact_uri: Mapped[str] = mapped_column(String(1024), default="")
+    metadata_json: Mapped[str] = mapped_column(Text, default="{}")
+    status: Mapped[str] = mapped_column(String(32), default="active")
+    created_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class WorkerUpdateCampaign(Base):
+    __tablename__ = "worker_update_campaigns"
+    __table_args__ = (UniqueConstraint("project_id", "name", name="uq_worker_update_campaign_project_name"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    bundle_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("worker_update_bundles.id"), nullable=True, index=True)
+    target_selector_json: Mapped[str] = mapped_column(Text, default="{}")
+    desired_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    rollout_strategy: Mapped[str] = mapped_column(String(32), default="rolling")
+    preflight_required: Mapped[int] = mapped_column(Integer, default=1)
+    backup_required: Mapped[int] = mapped_column(Integer, default=1)
+    canary_batch_size: Mapped[int] = mapped_column(Integer, default=1)
+    max_allowed_failures: Mapped[int] = mapped_column(Integer, default=0)
+    auto_rollback_on_halt: Mapped[int] = mapped_column(Integer, default=1)
+    halt_reason: Mapped[str] = mapped_column(Text, default="")
+    state: Mapped[str] = mapped_column(String(32), default="draft", index=True)
+    created_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    rolled_back_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class WorkerUpdateExecution(Base):
+    __tablename__ = "worker_update_executions"
+    __table_args__ = (UniqueConstraint("campaign_id", "worker_id", name="uq_worker_update_exec_campaign_worker"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    campaign_id: Mapped[str] = mapped_column(String(36), ForeignKey("worker_update_campaigns.id"), index=True)
+    worker_id: Mapped[str] = mapped_column(String(36), ForeignKey("worker_instances.id"), index=True)
+    state: Mapped[str] = mapped_column(String(32), default="queued")
+    preflight_ok: Mapped[int] = mapped_column(Integer, default=0)
+    backup_ref: Mapped[str] = mapped_column(String(255), default="")
+    applied_version: Mapped[str] = mapped_column(String(64), default="")
+    failure_reason: Mapped[str] = mapped_column(Text, default="")
+    rollback_state: Mapped[str] = mapped_column(String(32), default="not_requested")
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class WorkerDiscoveryScan(Base):
+    __tablename__ = "worker_discovery_scans"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    initiated_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    network_scope: Mapped[str] = mapped_column(String(255), default="local")
+    status: Mapped[str] = mapped_column(String(32), default="completed")
+    findings_json: Mapped[str] = mapped_column(Text, default="[]")
+    notes: Mapped[str] = mapped_column(Text, default="")
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 class WorkerGroup(Base):
     __tablename__ = "worker_groups"
     __table_args__ = (UniqueConstraint("project_id", "name", name="uq_worker_group_project_name"),)
