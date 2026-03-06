@@ -46,7 +46,7 @@ def default_project_policy_profiles(environment: str = "development") -> dict:
             "enforce_snapshot_pinning": True if prod_like else True,
             "allowed_snapshot_patterns": [
                 r".*-\d{4}-\d{2}-\d{2}$",
-                r".*\.\d+(\.\d+)?$",
+                r".*\.\d+(\.\d+)?([.-][A-Za-z0-9_]+)?$",
             ],
             "blocked_aliases": [
                 "gpt-5",

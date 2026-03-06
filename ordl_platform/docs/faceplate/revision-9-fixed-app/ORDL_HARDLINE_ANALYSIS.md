@@ -10,15 +10,16 @@
 
 ### Current State Analysis
 
-| Module | Implemented | Pending | Coverage |
-|--------|-------------|---------|----------|
-| Governance (orgs) | 2/6 | 4 | 33% |
-| Governance (seats) | 2/6 | 4 | 33% |
-| Security (audit) | 3/4 | 1 | 75% |
-| Security (extensions) | 3/4 | 2 | 75% |
-| Security (providers) | 0/4 | 4 | 0% |
+| Module                | Implemented | Pending | Coverage |
+| --------------------- | ----------- | ------- | -------- |
+| Governance (orgs)     | 2/6         | 4       | 33%      |
+| Governance (seats)    | 2/6         | 4       | 33%      |
+| Security (audit)      | 3/4         | 1       | 75%      |
+| Security (extensions) | 3/4         | 2       | 75%      |
+| Security (providers)  | 0/4         | 4       | 0%       |
 
 ### Critical Finding: Mismatched Expectations
+
 The frontend JS implementation assumes a **much richer API** than currently exists. The 10 pending endpoints represent **high-priority functionality** that is actively being called from the UI (with FIXME warnings currently displayed to users).
 
 ---
@@ -27,17 +28,18 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 
 ### 1. GET /v1/orgs/{org_id}
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Route exists | ❌ MISSING | Only `GET /orgs` (list) exists |
-| Path parameter validation | ❌ | Requires `org_id: str` validation |
-| Tenant scope check | ⚠️ | Pattern exists in `list_orgs` - needs reuse |
-| Response schema | ❌ | Need `OrgOut` with additional fields |
-| Auth requirement | org member | Any member of tenant can view |
+| Item                      | Status     | Notes                                       |
+| ------------------------- | ---------- | ------------------------------------------- |
+| Route exists              | ❌ MISSING  | Only `GET /orgs` (list) exists              |
+| Path parameter validation | ❌          | Requires `org_id: str` validation           |
+| Tenant scope check        | ⚠️         | Pattern exists in `list_orgs` - needs reuse |
+| Response schema           | ❌          | Need `OrgOut` with additional fields        |
+| Auth requirement          | org member | Any member of tenant can view               |
 
 **Required Request Body Fields:** NONE (GET request)
 
 **Response Shape:**
+
 ```json
 {
   "id": "string",
@@ -55,10 +57,12 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Error Cases:**
+
 - `404` - Org not found
 - `403` - Tenant scope denied (user not in org's tenant)
 
 **Auth Requirements:** 
+
 - Requires valid JWT token
 - User must be member of the same tenant
 - No special role required (read-only)
@@ -67,16 +71,17 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 
 ### 2. PUT /v1/orgs/{org_id}
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Route exists | ❌ MISSING | |
-| Path parameter validation | ❌ | Requires `org_id: str` |
-| Request body validation | ❌ | Need `OrgUpdate` schema |
-| Tenant scope check | ⚠️ | Reuse pattern from governance.py |
-| Board member check | ⚠️ | May need board_member role |
-| Audit logging | ⚠️ | Reuse `append_audit_event` pattern |
+| Item                      | Status    | Notes                              |
+| ------------------------- | --------- | ---------------------------------- |
+| Route exists              | ❌ MISSING |                                    |
+| Path parameter validation | ❌         | Requires `org_id: str`             |
+| Request body validation   | ❌         | Need `OrgUpdate` schema            |
+| Tenant scope check        | ⚠️        | Reuse pattern from governance.py   |
+| Board member check        | ⚠️        | May need board_member role         |
+| Audit logging             | ⚠️        | Reuse `append_audit_event` pattern |
 
 **Required Request Body Fields:**
+
 ```json
 {
   "name": "string (optional)",
@@ -89,6 +94,7 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Response Shape:**
+
 ```json
 {
   "id": "string",
@@ -101,12 +107,14 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Error Cases:**
+
 - `404` - Org not found
 - `403` - Insufficient permissions
 - `400` - Invalid field values
 - `422` - Validation error
 
 **Auth Requirements:**
+
 - Valid JWT token
 - `board_member` role OR `owner_user_id` match
 - Must be in same tenant
@@ -115,14 +123,15 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 
 ### 3. PUT /v1/orgs/{org_id}/defaults
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Route exists | ❌ MISSING | Frontend shows FIXME warning |
-| Path parameter | ❌ | Requires `org_id` |
-| Defaults schema | ❌ | Need policy defaults model |
-| Audit logging | ⚠️ | Reuse existing pattern |
+| Item            | Status    | Notes                        |
+| --------------- | --------- | ---------------------------- |
+| Route exists    | ❌ MISSING | Frontend shows FIXME warning |
+| Path parameter  | ❌         | Requires `org_id`            |
+| Defaults schema | ❌         | Need policy defaults model   |
+| Audit logging   | ⚠️        | Reuse existing pattern       |
 
 **Required Request Body Fields:**
+
 ```json
 {
   "default_clearance_tier": "string (e.g., 'L2')",
@@ -135,6 +144,7 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Response Shape:**
+
 ```json
 {
   "org_id": "string",
@@ -152,11 +162,13 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Error Cases:**
+
 - `404` - Org not found
 - `403` - Board member role required
 - `400` - Invalid default values
 
 **Auth Requirements:**
+
 - Valid JWT token
 - `board_member` role required
 - Same tenant
@@ -165,14 +177,15 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 
 ### 4. POST /v1/orgs/{org_id}/members
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Route exists | ❌ MISSING | Board member management |
-| Path parameter | ❌ | Requires `org_id` |
-| Member schema | ❌ | Need `OrgMemberCreate` |
-| Board history tracking | ⚠️ | May need new model/table |
+| Item                   | Status    | Notes                    |
+| ---------------------- | --------- | ------------------------ |
+| Route exists           | ❌ MISSING | Board member management  |
+| Path parameter         | ❌         | Requires `org_id`        |
+| Member schema          | ❌         | Need `OrgMemberCreate`   |
+| Board history tracking | ⚠️        | May need new model/table |
 
 **Required Request Body Fields:**
+
 ```json
 {
   "user_id": "string (optional - can invite by email)",
@@ -186,6 +199,7 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Response Shape:**
+
 ```json
 {
   "id": "string",
@@ -202,12 +216,14 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Error Cases:**
+
 - `404` - Org not found
 - `403` - Board member role required
 - `409` - User already a member
 - `400` - Invalid role or clearance
 
 **Auth Requirements:**
+
 - Valid JWT token
 - `board_member` role required
 - Cannot add members with higher clearance than self
@@ -216,14 +232,15 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 
 ### 5. POST /v1/orgs/{org_id}/regions
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Route exists | ❌ MISSING | Region management |
-| Path parameter | ❌ | Requires `org_id` |
-| Region schema | ❌ | Need `RegionCreate` |
-| Compliance validation | ⚠️ | Validate compliance framework |
+| Item                  | Status    | Notes                         |
+| --------------------- | --------- | ----------------------------- |
+| Route exists          | ❌ MISSING | Region management             |
+| Path parameter        | ❌         | Requires `org_id`             |
+| Region schema         | ❌         | Need `RegionCreate`           |
+| Compliance validation | ⚠️        | Validate compliance framework |
 
 **Required Request Body Fields:**
+
 ```json
 {
   "code": "string (e.g., 'us-east-1')",
@@ -236,6 +253,7 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Response Shape:**
+
 ```json
 {
   "id": "string",
@@ -252,12 +270,14 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Error Cases:**
+
 - `404` - Org not found
 - `403` - Board member role required
 - `409` - Region code already exists
 - `400` - Invalid compliance framework
 
 **Auth Requirements:**
+
 - Valid JWT token
 - `board_member` role required
 
@@ -265,14 +285,15 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 
 ### 6. POST /v1/audit/evidence
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Route exists | ❌ MISSING | Evidence package creation |
-| Event IDs validation | ❌ | Must verify events exist |
-| Chain verification | ⚠️ | May include Merkle proofs |
-| Package storage | ⚠️ | Where to store packages? |
+| Item                 | Status    | Notes                     |
+| -------------------- | --------- | ------------------------- |
+| Route exists         | ❌ MISSING | Evidence package creation |
+| Event IDs validation | ❌         | Must verify events exist  |
+| Chain verification   | ⚠️        | May include Merkle proofs |
+| Package storage      | ⚠️        | Where to store packages?  |
 
 **Required Request Body Fields:**
+
 ```json
 {
   "name": "string (required)",
@@ -286,6 +307,7 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Response Shape:**
+
 ```json
 {
   "id": "string",
@@ -305,12 +327,14 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Error Cases:**
+
 - `404` - One or more events not found
 - `403` - Auditor role required
 - `400` - No event_ids provided
 - `413` - Too many events requested
 
 **Auth Requirements:**
+
 - Valid JWT token
 - `auditor` or `board_member` role required
 - Must have access to all events in package
@@ -319,13 +343,14 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 
 ### 7. POST /v1/extensions/verify
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Route exists | ❌ MISSING | Bulk/single extension verification |
-| Signature validation | ✅ EXISTS | Reuse HMAC pattern from extensions.py |
-| Batch support | ❌ | Support array of extension_ids |
+| Item                 | Status    | Notes                                 |
+| -------------------- | --------- | ------------------------------------- |
+| Route exists         | ❌ MISSING | Bulk/single extension verification    |
+| Signature validation | ✅ EXISTS  | Reuse HMAC pattern from extensions.py |
+| Batch support        | ❌         | Support array of extension_ids        |
 
 **Required Request Body Fields:**
+
 ```json
 {
   "extension_ids": ["string"] (optional - if empty, verify all)
@@ -333,6 +358,7 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Response Shape:**
+
 ```json
 {
   "verified": "integer (count)",
@@ -349,10 +375,12 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Error Cases:**
+
 - `403` - manage_extensions permission required
 - `404` - Extension not found (for single ID)
 
 **Auth Requirements:**
+
 - Valid JWT token
 - `manage_extensions` action permission (via `evaluate_authorization`)
 
@@ -360,13 +388,14 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 
 ### 8. POST /v1/extensions/batch
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Route exists | ❌ MISSING | Batch operations on extensions |
-| Operation types | ❌ | Define allowed operations |
-| Atomic handling | ⚠️ | All succeed or partial? |
+| Item            | Status    | Notes                          |
+| --------------- | --------- | ------------------------------ |
+| Route exists    | ❌ MISSING | Batch operations on extensions |
+| Operation types | ❌         | Define allowed operations      |
+| Atomic handling | ⚠️        | All succeed or partial?        |
 
 **Required Request Body Fields:**
+
 ```json
 {
   "operation": "enum: ['revoke', 'activate', 'delete', 'verify']",
@@ -376,6 +405,7 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Response Shape:**
+
 ```json
 {
   "operation": "string",
@@ -393,11 +423,13 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Error Cases:**
+
 - `403` - manage_extensions permission required
 - `400` - Invalid operation type
 - `400` - Missing required reason
 
 **Auth Requirements:**
+
 - Valid JWT token
 - `manage_extensions` action permission
 
@@ -405,13 +437,14 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 
 ### 9. POST /v1/providers/{id}/test
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Route exists | ❌ MISSING | Provider health testing |
-| Provider model | ❌ | Need Provider model |
-| Health check logic | ⚠️ | Provider-type specific health checks |
+| Item               | Status    | Notes                                |
+| ------------------ | --------- | ------------------------------------ |
+| Route exists       | ❌ MISSING | Provider health testing              |
+| Provider model     | ❌         | Need Provider model                  |
+| Health check logic | ⚠️        | Provider-type specific health checks |
 
 **Required Request Body Fields:** NONE (POST with empty body, or optional:
+
 ```json
 {
   "test_type": "enum: ['connectivity', 'auth', 'inference'] (default: 'connectivity')"
@@ -436,10 +469,12 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Error Cases:**
+
 - `404` - Provider not found
 - `403` - manage_providers permission required
 
 **Auth Requirements:**
+
 - Valid JWT token
 - `manage_providers` permission (new permission needed)
 
@@ -447,13 +482,14 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 
 ### 10. PUT /v1/providers/{id}/config
 
-| Item | Status | Notes |
-|------|--------|-------|
-| Route exists | ❌ MISSING | Provider configuration |
-| Provider model | ❌ | Need Provider model with config JSON |
-| Secret handling | ⚠️ | Encrypt API keys at rest |
+| Item            | Status    | Notes                                |
+| --------------- | --------- | ------------------------------------ |
+| Route exists    | ❌ MISSING | Provider configuration               |
+| Provider model  | ❌         | Need Provider model with config JSON |
+| Secret handling | ⚠️        | Encrypt API keys at rest             |
 
 **Required Request Body Fields:**
+
 ```json
 {
   "name": "string (optional)",
@@ -469,6 +505,7 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Response Shape:**
+
 ```json
 {
   "id": "string",
@@ -487,12 +524,14 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ```
 
 **Error Cases:**
+
 - `404` - Provider not found
 - `403` - manage_providers permission required
 - `400` - Invalid configuration values
 - `401` - API key validation failed (if testing)
 
 **Auth Requirements:**
+
 - Valid JWT token
 - `manage_providers` permission
 
@@ -501,10 +540,13 @@ The frontend JS implementation assumes a **much richer API** than currently exis
 ## SCHEMA CORRECTIONS NEEDED FOR UI COMPATIBILITY
 
 ### 1. OrgOut Schema Expansion
+
 Current `OrgOut` in governance.py only has:
+
 - id, tenant_id, name, owner_user_id, board_scope_mode
 
 **Required additions:**
+
 ```python
 class OrgOut(BaseModel):
     id: str
@@ -689,60 +731,62 @@ class ProviderTestResponse(BaseModel):
 
 ### ✅ Aligned Routes
 
-| Route | Backend | Frontend | Status |
-|-------|---------|----------|--------|
-| POST /v1/orgs | ✅ | ✅ | Aligned |
-| GET /v1/orgs | ✅ | ✅ | Aligned |
-| POST /v1/teams | ✅ | ✅ | Aligned |
-| GET /v1/teams | ✅ | ✅ | Aligned |
-| POST /v1/projects | ✅ | ✅ | Aligned |
-| GET /v1/projects | ✅ | ✅ | Aligned |
-| GET /v1/projects/{id} | ✅ | ✅ | Aligned |
-| POST /v1/seats | ✅ | ✅ | Aligned |
-| GET /v1/seats | ✅ | ✅ | Aligned |
-| POST /v1/policy/decide | ✅ | ✅ | Aligned |
-| POST /v1/extensions | ✅ | ✅ | Aligned |
-| GET /v1/extensions | ✅ | ✅ | Aligned |
-| POST /v1/extensions/{id}/status | ✅ | ✅ | Aligned |
-| GET /v1/audit/events | ✅ | ✅ | Aligned |
-| GET /v1/audit/export | ✅ | ✅ | Aligned |
-| GET /v1/audit/verify | ✅ | ✅ | Aligned |
+| Route                           | Backend | Frontend | Status  |
+| ------------------------------- | ------- | -------- | ------- |
+| POST /v1/orgs                   | ✅       | ✅        | Aligned |
+| GET /v1/orgs                    | ✅       | ✅        | Aligned |
+| POST /v1/teams                  | ✅       | ✅        | Aligned |
+| GET /v1/teams                   | ✅       | ✅        | Aligned |
+| POST /v1/projects               | ✅       | ✅        | Aligned |
+| GET /v1/projects                | ✅       | ✅        | Aligned |
+| GET /v1/projects/{id}           | ✅       | ✅        | Aligned |
+| POST /v1/seats                  | ✅       | ✅        | Aligned |
+| GET /v1/seats                   | ✅       | ✅        | Aligned |
+| POST /v1/policy/decide          | ✅       | ✅        | Aligned |
+| POST /v1/extensions             | ✅       | ✅        | Aligned |
+| GET /v1/extensions              | ✅       | ✅        | Aligned |
+| POST /v1/extensions/{id}/status | ✅       | ✅        | Aligned |
+| GET /v1/audit/events            | ✅       | ✅        | Aligned |
+| GET /v1/audit/export            | ✅       | ✅        | Aligned |
+| GET /v1/audit/verify            | ✅       | ✅        | Aligned |
 
 ### ❌ Mismatched Routes
 
-| Route | Issue | Frontend Expects | Backend Has |
-|-------|-------|------------------|-------------|
-| GET /v1/orgs/{id} | Missing | Full org profile | List only |
-| PUT /v1/orgs/{id} | Missing | Edit org profile | Nothing |
-| PUT /v1/orgs/{id}/defaults | Missing | Policy defaults | Nothing |
-| POST /v1/orgs/{id}/members | Missing | Board management | Nothing |
-| POST /v1/orgs/{id}/regions | Missing | Region management | Nothing |
-| PUT /v1/seats/{id} | Missing | Edit seat | Create/List only |
-| POST /v1/seats/{id}/assign | Missing | Assign seat | Nothing |
-| POST /v1/seats/bulk | Missing | Bulk operations | Nothing |
-| POST /v1/audit/evidence | Missing | Evidence packages | Export only |
-| POST /v1/extensions/verify | Missing | Bulk verify | Individual status only |
-| POST /v1/extensions/batch | Missing | Batch ops | Nothing |
-| POST /v1/providers | Missing | Add provider | Nothing |
-| POST /v1/providers/{id}/test | Missing | Health test | Nothing |
-| PUT /v1/providers/{id}/config | Missing | Configure | Nothing |
+| Route                         | Issue   | Frontend Expects  | Backend Has            |
+| ----------------------------- | ------- | ----------------- | ---------------------- |
+| GET /v1/orgs/{id}             | Missing | Full org profile  | List only              |
+| PUT /v1/orgs/{id}             | Missing | Edit org profile  | Nothing                |
+| PUT /v1/orgs/{id}/defaults    | Missing | Policy defaults   | Nothing                |
+| POST /v1/orgs/{id}/members    | Missing | Board management  | Nothing                |
+| POST /v1/orgs/{id}/regions    | Missing | Region management | Nothing                |
+| PUT /v1/seats/{id}            | Missing | Edit seat         | Create/List only       |
+| POST /v1/seats/{id}/assign    | Missing | Assign seat       | Nothing                |
+| POST /v1/seats/bulk           | Missing | Bulk operations   | Nothing                |
+| POST /v1/audit/evidence       | Missing | Evidence packages | Export only            |
+| POST /v1/extensions/verify    | Missing | Bulk verify       | Individual status only |
+| POST /v1/extensions/batch     | Missing | Batch ops         | Nothing                |
+| POST /v1/providers            | Missing | Add provider      | Nothing                |
+| POST /v1/providers/{id}/test  | Missing | Health test       | Nothing                |
+| PUT /v1/providers/{id}/config | Missing | Configure         | Nothing                |
 
 ---
 
 ## RISKS
 
-| Risk | Severity | Likelihood | Impact | Mitigation |
-|------|----------|------------|--------|------------|
-| **Frontend unusable for governance** | HIGH | High | Critical | 5 of 10 pending are governance-critical; users see FIXME warnings |
-| **No provider management** | HIGH | High | High | Cannot configure AI providers; system may fail |
-| **Evidence packages missing** | MEDIUM | Medium | Medium | Legal/compliance gap; work around with export |
-| **Schema drift** | MEDIUM | Medium | Medium | Frontend expects fields backend doesn't provide |
-| **Auth model mismatch** | MEDIUM | Low | High | Frontend assumes board_member role; verify authz implementation |
-| **Batch operation limits** | LOW | Medium | Low | Need rate limiting on bulk endpoints |
-| **Provider secrets exposure** | HIGH | Low | Critical | Encrypt API keys at rest in provider config |
+| Risk                                 | Severity | Likelihood | Impact   | Mitigation                                                        |
+| ------------------------------------ | -------- | ---------- | -------- | ----------------------------------------------------------------- |
+| **Frontend unusable for governance** | HIGH     | High       | Critical | 5 of 10 pending are governance-critical; users see FIXME warnings |
+| **No provider management**           | HIGH     | High       | High     | Cannot configure AI providers; system may fail                    |
+| **Evidence packages missing**        | MEDIUM   | Medium     | Medium   | Legal/compliance gap; work around with export                     |
+| **Schema drift**                     | MEDIUM   | Medium     | Medium   | Frontend expects fields backend doesn't provide                   |
+| **Auth model mismatch**              | MEDIUM   | Low        | High     | Frontend assumes board_member role; verify authz implementation   |
+| **Batch operation limits**           | LOW      | Medium     | Low      | Need rate limiting on bulk endpoints                              |
+| **Provider secrets exposure**        | HIGH     | Low        | Critical | Encrypt API keys at rest in provider config                       |
 
 ### Critical Risk Detail: Governance Gaps
+
 The frontend orgs.js actively calls:
+
 - `api.getOrganization()` - expects `GET /v1/orgs/{id}` ❌
 - `api.updateOrganization()` - expects `PUT /v1/orgs/{id}` ❌
 - `api.getPolicyDefaults()` - expects `GET /v1/orgs/{id}/defaults` ❌
@@ -759,6 +803,7 @@ The frontend orgs.js actively calls:
 ### Priority 1: Critical (Week 1)
 
 1. **Create Provider Model & Base Routes**
+   
    - [ ] Create `app/models/provider.py` with Provider model
    - [ ] Create `app/schemas/provider.py` with ProviderCreate, ProviderOut, etc.
    - [ ] Create `app/blueprints/providers.py` with basic CRUD
@@ -766,12 +811,14 @@ The frontend orgs.js actively calls:
    - [ ] Add encryption for `api_key` field
 
 2. **Implement GET/PUT /v1/orgs/{org_id}**
+   
    - [ ] Add `GET /v1/orgs/{org_id}` to governance.py
    - [ ] Add `PUT /v1/orgs/{org_id}` to governance.py
    - [ ] Expand OrgOut schema with additional fields
    - [ ] Add audit logging for updates
 
 3. **Implement Org Members (Board Management)**
+   
    - [ ] Create OrgMember model
    - [ ] Add `POST /v1/orgs/{org_id}/members` endpoint
    - [ ] Add `GET /v1/orgs/{org_id}/members` endpoint
@@ -779,18 +826,21 @@ The frontend orgs.js actively calls:
 ### Priority 2: High (Week 2)
 
 4. **Implement Seat Management**
+   
    - [ ] Add `PUT /v1/seats/{seat_id}` endpoint
    - [ ] Add `POST /v1/seats/{seat_id}/assign` endpoint
    - [ ] Add `POST /v1/seats/{seat_id}/vacate` endpoint
    - [ ] Add `POST /v1/seats/bulk` endpoint
 
 5. **Implement Audit Evidence**
+   
    - [ ] Create EvidencePackage model
    - [ ] Add `POST /v1/audit/evidence` endpoint
    - [ ] Implement Merkle chain verification logic
    - [ ] Add download URL generation
 
 6. **Implement Provider Testing & Config**
+   
    - [ ] Add `POST /v1/providers/{id}/test` endpoint
    - [ ] Add `PUT /v1/providers/{id}/config` endpoint
    - [ ] Implement provider-type specific health checks
@@ -798,16 +848,19 @@ The frontend orgs.js actively calls:
 ### Priority 3: Medium (Week 3)
 
 7. **Implement Extensions Batch Operations**
+   
    - [ ] Add `POST /v1/extensions/verify` endpoint (bulk)
    - [ ] Add `POST /v1/extensions/batch` endpoint
    - [ ] Implement atomic batch handling
 
 8. **Implement Org Defaults & Regions**
+   
    - [ ] Add `PUT /v1/orgs/{org_id}/defaults` endpoint
    - [ ] Add `POST /v1/orgs/{org_id}/regions` endpoint
    - [ ] Create PolicyDefaults model/schema
 
 9. **Auth & Permissions**
+   
    - [ ] Verify `board_member` role exists in authz
    - [ ] Add `manage_providers` permission
    - [ ] Add `auditor` permission for evidence
@@ -825,34 +878,42 @@ The frontend orgs.js actively calls:
 ## OPEN QUESTIONS
 
 1. **Provider Model Storage**
+   
    - Is there an existing Provider model in the database?
    - How should API keys be encrypted? (Fernet? Vault integration?)
 
 2. **Evidence Package Storage**
+   
    - Should evidence packages be stored as files or in database?
    - What's the retention policy? (Frontend suggests 7 years default)
 
 3. **Board Member User Linking**
+   
    - Should board members be linked to Users table or standalone?
    - How to handle invited members who don't have accounts yet?
 
 4. **Region Data Residency**
+   
    - Do regions affect actual data storage location?
    - Is this metadata-only or policy-enforced?
 
 5. **Clearance Matrix NTK**
+   
    - The clearance.js references an NTK (Need To Know) matrix
    - Is this a separate model or part of the compartment system?
 
 6. **Batch Operation Atomicity**
+   
    - Should batch operations be all-or-nothing or partial success?
    - What's the maximum batch size?
 
 7. **Provider Health Check Frequency**
+   
    - How often should providers be health-checked?
    - Should this be background job or on-demand only?
 
 8. **Audit Event Selection for Evidence**
+   
    - Frontend allows selecting events via checkboxes
    - Is there an event selection API or client-side only?
 
@@ -874,7 +935,7 @@ def get_org(
         raise HTTPException(status_code=404, detail='org not found')
     if org.tenant_id != principal.tenant_id:
         raise HTTPException(status_code=403, detail='tenant scope denied')
-    
+
     return OrgOut(
         id=org.id,
         tenant_id=org.tenant_id,
@@ -899,18 +960,18 @@ def verify_extensions(
     auth = evaluate_authorization(principal, action='manage_extensions')
     if auth.decision != 'allow':
         raise HTTPException(status_code=403, detail='extension verification denied')
-    
+
     if payload.extension_ids:
         extensions = [db.get(Extension, eid) for eid in payload.extension_ids]
     else:
         extensions = db.scalars(
             select(Extension).where(Extension.tenant_id == principal.tenant_id)
         ).all()
-    
+
     results = []
     verified_count = 0
     failed_count = 0
-    
+
     for ext in extensions:
         if ext is None:
             continue
@@ -926,7 +987,7 @@ def verify_extensions(
             verified=is_valid,
             error=None if is_valid else 'signature verification failed'
         ))
-    
+
     return ExtensionVerifyResponse(
         verified=verified_count,
         failed=failed_count,

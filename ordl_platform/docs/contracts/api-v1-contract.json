@@ -1,7 +1,7 @@
 {
   "title": "ORDL Platform API",
   "version": "0.1.0",
-  "v1_path_count": 102,
+  "v1_path_count": 119,
   "routes": [
     {
       "path": "/v1/approvals",
@@ -29,6 +29,15 @@
         "audit"
       ],
       "summary": "List Audit Events"
+    },
+    {
+      "path": "/v1/audit/evidence",
+      "method": "POST",
+      "operation_id": "create_evidence_package_v1_audit_evidence_post",
+      "tags": [
+        "audit"
+      ],
+      "summary": "Create Evidence Package"
     },
     {
       "path": "/v1/audit/export",
@@ -301,6 +310,24 @@
       "summary": "Register Extension"
     },
     {
+      "path": "/v1/extensions/batch",
+      "method": "POST",
+      "operation_id": "batch_extensions_v1_extensions_batch_post",
+      "tags": [
+        "extensions"
+      ],
+      "summary": "Batch Extensions"
+    },
+    {
+      "path": "/v1/extensions/verify",
+      "method": "POST",
+      "operation_id": "verify_extensions_v1_extensions_verify_post",
+      "tags": [
+        "extensions"
+      ],
+      "summary": "Verify Extensions"
+    },
+    {
       "path": "/v1/extensions/{extension_id}/status",
       "method": "POST",
       "operation_id": "set_extension_status_v1_extensions__extension_id__status_post",
@@ -454,6 +481,96 @@
       "summary": "Transition Message"
     },
     {
+      "path": "/v1/models/deployments",
+      "method": "POST",
+      "operation_id": "create_model_deployment_v1_models_deployments_post",
+      "tags": [
+        "models"
+      ],
+      "summary": "Create Model Deployment"
+    },
+    {
+      "path": "/v1/models/evals/runs",
+      "method": "GET",
+      "operation_id": "list_eval_runs_v1_models_evals_runs_get",
+      "tags": [
+        "models"
+      ],
+      "summary": "List Eval Runs"
+    },
+    {
+      "path": "/v1/models/evals/runs",
+      "method": "POST",
+      "operation_id": "create_eval_run_v1_models_evals_runs_post",
+      "tags": [
+        "models"
+      ],
+      "summary": "Create Eval Run"
+    },
+    {
+      "path": "/v1/models/evals/runs/{eval_run_id}",
+      "method": "GET",
+      "operation_id": "get_eval_run_v1_models_evals_runs__eval_run_id__get",
+      "tags": [
+        "models"
+      ],
+      "summary": "Get Eval Run"
+    },
+    {
+      "path": "/v1/models/fine-tunes",
+      "method": "GET",
+      "operation_id": "list_fine_tune_runs_v1_models_fine_tunes_get",
+      "tags": [
+        "models"
+      ],
+      "summary": "List Fine Tune Runs"
+    },
+    {
+      "path": "/v1/models/fine-tunes",
+      "method": "POST",
+      "operation_id": "create_fine_tune_run_v1_models_fine_tunes_post",
+      "tags": [
+        "models"
+      ],
+      "summary": "Create Fine Tune Run"
+    },
+    {
+      "path": "/v1/models/fine-tunes/{fine_tune_run_id}",
+      "method": "GET",
+      "operation_id": "get_fine_tune_run_v1_models_fine_tunes__fine_tune_run_id__get",
+      "tags": [
+        "models"
+      ],
+      "summary": "Get Fine Tune Run"
+    },
+    {
+      "path": "/v1/models/fine-tunes/{fine_tune_run_id}/state",
+      "method": "POST",
+      "operation_id": "update_fine_tune_state_v1_models_fine_tunes__fine_tune_run_id__state_post",
+      "tags": [
+        "models"
+      ],
+      "summary": "Update Fine Tune State"
+    },
+    {
+      "path": "/v1/models/promotions",
+      "method": "GET",
+      "operation_id": "list_model_promotions_v1_models_promotions_get",
+      "tags": [
+        "models"
+      ],
+      "summary": "List Model Promotions"
+    },
+    {
+      "path": "/v1/models/promotions",
+      "method": "POST",
+      "operation_id": "create_model_promotion_v1_models_promotions_post",
+      "tags": [
+        "models"
+      ],
+      "summary": "Create Model Promotion"
+    },
+    {
       "path": "/v1/orchestration/profiles",
       "method": "GET",
       "operation_id": "list_orchestration_profiles_v1_orchestration_profiles_get",
@@ -598,6 +715,51 @@
       "summary": "Patch Org Region"
     },
     {
+      "path": "/v1/orgs/{org_id}",
+      "method": "GET",
+      "operation_id": "get_org_by_id_v1_orgs__org_id__get",
+      "tags": [
+        "governance"
+      ],
+      "summary": "Get Org By Id"
+    },
+    {
+      "path": "/v1/orgs/{org_id}",
+      "method": "PUT",
+      "operation_id": "put_org_by_id_v1_orgs__org_id__put",
+      "tags": [
+        "governance"
+      ],
+      "summary": "Put Org By Id"
+    },
+    {
+      "path": "/v1/orgs/{org_id}/defaults",
+      "method": "PUT",
+      "operation_id": "put_org_defaults_by_id_v1_orgs__org_id__defaults_put",
+      "tags": [
+        "governance"
+      ],
+      "summary": "Put Org Defaults By Id"
+    },
+    {
+      "path": "/v1/orgs/{org_id}/members",
+      "method": "POST",
+      "operation_id": "add_org_member_by_id_v1_orgs__org_id__members_post",
+      "tags": [
+        "governance"
+      ],
+      "summary": "Add Org Member By Id"
+    },
+    {
+      "path": "/v1/orgs/{org_id}/regions",
+      "method": "POST",
+      "operation_id": "add_org_region_by_id_v1_orgs__org_id__regions_post",
+      "tags": [
+        "governance"
+      ],
+      "summary": "Add Org Region By Id"
+    },
+    {
       "path": "/v1/policy/decide",
       "method": "POST",
       "operation_id": "policy_decide_v1_policy_decide_post",
@@ -731,6 +893,24 @@
         "governance"
       ],
       "summary": "Put Project Defaults"
+    },
+    {
+      "path": "/v1/projects/{project_id}/policy-profiles",
+      "method": "GET",
+      "operation_id": "get_project_policy_profiles_v1_projects__project_id__policy_profiles_get",
+      "tags": [
+        "governance"
+      ],
+      "summary": "Get Project Policy Profiles"
+    },
+    {
+      "path": "/v1/projects/{project_id}/policy-profiles",
+      "method": "PUT",
+      "operation_id": "put_project_policy_profiles_v1_projects__project_id__policy_profiles_put",
+      "tags": [
+        "governance"
+      ],
+      "summary": "Put Project Policy Profiles"
     },
     {
       "path": "/v1/protocols/bootstrap/adopted",
@@ -902,6 +1082,24 @@
         "providers"
       ],
       "summary": "Put Provider Probes"
+    },
+    {
+      "path": "/v1/providers/{id}/config",
+      "method": "PUT",
+      "operation_id": "put_provider_config_alias_v1_providers__id__config_put",
+      "tags": [
+        "providers"
+      ],
+      "summary": "Put Provider Config Alias"
+    },
+    {
+      "path": "/v1/providers/{id}/test",
+      "method": "POST",
+      "operation_id": "test_provider_alias_v1_providers__id__test_post",
+      "tags": [
+        "providers"
+      ],
+      "summary": "Test Provider Alias"
     },
     {
       "path": "/v1/providers/{provider}",
@@ -3014,6 +3212,166 @@
         }
       }
     },
+    "/v1/projects/{project_id}/policy-profiles": {
+      "get": {
+        "tags": [
+          "governance"
+        ],
+        "summary": "Get Project Policy Profiles",
+        "operationId": "get_project_policy_profiles_v1_projects__project_id__policy_profiles_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Project Policy Profiles V1 Projects  Project Id  Policy Profiles Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "governance"
+        ],
+        "summary": "Put Project Policy Profiles",
+        "operationId": "put_project_policy_profiles_v1_projects__project_id__policy_profiles_put",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectPolicyProfilesUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Put Project Policy Profiles V1 Projects  Project Id  Policy Profiles Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/teams/{team_id}/scope": {
       "put": {
         "tags": [
@@ -3083,6 +3441,420 @@
                   "type": "object",
                   "additionalProperties": true,
                   "title": "Response Put Team Scope Matrix V1 Teams  Team Id  Scope Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/orgs/{org_id}": {
+      "get": {
+        "tags": [
+          "governance"
+        ],
+        "summary": "Get Org By Id",
+        "operationId": "get_org_by_id_v1_orgs__org_id__get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "governance"
+        ],
+        "summary": "Put Org By Id",
+        "operationId": "put_org_by_id_v1_orgs__org_id__put",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrgCurrentUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrgOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/orgs/{org_id}/defaults": {
+      "put": {
+        "tags": [
+          "governance"
+        ],
+        "summary": "Put Org Defaults By Id",
+        "operationId": "put_org_defaults_by_id_v1_orgs__org_id__defaults_put",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrgPolicyDefaultsUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Put Org Defaults By Id V1 Orgs  Org Id  Defaults Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/orgs/{org_id}/members": {
+      "post": {
+        "tags": [
+          "governance"
+        ],
+        "summary": "Add Org Member By Id",
+        "operationId": "add_org_member_by_id_v1_orgs__org_id__members_post",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrgBoardMemberCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Add Org Member By Id V1 Orgs  Org Id  Members Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/orgs/{org_id}/regions": {
+      "post": {
+        "tags": [
+          "governance"
+        ],
+        "summary": "Add Org Region By Id",
+        "operationId": "add_org_region_by_id_v1_orgs__org_id__regions_post",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrgRegionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Add Org Region By Id V1 Orgs  Org Id  Regions Post"
                 }
               }
             }
@@ -5647,6 +6419,766 @@
         }
       }
     },
+    "/v1/models/evals/runs": {
+      "post": {
+        "tags": [
+          "models"
+        ],
+        "summary": "Create Eval Run",
+        "operationId": "create_eval_run_v1_models_evals_runs_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelEvalRunCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelEvalRunOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "models"
+        ],
+        "summary": "List Eval Runs",
+        "operationId": "list_eval_runs_v1_models_evals_runs_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ModelEvalRunOut"
+                  },
+                  "title": "Response List Eval Runs V1 Models Evals Runs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/models/evals/runs/{eval_run_id}": {
+      "get": {
+        "tags": [
+          "models"
+        ],
+        "summary": "Get Eval Run",
+        "operationId": "get_eval_run_v1_models_evals_runs__eval_run_id__get",
+        "parameters": [
+          {
+            "name": "eval_run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Eval Run Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelEvalRunOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/models/fine-tunes": {
+      "post": {
+        "tags": [
+          "models"
+        ],
+        "summary": "Create Fine Tune Run",
+        "operationId": "create_fine_tune_run_v1_models_fine_tunes_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelFineTuneRunCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelFineTuneRunOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "models"
+        ],
+        "summary": "List Fine Tune Runs",
+        "operationId": "list_fine_tune_runs_v1_models_fine_tunes_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ModelFineTuneRunOut"
+                  },
+                  "title": "Response List Fine Tune Runs V1 Models Fine Tunes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/models/fine-tunes/{fine_tune_run_id}": {
+      "get": {
+        "tags": [
+          "models"
+        ],
+        "summary": "Get Fine Tune Run",
+        "operationId": "get_fine_tune_run_v1_models_fine_tunes__fine_tune_run_id__get",
+        "parameters": [
+          {
+            "name": "fine_tune_run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fine Tune Run Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelFineTuneRunOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/models/fine-tunes/{fine_tune_run_id}/state": {
+      "post": {
+        "tags": [
+          "models"
+        ],
+        "summary": "Update Fine Tune State",
+        "operationId": "update_fine_tune_state_v1_models_fine_tunes__fine_tune_run_id__state_post",
+        "parameters": [
+          {
+            "name": "fine_tune_run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fine Tune Run Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelFineTuneRunStateUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelFineTuneRunOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/models/promotions": {
+      "post": {
+        "tags": [
+          "models"
+        ],
+        "summary": "Create Model Promotion",
+        "operationId": "create_model_promotion_v1_models_promotions_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelPromotionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelPromotionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "models"
+        ],
+        "summary": "List Model Promotions",
+        "operationId": "list_model_promotions_v1_models_promotions_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ModelPromotionOut"
+                  },
+                  "title": "Response List Model Promotions V1 Models Promotions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/models/deployments": {
+      "post": {
+        "tags": [
+          "models"
+        ],
+        "summary": "Create Model Deployment",
+        "operationId": "create_model_deployment_v1_models_deployments_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModelPromotionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelPromotionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/policy/decide": {
       "post": {
         "tags": [
@@ -6380,6 +7912,82 @@
                   "type": "object",
                   "additionalProperties": true,
                   "title": "Response Test Provider V1 Providers  Provider  Test Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/providers/{id}/test": {
+      "post": {
+        "tags": [
+          "providers"
+        ],
+        "summary": "Test Provider Alias",
+        "operationId": "test_provider_alias_v1_providers__id__test_post",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Test Provider Alias V1 Providers  Id  Test Post"
                 }
               }
             }
@@ -7208,6 +8816,94 @@
         }
       }
     },
+    "/v1/providers/{id}/config": {
+      "put": {
+        "tags": [
+          "providers"
+        ],
+        "summary": "Put Provider Config Alias",
+        "operationId": "put_provider_config_alias_v1_providers__id__config_put",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Put Provider Config Alias V1 Providers  Id  Config Put"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/providers/credentials/{provider}": {
       "get": {
         "tags": [
@@ -7492,6 +9188,160 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ExtensionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/extensions/verify": {
+      "post": {
+        "tags": [
+          "extensions"
+        ],
+        "summary": "Verify Extensions",
+        "operationId": "verify_extensions_v1_extensions_verify_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtensionVerifyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Verify Extensions V1 Extensions Verify Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/extensions/batch": {
+      "post": {
+        "tags": [
+          "extensions"
+        ],
+        "summary": "Batch Extensions",
+        "operationId": "batch_extensions_v1_extensions_batch_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExtensionBatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Batch Extensions V1 Extensions Batch Post"
                 }
               }
             }
@@ -11653,6 +13503,85 @@
               "application/json": {
                 "schema": {
                   "title": "Response Export Audit V1 Audit Export Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/audit/evidence": {
+      "post": {
+        "tags": [
+          "audit"
+        ],
+        "summary": "Create Evidence Package",
+        "operationId": "create_evidence_package_v1_audit_evidence_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          },
+          {
+            "name": "x-principal-json",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Principal-Json"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Create Evidence Package V1 Audit Evidence Post"
                 }
               }
             }

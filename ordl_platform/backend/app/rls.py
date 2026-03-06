@@ -106,6 +106,7 @@ _POLICY_EXPRESSIONS: dict[str, str] = {
     ),
     'extensions': f"tenant_id = {_TENANT_SETTING}",
     'provider_credentials': f"tenant_id = {_TENANT_SETTING}",
+    'config_states': f"tenant_id = {_TENANT_SETTING}",
     'protocol_standards': f"tenant_id = {_TENANT_SETTING}",
     'protocol_standard_versions': (
         "exists ("
@@ -153,6 +154,9 @@ _POLICY_EXPRESSIONS: dict[str, str] = {
         f"where g.id = program_id and o.tenant_id = {_TENANT_SETTING}"
         ")"
     ),
+    'model_eval_runs': _PROJECT_SCOPE_EXISTS,
+    'model_fine_tune_runs': _PROJECT_SCOPE_EXISTS,
+    'model_promotions': _PROJECT_SCOPE_EXISTS,
 }
 
 

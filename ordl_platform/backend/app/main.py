@@ -20,6 +20,7 @@ from app.routers import (
     dispatch,
     extensions,
     governance,
+    models_governance,
     messages,
     orchestration,
     ops,
@@ -78,6 +79,7 @@ def create_app() -> FastAPI:
     app.include_router(messages.router, prefix=settings.api_prefix)
     app.include_router(approvals.router, prefix=settings.api_prefix)
     app.include_router(dispatch.router, prefix=settings.api_prefix)
+    app.include_router(models_governance.router, prefix=settings.api_prefix)
     app.include_router(policy.router, prefix=settings.api_prefix)
     app.include_router(providers.router, prefix=settings.api_prefix)
     app.include_router(extensions.router, prefix=settings.api_prefix)

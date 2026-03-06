@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 from datetime import datetime, timezone
 from io import StringIO
@@ -269,3 +270,58 @@ def export_audit(
         media_type='text/csv',
         headers={'Content-Disposition': f'attachment; filename="audit-{project_id}.csv"'},
     )
+
+
+@router.post('/evidence')
+def create_evidence_package(
+    payload: dict,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> dict:
+    project_id = str(payload.get('project_id') or '').strip()
+    if not project_id:
+        raise HTTPException(status_code=400, detail='project_id is required')
+    ensure_project_scope(db, principal, project_id)
+
+    event_ids = payload.get('event_ids', [])
+    if not isinstance(event_ids, list):
+        raise HTTPException(status_code=400, detail='event_ids must be a list')
+
+    if event_ids:
+        rows = db.scalars(
+            select(AuditEvent)
+            .where(
+                AuditEvent.project_id == project_id,
+                AuditEvent.id.in_([str(x) for x in event_ids]),
+            )
+            .order_by(AuditEvent.event_index.asc(), AuditEvent.created_at.asc())
+        ).all()
+    else:
+        rows = db.scalars(
+            select(AuditEvent)
+            .where(AuditEvent.project_id == project_id)
+            .order_by(AuditEvent.event_index.asc(), AuditEvent.created_at.asc())
+            .limit(500)
+        ).all()
+
+    chain = verify_audit_chain(db, tenant_id=principal.tenant_id, project_id=project_id, limit=5000)
+    package = {
+        'project_id': project_id,
+        'event_count': len(rows),
+        'events': [_event_row(row) for row in rows],
+        'chain_verified': bool(chain.get('ok', False)),
+        'chain': chain,
+        'generated_at': datetime.now(timezone.utc).isoformat(),
+    }
+    canonical = json.dumps(package, sort_keys=True, separators=(',', ':'))
+    evidence_hash = hashlib.sha256(canonical.encode('utf-8')).hexdigest()
+    evidence_id = f"evidence-{evidence_hash[:16]}"
+    return {
+        'evidence_id': evidence_id,
+        'project_id': project_id,
+        'event_count': len(rows),
+        'chain_verified': bool(chain.get('ok', False)),
+        'evidence_hash': evidence_hash,
+        'format': str(payload.get('format') or 'json'),
+        'description': str(payload.get('description') or ''),
+    }

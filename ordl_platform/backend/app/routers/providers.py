@@ -213,6 +213,15 @@ def test_provider(
     return {'provider': provider, 'status': 'healthy' if configured else 'not_configured', 'configured': configured}
 
 
+@router.post('/{id}/test')
+def test_provider_alias(
+    id: str,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> dict:
+    return test_provider(provider=id, principal=principal, db=db)
+
+
 @router.get('/{provider}/logs')
 def provider_logs(
     provider: str,
@@ -412,6 +421,16 @@ def put_provider_config(
     db: Session = Depends(get_db),
 ) -> dict:
     return patch_provider_profile(provider=provider, payload={'metadata': payload}, principal=principal, db=db)
+
+
+@router.put('/{id}/config')
+def put_provider_config_alias(
+    id: str,
+    payload: dict,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> dict:
+    return put_provider_config(provider=id, payload=payload, principal=principal, db=db)
 
 
 @router.get('/credentials/{provider}')

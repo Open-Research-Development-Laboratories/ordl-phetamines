@@ -477,6 +477,62 @@ class ConfigState(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+class ModelEvalRun(Base):
+    __tablename__ = "model_eval_runs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    provider: Mapped[str] = mapped_column(String(64), default="openai_codex")
+    model: Mapped[str] = mapped_column(String(128), nullable=False)
+    suite_name: Mapped[str] = mapped_column(String(200), default="default")
+    score_bp: Mapped[int] = mapped_column(Integer, default=0)
+    threshold_bp: Mapped[int] = mapped_column(Integer, default=0)
+    status: Mapped[str] = mapped_column(String(16), default="pass")
+    metrics_json: Mapped[str] = mapped_column(Text, default="{}")
+    findings_json: Mapped[str] = mapped_column(Text, default="[]")
+    executed_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class ModelFineTuneRun(Base):
+    __tablename__ = "model_fine_tune_runs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    provider: Mapped[str] = mapped_column(String(64), default="openai_codex")
+    base_model: Mapped[str] = mapped_column(String(128), nullable=False)
+    target_model: Mapped[str] = mapped_column(String(128), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), default="queued")
+    dataset_uri: Mapped[str] = mapped_column(String(1024), default="")
+    dataset_digest: Mapped[str] = mapped_column(String(128), default="")
+    dataset_provenance_json: Mapped[str] = mapped_column(Text, default="{}")
+    training_params_json: Mapped[str] = mapped_column(Text, default="{}")
+    latest_eval_run_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("model_eval_runs.id"), nullable=True, index=True)
+    promotion_state: Mapped[str] = mapped_column(String(32), default="not_requested")
+    created_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class ModelPromotion(Base):
+    __tablename__ = "model_promotions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    provider: Mapped[str] = mapped_column(String(64), default="openai_codex")
+    model: Mapped[str] = mapped_column(String(128), nullable=False)
+    environment: Mapped[str] = mapped_column(String(32), default="staging")
+    mode: Mapped[str] = mapped_column(String(32), default="promote")
+    fine_tune_run_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("model_fine_tune_runs.id"), nullable=True, index=True)
+    required_eval_run_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("model_eval_runs.id"), nullable=True, index=True)
+    status: Mapped[str] = mapped_column(String(32), default="pending")
+    reason_codes_json: Mapped[str] = mapped_column(Text, default="[]")
+    approved_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
 class ProtocolStandard(Base):
     __tablename__ = "protocol_standards"
     __table_args__ = (UniqueConstraint("tenant_id", "code", name="uq_protocol_standard_tenant_code"),)

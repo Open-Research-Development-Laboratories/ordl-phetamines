@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -8,7 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.authz import evaluate_authorization
-from app.common import ensure_project_scope
+from app.common import default_project_policy_profiles, ensure_project_scope, get_config_state
 from app.config import get_settings
 from app.db import get_db
 from app.dispatch import create_dispatch, execute_dispatch_request
@@ -25,6 +26,106 @@ from app.schemas import (
 from app.security import Principal, get_current_principal
 
 router = APIRouter(prefix='/dispatch', tags=['dispatch'])
+
+
+def _is_model_pinned(model: str, *, allowed_patterns: list[str], blocked_aliases: list[str]) -> bool:
+    value = (model or "").strip()
+    if not value:
+        return False
+    if value in set(str(x) for x in blocked_aliases):
+        return False
+    for pattern in allowed_patterns:
+        try:
+            if re.fullmatch(str(pattern), value):
+                return True
+        except re.error:
+            continue
+    return False
+
+
+def _has_json_schema(payload: dict) -> bool:
+    text = payload.get("text")
+    if isinstance(text, dict):
+        fmt = text.get("format")
+        if isinstance(fmt, dict) and fmt.get("type") == "json_schema":
+            return True
+    response_format = payload.get("response_format")
+    if isinstance(response_format, dict):
+        if response_format.get("type") == "json_schema" and isinstance(response_format.get("json_schema"), dict):
+            return True
+    return False
+
+
+def _validate_dispatch_policy(*, project_id: str, provider: str, model: str, request_payload: dict, db: Session, principal: Principal) -> None:
+    settings = get_settings()
+    profiles = get_config_state(
+        db,
+        tenant_id=principal.tenant_id,
+        scope_type="project",
+        scope_id=project_id,
+        config_key="policy_profiles",
+        default=default_project_policy_profiles(settings.environment),
+    )
+    if not isinstance(profiles, dict):
+        profiles = default_project_policy_profiles(settings.environment)
+
+    model_policy = profiles.get("model", {})
+    if not isinstance(model_policy, dict):
+        model_policy = {}
+    enforce_pin = bool(model_policy.get("enforce_snapshot_pinning", True))
+    allowed_patterns = model_policy.get("allowed_snapshot_patterns", [])
+    blocked_aliases = model_policy.get("blocked_aliases", [])
+    if not isinstance(allowed_patterns, list):
+        allowed_patterns = []
+    if not isinstance(blocked_aliases, list):
+        blocked_aliases = []
+    if enforce_pin and provider == "openai_codex":
+        if not _is_model_pinned(model, allowed_patterns=[str(x) for x in allowed_patterns], blocked_aliases=[str(x) for x in blocked_aliases]):
+            raise HTTPException(
+                status_code=422,
+                detail="model snapshot pinning policy violation: use pinned model snapshot for OpenAI dispatch",
+            )
+
+    instructions_policy = profiles.get("instructions", {})
+    if not isinstance(instructions_policy, dict):
+        instructions_policy = {}
+    if provider == "openai_codex" and bool(instructions_policy.get("require_instructions_for_openai", False)):
+        instructions = request_payload.get("instructions")
+        min_len = int(instructions_policy.get("min_instruction_chars", 1))
+        if not isinstance(instructions, str) or len(instructions.strip()) < min_len:
+            raise HTTPException(
+                status_code=422,
+                detail="instructions policy violation: missing or too-short instructions for OpenAI request",
+            )
+
+    schema_policy = profiles.get("schema", {})
+    if not isinstance(schema_policy, dict):
+        schema_policy = {}
+    if bool(schema_policy.get("require_json_schema_for_machine_consumed", False)):
+        if bool(request_payload.get("machine_consumed", False)) and not _has_json_schema(request_payload):
+            raise HTTPException(
+                status_code=422,
+                detail="schema policy violation: machine-consumed payload must provide JSON schema",
+            )
+
+    tooling_policy = profiles.get("tooling", {})
+    if not isinstance(tooling_policy, dict):
+        tooling_policy = {}
+    if bool(tooling_policy.get("enforce_tool_allowlist", False)):
+        allowed_tools = tooling_policy.get("allowed_tools", [])
+        allowed_set = {str(t) for t in allowed_tools} if isinstance(allowed_tools, list) else set()
+        tools = request_payload.get("tools", [])
+        if isinstance(tools, list):
+            for tool in tools:
+                if isinstance(tool, dict):
+                    name = str(tool.get("name") or tool.get("type") or "").strip()
+                else:
+                    name = str(tool).strip()
+                if name and name not in allowed_set:
+                    raise HTTPException(
+                        status_code=422,
+                        detail=f"tooling policy violation: tool '{name}' is not in project allowlist",
+                    )
 
 
 def _dispatch_out(row: DispatchRequest) -> DispatchOut:
@@ -86,6 +187,15 @@ def dispatch_work(
     auth = evaluate_authorization(principal, action='dispatch', high_risk=True)
     if auth.decision != 'allow':
         raise HTTPException(status_code=403, detail=f'dispatch denied: {auth.reason_codes}')
+
+    _validate_dispatch_policy(
+        project_id=payload.project_id,
+        provider=payload.provider,
+        model=payload.model,
+        request_payload=payload.payload,
+        db=db,
+        principal=principal,
+    )
 
     if payload.message_id:
         msg = db.get(CollabMessage, payload.message_id)

@@ -7,6 +7,7 @@ Generated from FastAPI OpenAPI source. `/v1` is the source of truth for frontend
 | POST | `/v1/approvals` | `create_approval_v1_approvals_post` | `approvals` | Create Approval |
 | GET | `/v1/audit` | `list_policy_decisions_v1_audit_get` | `audit` | List Policy Decisions |
 | GET | `/v1/audit/events` | `list_audit_events_v1_audit_events_get` | `audit` | List Audit Events |
+| POST | `/v1/audit/evidence` | `create_evidence_package_v1_audit_evidence_post` | `audit` | Create Evidence Package |
 | GET | `/v1/audit/export` | `export_audit_v1_audit_export_get` | `audit` | Export Audit |
 | GET | `/v1/audit/verify` | `verify_project_audit_v1_audit_verify_get` | `audit` | Verify Project Audit |
 | GET | `/v1/auth/me` | `auth_me_v1_auth_me_get` | `auth` | Auth Me |
@@ -37,6 +38,8 @@ Generated from FastAPI OpenAPI source. `/v1` is the source of truth for frontend
 | GET | `/v1/dispatch/{dispatch_request_id}/executions` | `list_dispatch_executions_v1_dispatch__dispatch_request_id__executions_get` | `dispatch` | List Dispatch Executions |
 | GET | `/v1/extensions` | `list_extensions_v1_extensions_get` | `extensions` | List Extensions |
 | POST | `/v1/extensions` | `register_extension_v1_extensions_post` | `extensions` | Register Extension |
+| POST | `/v1/extensions/batch` | `batch_extensions_v1_extensions_batch_post` | `extensions` | Batch Extensions |
+| POST | `/v1/extensions/verify` | `verify_extensions_v1_extensions_verify_post` | `extensions` | Verify Extensions |
 | POST | `/v1/extensions/{extension_id}/status` | `set_extension_status_v1_extensions__extension_id__status_post` | `extensions` | Set Extension Status |
 | GET | `/v1/info` | `info_v1_info_get` | `ops` | Info |
 | GET | `/v1/jobs/runs` | `list_job_runs_v1_jobs_runs_get` | `orchestration` | List Job Runs |
@@ -54,6 +57,16 @@ Generated from FastAPI OpenAPI source. `/v1` is the source of truth for frontend
 | GET | `/v1/messages/{message_id}` | `get_message_v1_messages__message_id__get` | `messages` | Get Message |
 | PATCH | `/v1/messages/{message_id}` | `update_message_v1_messages__message_id__patch` | `messages` | Update Message |
 | POST | `/v1/messages/{message_id}/transition` | `transition_message_v1_messages__message_id__transition_post` | `messages` | Transition Message |
+| POST | `/v1/models/deployments` | `create_model_deployment_v1_models_deployments_post` | `models` | Create Model Deployment |
+| GET | `/v1/models/evals/runs` | `list_eval_runs_v1_models_evals_runs_get` | `models` | List Eval Runs |
+| POST | `/v1/models/evals/runs` | `create_eval_run_v1_models_evals_runs_post` | `models` | Create Eval Run |
+| GET | `/v1/models/evals/runs/{eval_run_id}` | `get_eval_run_v1_models_evals_runs__eval_run_id__get` | `models` | Get Eval Run |
+| GET | `/v1/models/fine-tunes` | `list_fine_tune_runs_v1_models_fine_tunes_get` | `models` | List Fine Tune Runs |
+| POST | `/v1/models/fine-tunes` | `create_fine_tune_run_v1_models_fine_tunes_post` | `models` | Create Fine Tune Run |
+| GET | `/v1/models/fine-tunes/{fine_tune_run_id}` | `get_fine_tune_run_v1_models_fine_tunes__fine_tune_run_id__get` | `models` | Get Fine Tune Run |
+| POST | `/v1/models/fine-tunes/{fine_tune_run_id}/state` | `update_fine_tune_state_v1_models_fine_tunes__fine_tune_run_id__state_post` | `models` | Update Fine Tune State |
+| GET | `/v1/models/promotions` | `list_model_promotions_v1_models_promotions_get` | `models` | List Model Promotions |
+| POST | `/v1/models/promotions` | `create_model_promotion_v1_models_promotions_post` | `models` | Create Model Promotion |
 | GET | `/v1/orchestration/profiles` | `list_orchestration_profiles_v1_orchestration_profiles_get` | `orchestration` | List Orchestration Profiles |
 | POST | `/v1/orchestration/profiles` | `create_orchestration_profile_v1_orchestration_profiles_post` | `orchestration` | Create Orchestration Profile |
 | GET | `/v1/orgs` | `list_orgs_v1_orgs_get` | `governance` | List Orgs |
@@ -70,6 +83,11 @@ Generated from FastAPI OpenAPI source. `/v1` is the source of truth for frontend
 | GET | `/v1/orgs/regions` | `list_org_regions_v1_orgs_regions_get` | `governance` | List Org Regions |
 | POST | `/v1/orgs/regions` | `add_org_region_v1_orgs_regions_post` | `governance` | Add Org Region |
 | PATCH | `/v1/orgs/regions/{code}` | `patch_org_region_v1_orgs_regions__code__patch` | `governance` | Patch Org Region |
+| GET | `/v1/orgs/{org_id}` | `get_org_by_id_v1_orgs__org_id__get` | `governance` | Get Org By Id |
+| PUT | `/v1/orgs/{org_id}` | `put_org_by_id_v1_orgs__org_id__put` | `governance` | Put Org By Id |
+| PUT | `/v1/orgs/{org_id}/defaults` | `put_org_defaults_by_id_v1_orgs__org_id__defaults_put` | `governance` | Put Org Defaults By Id |
+| POST | `/v1/orgs/{org_id}/members` | `add_org_member_by_id_v1_orgs__org_id__members_post` | `governance` | Add Org Member By Id |
+| POST | `/v1/orgs/{org_id}/regions` | `add_org_region_by_id_v1_orgs__org_id__regions_post` | `governance` | Add Org Region By Id |
 | POST | `/v1/policy/decide` | `policy_decide_v1_policy_decide_post` | `policy` | Policy Decide |
 | POST | `/v1/policy/validate` | `policy_validate_v1_policy_validate_post` | `policy` | Policy Validate |
 | GET | `/v1/programs` | `list_programs_v1_programs_get` | `programs` | List Programs |
@@ -85,6 +103,8 @@ Generated from FastAPI OpenAPI source. `/v1` is the source of truth for frontend
 | GET | `/v1/projects/{project_id}/change-requests` | `list_change_requests_v1_projects__project_id__change_requests_get` | `programs` | List Change Requests |
 | POST | `/v1/projects/{project_id}/change-requests` | `create_change_request_v1_projects__project_id__change_requests_post` | `programs` | Create Change Request |
 | PUT | `/v1/projects/{project_id}/defaults` | `put_project_defaults_v1_projects__project_id__defaults_put` | `governance` | Put Project Defaults |
+| GET | `/v1/projects/{project_id}/policy-profiles` | `get_project_policy_profiles_v1_projects__project_id__policy_profiles_get` | `governance` | Get Project Policy Profiles |
+| PUT | `/v1/projects/{project_id}/policy-profiles` | `put_project_policy_profiles_v1_projects__project_id__policy_profiles_put` | `governance` | Put Project Policy Profiles |
 | POST | `/v1/protocols/bootstrap/adopted` | `bootstrap_adopted_protocols_v1_protocols_bootstrap_adopted_post` | `protocols` | Bootstrap Adopted Protocols |
 | GET | `/v1/protocols/compatibility` | `get_protocol_compatibility_v1_protocols_compatibility_get` | `protocols` | Get Protocol Compatibility |
 | GET | `/v1/protocols/conformance/runs` | `list_protocol_conformance_runs_v1_protocols_conformance_runs_get` | `protocols` | List Protocol Conformance Runs |
@@ -104,6 +124,8 @@ Generated from FastAPI OpenAPI source. `/v1` is the source of truth for frontend
 | PATCH | `/v1/providers/priority` | `put_provider_priority_v1_providers_priority_patch` | `providers` | Put Provider Priority |
 | PUT | `/v1/providers/priority` | `put_provider_priority_v1_providers_priority_put` | `providers` | Put Provider Priority |
 | PUT | `/v1/providers/probes` | `put_provider_probes_v1_providers_probes_put` | `providers` | Put Provider Probes |
+| PUT | `/v1/providers/{id}/config` | `put_provider_config_alias_v1_providers__id__config_put` | `providers` | Put Provider Config Alias |
+| POST | `/v1/providers/{id}/test` | `test_provider_alias_v1_providers__id__test_post` | `providers` | Test Provider Alias |
 | DELETE | `/v1/providers/{provider}` | `delete_provider_profile_v1_providers__provider__delete` | `providers` | Delete Provider Profile |
 | GET | `/v1/providers/{provider}` | `get_provider_profile_v1_providers__provider__get` | `providers` | Get Provider Profile |
 | PATCH | `/v1/providers/{provider}` | `patch_provider_profile_v1_providers__provider__patch` | `providers` | Patch Provider Profile |
