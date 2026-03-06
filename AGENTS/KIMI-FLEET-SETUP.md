@@ -26,6 +26,7 @@ These files must exist on every machine's active workspace root before any new s
 - `memory/YYYY-MM-DD.md` (today + yesterday)
 
 Reference root:
+
 - Windows hub: `C:\development`
 - RHEL workers: `/development` (or override per host, but keep consistent on each host)
 

@@ -4,6 +4,8 @@ This repo includes profile scripts to tune OpenClaw for token efficiency or thro
 
 - Windows: `fleet_api/scripts/apply-openclaw-profile.ps1`
 - Linux: `fleet_api/scripts/apply-openclaw-profile.sh`
+- Windows plugin guard: `fleet_api/scripts/ensure-openclaw-required-plugins.ps1`
+- Linux plugin guard: `fleet_api/scripts/ensure-openclaw-required-plugins.sh`
 
 ## Profile goals
 
@@ -52,6 +54,12 @@ Apply:
 powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\apply-openclaw-profile.ps1 -Profile balanced
 ```
 
+Ensure required plugins (`kimi-claw`, `discord`, `memory-core`) are discoverable + pinned:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\ensure-openclaw-required-plugins.ps1
+```
+
 ### Linux (workers)
 
 Dry run:
@@ -64,6 +72,12 @@ Apply:
 
 ```bash
 bash ./fleet_api/scripts/apply-openclaw-profile.sh balanced
+```
+
+Ensure required plugins (`kimi-claw`, `discord`, `memory-core`) are discoverable + pinned:
+
+```bash
+bash ./fleet_api/scripts/ensure-openclaw-required-plugins.sh
 ```
 
 ## Restart after apply
@@ -84,4 +98,3 @@ openclaw gateway stop || true
 pkill -f openclaw-gateway || true
 OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &
 ```
-

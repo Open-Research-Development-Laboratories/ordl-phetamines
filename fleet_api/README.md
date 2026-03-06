@@ -55,6 +55,18 @@ Linux worker autostart:
 bash /path/to/repo/fleet_api/scripts/install-linux-worker-autostart.sh
 ```
 
+One-shot token resync to workers (no manual copy/paste):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\resync-fleet-tokens.ps1
+```
+
+Specific roles only:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\resync-fleet-tokens.ps1 -Roles worker-build-laptop,worker-batch-server
+```
+
 UI:
 - <http://127.0.0.1:8890/>
 

@@ -7,7 +7,7 @@ import shlex
 import time
 from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Callable, Iterable
 
 import paramiko
 
@@ -117,7 +117,12 @@ class FleetOrchestrator:
                 out[role] = self._run_steps(client, steps, timeout=45)
         return out
 
-    def resync_workers(self, roles: list[str], rotate_identity: bool = False) -> dict[str, Any]:
+    def resync_workers(
+        self,
+        roles: list[str],
+        rotate_identity: bool = False,
+        progress: Callable[[str], None] | None = None,
+    ) -> dict[str, Any]:
         bundle = self._desktop_token_bundle()
         if not bundle["ok"]:
             raise RuntimeError(bundle["error"])
@@ -128,6 +133,8 @@ class FleetOrchestrator:
 
         for role in roles:
             target = self._target(role)
+            if progress:
+                progress(f"[resync] role={role} host={target.host} connect/start")
             with self._connect(target) as client:
                 suffix = _role_suffix(role)
                 instance_id = f"connector-worker-{suffix}"
@@ -135,6 +142,8 @@ class FleetOrchestrator:
                 if rotate_identity:
                     instance_id = f"{instance_id}-{timestamp}"
                     device_id = f"{device_id}-{timestamp}"
+                if progress:
+                    progress(f"[resync] role={role} applying config and restarting gateway")
 
                 steps = [
                     "openclaw gateway stop || true",
@@ -163,8 +172,14 @@ class FleetOrchestrator:
                     ),
                 ]
                 results[role] = self._run_steps(client, steps, timeout=50)
+                if progress:
+                    progress(f"[resync] role={role} done")
 
+        if progress:
+            progress("[resync] approving pending desktop pairing requests")
         approvals = self.approve_pending_devices()
+        if progress:
+            progress("[resync] approvals complete")
         return {
             "token_bundle": bundle["masked"],
             "workers": results,
@@ -252,12 +267,143 @@ class FleetOrchestrator:
             **out,
         }
 
+    def latest_worker_handoff(self, role: str, handoff_glob: str = "/development/crew-handoff/*.md") -> dict[str, Any]:
+        target = self._target(role)
+        with self._connect(target) as client:
+            latest = self._remote_run(
+                client,
+                f"ls -1t {shlex.quote(handoff_glob)} 2>/dev/null | head -n 1",
+                timeout=30,
+            )
+            path = latest["stdout"].strip()
+            if not path:
+                return {
+                    "role": role,
+                    "host": target.host,
+                    "ok": False,
+                    "error": f"no handoff files matched {handoff_glob}",
+                    "path": None,
+                    "content": "",
+                }
+            content = self._remote_run(client, f"cat {shlex.quote(path)}", timeout=60)
+        return {
+            "role": role,
+            "host": target.host,
+            "ok": content["ok"],
+            "error": content["stderr"] if not content["ok"] else "",
+            "path": path,
+            "content": content["stdout"],
+        }
+
+    def active_openclaw_session(self) -> dict[str, Any]:
+        result = self._run_openclaw(["sessions", "--json"], timeout=60)
+        if not result["ok"]:
+            return {
+                "ok": False,
+                "error": result["stderr"].strip() or "openclaw sessions --json failed",
+                "session_id": None,
+            }
+        try:
+            payload = json.loads(result["stdout"])
+            sessions = payload.get("sessions", []) or []
+            if not sessions:
+                return {
+                    "ok": False,
+                    "error": "no openclaw sessions found",
+                    "session_id": None,
+                }
+            sessions_sorted = sorted(sessions, key=lambda x: x.get("updatedAt", 0), reverse=True)
+            top = sessions_sorted[0]
+            return {
+                "ok": True,
+                "session_id": top.get("sessionId"),
+                "session_key": top.get("key"),
+                "agent_id": top.get("agentId"),
+                "updated_at": top.get("updatedAt"),
+            }
+        except Exception as exc:  # noqa: BLE001
+            return {
+                "ok": False,
+                "error": f"failed to parse session list: {exc}",
+                "session_id": None,
+            }
+
+    def stage_text_to_openclaw_chat(
+        self,
+        title: str,
+        body: str,
+        session_id: str | None = None,
+        max_chunk_chars: int = 3200,
+    ) -> dict[str, Any]:
+        chosen = session_id
+        if not chosen:
+            session = self.active_openclaw_session()
+            if not session.get("ok"):
+                return {
+                    "ok": False,
+                    "error": session.get("error", "failed to resolve active openclaw session"),
+                    "session_id": None,
+                    "chunks": [],
+                }
+            chosen = session.get("session_id")
+            if not chosen:
+                return {
+                    "ok": False,
+                    "error": "active session has no sessionId",
+                    "session_id": None,
+                    "chunks": [],
+                }
+
+        chunks = _chunk_text_for_messages(body, max_chars=max(1000, min(max_chunk_chars, 8000)))
+        if not chunks:
+            chunks = ["(empty)"]
+
+        posted: list[dict[str, Any]] = []
+        total = len(chunks)
+        for idx, chunk in enumerate(chunks, start=1):
+            header = f"[WORKER-DUMP] {title} (part {idx}/{total})"
+            message = f"{header}\n\n{chunk}"
+            result = self._run_openclaw(
+                [
+                    "agent",
+                    "--session-id",
+                    chosen,
+                    "--thinking",
+                    "off",
+                    "--message",
+                    message,
+                    "--json",
+                ],
+                timeout=180,
+            )
+            posted.append(
+                {
+                    "part": idx,
+                    "ok": result["ok"],
+                    "stdout": result["stdout"],
+                    "stderr": result["stderr"],
+                }
+            )
+            if not result["ok"]:
+                break
+
+        return {
+            "ok": all(x["ok"] for x in posted),
+            "session_id": chosen,
+            "parts": len(posted),
+            "chunks_expected": total,
+            "chunks": posted,
+        }
+
     def _desktop_token_bundle(self) -> dict[str, Any]:
-        hub = self._desktop_get_config("gateway.auth.token")
-        kimi = self._desktop_get_config("plugins.entries.kimi-claw.config.bridge.token")
-        user_id = self._desktop_get_config("plugins.entries.kimi-claw.config.bridge.userId")
+        # Read local config file first to avoid CLI redaction placeholders.
+        hub = self._read_openclaw_json_key("gateway.auth.token") or self._desktop_get_config("gateway.auth.token")
+        kimi = self._read_openclaw_json_key("plugins.entries.kimi-claw.config.bridge.token") or self._desktop_get_config("plugins.entries.kimi-claw.config.bridge.token")
+        user_id = self._read_openclaw_json_key("plugins.entries.kimi-claw.config.bridge.userId") or self._desktop_get_config("plugins.entries.kimi-claw.config.bridge.userId")
         if not hub or not kimi or not user_id:
             return {"ok": False, "error": "failed to read desktop openclaw token values"}
+        if _looks_redacted(hub) or _looks_redacted(kimi):
+            return {"ok": False, "error": "desktop token values are redacted; read from local ~/.openclaw/openclaw.json failed"}
         return {
             "ok": True,
             "hub_token": hub,
@@ -291,8 +437,14 @@ class FleetOrchestrator:
                 continue
             filtered.append(line)
         if filtered:
-            return filtered[-1]
-        return lines[-1] or self._read_openclaw_json_key(key)
+            val = filtered[-1]
+            if _looks_redacted(val):
+                return self._read_openclaw_json_key(key)
+            return val
+        fallback = lines[-1]
+        if _looks_redacted(fallback):
+            return self._read_openclaw_json_key(key)
+        return fallback or self._read_openclaw_json_key(key)
 
     def _run_openclaw(self, args: list[str], timeout: int = 60) -> dict[str, Any]:
         candidates = ["openclaw", "openclaw.cmd"]
@@ -486,4 +638,49 @@ def _normalize_signal_lines(lines: list[str]) -> list[str]:
             out.append(m.group(1))
         else:
             out.append(line)
+    return out
+
+
+def _looks_redacted(value: str | None) -> bool:
+    if not value:
+        return False
+    return "__OPENCLAW_REDACTED__" in value
+
+
+def _chunk_text_for_messages(text: str, max_chars: int = 3200) -> list[str]:
+    clean = (text or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+    if not clean:
+        return []
+    lines = clean.splitlines()
+    chunks: list[str] = []
+    bucket: list[str] = []
+    size = 0
+    for line in lines:
+        entry = line if line else " "
+        line_len = len(entry) + 1
+        if bucket and size + line_len > max_chars:
+            chunks.append("\n".join(bucket).strip())
+            bucket = []
+            size = 0
+        if len(entry) > max_chars:
+            if bucket:
+                chunks.append("\n".join(bucket).strip())
+                bucket = []
+                size = 0
+            chunks.extend(_split_long_line(entry, max_chars))
+            continue
+        bucket.append(entry)
+        size += line_len
+    if bucket:
+        chunks.append("\n".join(bucket).strip())
+    return [x for x in chunks if x]
+
+
+def _split_long_line(line: str, max_chars: int) -> list[str]:
+    out: list[str] = []
+    cursor = 0
+    size = len(line)
+    while cursor < size:
+        out.append(line[cursor : cursor + max_chars])
+        cursor += max_chars
     return out

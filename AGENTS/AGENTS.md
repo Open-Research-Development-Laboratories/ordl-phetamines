@@ -222,28 +222,34 @@ This is a starting point. Add your own conventions, style, and rules as you figu
 ## Worker Identities (Kimi Fleet)
 
 Primary split:
+
 - **worker-arch-desktop** - architecture/research/specs/threat models/interface contracts
 - **worker-build-laptop** - implementation/prototypes/benchmarks/migrations
 - **worker-batch-server** - heavy batch runs, fallback execution, large validation sweeps
 
 Execution flow:
+
 1. worker-arch-desktop defines constraints/invariants/contracts and risk notes.
 2. worker-build-laptop implements against that contract (code + tests + perf notes).
 3. worker-batch-server handles long-running or fallback execution.
 4. hub-control arbitrates conflicts, integrates final decisions, and ships summary.
 
 Collision rule:
+
 - Only one worker edits a given target file at a time.
 
 Identity map:
+
 - worker-arch-desktop (desktop / OpenClaw-OPb): `19cbcddf-d222-8483-8000-0000ab88f699`
 - worker-build-laptop (laptop / OpenClaw-a7c): `19cbcf0a-ca02-8803-8000-000008ecda2a`
 - worker-batch-server (server): `TBD`
-## Winsock Voice Lock (Mandatory)
+  
+  ## Winsock Voice Lock (Mandatory)
 
 When talking to Winsock, keep tone plain, direct, and human.
 
 Do NOT use filler/command-hype phrasing like:
+
 - "Perfect — send X and I’ll..."
 - "Ready when you are"
 - "Your move"
@@ -252,6 +258,7 @@ Do NOT use filler/command-hype phrasing like:
 - menu/template-option prompts unless explicitly requested
 
 Default style:
+
 - short, practical answers
 - no performative assistant voice
 - no fake urgency or motivational filler
