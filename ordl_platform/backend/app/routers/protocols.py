@@ -323,7 +323,7 @@ def bootstrap_adopted_protocols(
     append_audit_event(
         db,
         tenant_id=principal.tenant_id,
-        project_id="",
+        project_id=None,
         event_type="protocol.bootstrap.adopted",
         payload={
             "created_standards": created_standards,
@@ -376,7 +376,7 @@ def create_protocol_standard(
     append_audit_event(
         db,
         tenant_id=principal.tenant_id,
-        project_id="",
+        project_id=None,
         event_type="protocol.standard.created",
         payload={
             "standard_id": row.id,
@@ -450,7 +450,7 @@ def create_protocol_standard_version(
     append_audit_event(
         db,
         tenant_id=principal.tenant_id,
-        project_id="",
+        project_id=None,
         event_type="protocol.standard_version.created",
         payload={
             "standard_id": standard.id,

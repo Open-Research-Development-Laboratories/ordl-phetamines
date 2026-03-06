@@ -14,3 +14,7 @@
 # Fleet runtime artifacts
 fleet_api/state/**
 !fleet_api/state/.gitignore
+
+# Local deployment secrets
+ordl_platform/infra/.env.local
+ordl_platform/infra/.env.*.local

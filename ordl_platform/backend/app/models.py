@@ -400,7 +400,9 @@ class AuditEvent(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
     tenant_id: Mapped[str] = mapped_column(String(36), ForeignKey("tenants.id"), index=True)
-    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    project_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("projects.id"), index=True, nullable=True
+    )
     event_index: Mapped[int] = mapped_column(Integer, default=0, index=True)
     event_type: Mapped[str] = mapped_column(String(128), index=True)
     actor_type: Mapped[str] = mapped_column(String(32), default="", index=True)
@@ -463,3 +465,65 @@ class CodeDigestChunk(Base):
     start_line: Mapped[int] = mapped_column(Integer, nullable=False)
     end_line: Mapped[int] = mapped_column(Integer, nullable=False)
     chunk_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+
+
+class Program(Base):
+    __tablename__ = "programs"
+    __table_args__ = (UniqueConstraint("org_id", "code", name="uq_program_org_code"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    org_id: Mapped[str] = mapped_column(String(36), ForeignKey("orgs.id"), index=True)
+    team_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("teams.id"), nullable=True, index=True)
+    code: Mapped[str] = mapped_column(String(64), nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), default="active")
+    summary: Mapped[str] = mapped_column(Text, default="")
+    owner_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class ProgramMilestone(Base):
+    __tablename__ = "program_milestones"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    program_id: Mapped[str] = mapped_column(String(36), ForeignKey("programs.id"), index=True)
+    title: Mapped[str] = mapped_column(String(240), nullable=False)
+    target_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    status: Mapped[str] = mapped_column(String(32), default="planned")
+    owner_user_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("users.id"), nullable=True, index=True)
+    notes: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class ProgramRisk(Base):
+    __tablename__ = "program_risks"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    program_id: Mapped[str] = mapped_column(String(36), ForeignKey("programs.id"), index=True)
+    title: Mapped[str] = mapped_column(String(240), nullable=False)
+    severity: Mapped[str] = mapped_column(String(16), default="medium")
+    probability: Mapped[str] = mapped_column(String(16), default="medium")
+    impact: Mapped[str] = mapped_column(String(16), default="medium")
+    status: Mapped[str] = mapped_column(String(32), default="open")
+    owner_user_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("users.id"), nullable=True, index=True)
+    mitigation: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class ChangeRequest(Base):
+    __tablename__ = "change_requests"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    requested_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    reviewer_user_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("users.id"), nullable=True, index=True)
+    title: Mapped[str] = mapped_column(String(240), nullable=False)
+    description: Mapped[str] = mapped_column(Text, default="")
+    priority: Mapped[str] = mapped_column(String(16), default="medium")
+    status: Mapped[str] = mapped_column(String(32), default="submitted")
+    decision_notes: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)

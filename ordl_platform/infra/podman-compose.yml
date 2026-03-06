@@ -29,8 +29,8 @@ services:
 
   backend:
     build:
-      context: ..
-      dockerfile: ordl_platform/infra/Dockerfile.backend
+      context: ../..
+      dockerfile: ./ordl_platform/infra/Dockerfile.backend
     environment:
       ORDL_DATABASE_URL: postgresql+psycopg://ordl:ordl@postgres:5432/ordl
       ORDL_POLICY_SECRET: ordl-dev-policy-secret-please-change-this-32b
@@ -47,8 +47,8 @@ services:
 
   worker:
     build:
-      context: ..
-      dockerfile: ordl_platform/infra/Dockerfile.backend
+      context: ../..
+      dockerfile: ./ordl_platform/infra/Dockerfile.backend
     command: ["python", "-m", "app.worker"]
     environment:
       ORDL_DATABASE_URL: postgresql+psycopg://ordl:ordl@postgres:5432/ordl
@@ -60,8 +60,8 @@ services:
 
   frontend:
     build:
-      context: ..
-      dockerfile: ordl_platform/infra/Dockerfile.frontend
+      context: ../..
+      dockerfile: ./ordl_platform/infra/Dockerfile.frontend
     environment:
       VITE_ORDL_API_BASE: http://localhost:8891/v1
     depends_on:

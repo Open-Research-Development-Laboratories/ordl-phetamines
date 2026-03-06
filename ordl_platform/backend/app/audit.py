@@ -94,7 +94,7 @@ def append_audit_event(
     db: Session,
     *,
     tenant_id: str,
-    project_id: str,
+    project_id: str | None = None,
     event_type: str,
     payload: dict[str, Any],
     actor: dict[str, Any] | None = None,

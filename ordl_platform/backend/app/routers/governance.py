@@ -36,7 +36,7 @@ def create_org(
     append_audit_event(
         db,
         tenant_id=payload.tenant_id,
-        project_id='',
+        project_id=None,
         event_type='org.created',
         payload={'org_name': payload.name, 'owner_user_id': principal.user_id},
         actor=build_actor_snapshot(db, principal),

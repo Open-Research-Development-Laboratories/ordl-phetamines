@@ -49,8 +49,8 @@ services:
 
   backend:
     build:
-      context: ..
-      dockerfile: ordl_platform/infra/Dockerfile.backend
+      context: ../..
+      dockerfile: ./ordl_platform/infra/Dockerfile.backend
     environment:
       ORDL_ENVIRONMENT: production
       ORDL_DATABASE_URL: ${ORDL_DATABASE_URL:-postgresql+psycopg://ordl:change-me@postgres:5432/ordl}
@@ -82,8 +82,8 @@ services:
 
   worker:
     build:
-      context: ..
-      dockerfile: ordl_platform/infra/Dockerfile.backend
+      context: ../..
+      dockerfile: ./ordl_platform/infra/Dockerfile.backend
     command: ["python", "-m", "app.worker"]
     environment:
       ORDL_ENVIRONMENT: production
@@ -109,8 +109,8 @@ services:
 
   frontend:
     build:
-      context: ..
-      dockerfile: ordl_platform/infra/Dockerfile.frontend
+      context: ../..
+      dockerfile: ./ordl_platform/infra/Dockerfile.frontend
     environment:
       VITE_ORDL_API_BASE: ${VITE_ORDL_API_BASE:-http://localhost:8891/v1}
     depends_on:
