@@ -14,7 +14,7 @@ from fleet_api.fleet_api.orchestrator import (
 
 def test_normalize_signal_lines_extracts_json_message() -> None:
     raw = (
-        '/tmp/openclaw/openclaw-2026-03-05.log:'
+        '/tmp/ordlctl/ordlctl-2026-03-05.log:'
         '{"0":"{\\"subsystem\\":\\"gateway\\"}","1":"[kimi-bridge] [gateway] handshake complete",'
         '"time":"2026-03-05T23:05:39.818-05:00"}'
     )
@@ -48,7 +48,7 @@ def test_evaluate_pairings_marks_missing_hosts() -> None:
 
 
 def test_line_timestamp_parses_prefixed_worker_log_line() -> None:
-    line = "/home/winsock/openclaw-worker.log:2026-03-06T09:07:40.190Z [gateway] [kimi-bridge] [gateway] handshake complete"
+    line = "/home/winsock/ordlctl-worker.log:2026-03-06T09:07:40.190Z [gateway] [kimi-bridge] [gateway] handshake complete"
     ts = _line_timestamp(line)
     assert ts is not None
     assert ts.isoformat().startswith("2026-03-06T09:07:40.190")

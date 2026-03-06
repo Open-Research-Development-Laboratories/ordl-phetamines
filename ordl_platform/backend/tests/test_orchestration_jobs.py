@@ -123,7 +123,7 @@ def test_orchestration_job_lifecycle(client):
         headers=bearer(architect),
         json={
             'recipient': 'team:core-council',
-            'channel': 'openclaw_chat',
+            'channel': 'ordlctl_chat',
             'status': 'delivered',
             'detail': {'message_id': 'abc123'},
         },

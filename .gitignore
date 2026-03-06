@@ -10,3 +10,7 @@
 # Node
 **/node_modules/
 **/dist/
+
+# Fleet runtime artifacts
+fleet_api/state/**
+!fleet_api/state/.gitignore

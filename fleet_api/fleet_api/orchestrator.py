@@ -94,11 +94,11 @@ class FleetOrchestrator:
         return out
 
     def desktop_devices(self) -> dict[str, Any]:
-        result = self._run_openclaw(["devices", "list", "--json"], timeout=60)
+        result = self._run_ordlctl(["devices", "list", "--json"], timeout=60)
         if not result["ok"]:
             return {
                 "ok": False,
-                "error": result["stderr"].strip() or "openclaw devices list failed",
+                "error": result["stderr"].strip() or "ordlctl devices list failed",
                 "stdout": result["stdout"],
             }
         try:
@@ -111,7 +111,7 @@ class FleetOrchestrator:
                 "paired": data.get("paired", []),
             }
         except Exception as exc:  # noqa: BLE001
-            return {"ok": False, "error": f"invalid JSON from openclaw: {exc}", "raw": result["stdout"]}
+            return {"ok": False, "error": f"invalid JSON from ordlctl: {exc}", "raw": result["stdout"]}
 
     def fleet_status(self, roles: list[str] | None = None) -> dict[str, Any]:
         roles = roles or self.list_worker_roles()
@@ -298,20 +298,20 @@ class FleetOrchestrator:
         for role in ordered_roles:
             target = self._target(role)
             with self._connect(target) as client:
-                pre = self._remote_run(client, "openclaw --version 2>/dev/null | head -n 1 || true", timeout=40)
+                pre = self._remote_run(client, "ordlctl --version 2>/dev/null | head -n 1 || true", timeout=40)
                 pre_version = (pre.get("stdout") or "").strip()
                 semver = _extract_semver(pre_version)
                 pre_gateway = self._remote_run(
                     client,
-                    "openclaw config get plugins.entries.kimi-claw.config.gateway.url 2>/dev/null | tail -n 1 || true",
+                    "ordlctl config get plugins.entries.kimi-claw.config.gateway.url 2>/dev/null | tail -n 1 || true",
                     timeout=40,
                 )
                 previous_gateway = (pre_gateway.get("stdout") or "").strip()
                 update_steps = [
-                    "openclaw gateway stop || true",
+                    "ordlctl gateway stop || true",
                     "pkill -f '[o]penclaw-gateway' || true",
                     command,
-                    "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                    "nohup ordlctl gateway run --bind loopback > ~/ordlctl-worker.log 2>&1 &",
                     "sleep 10",
                     _gateway_probe_cmd(),
                     _signal_probe_cmd(limit=30),
@@ -338,10 +338,10 @@ class FleetOrchestrator:
                 rollback_cmd = self.cfg.update_rollback_template.format(version=semver)
                 with self._connect(target) as client:
                     rollback_steps = [
-                        "openclaw gateway stop || true",
+                        "ordlctl gateway stop || true",
                         "pkill -f '[o]penclaw-gateway' || true",
                         rollback_cmd,
-                        "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                        "nohup ordlctl gateway run --bind loopback > ~/ordlctl-worker.log 2>&1 &",
                         "sleep 10",
                         _gateway_probe_cmd(),
                         _signal_probe_cmd(limit=30),
@@ -395,15 +395,15 @@ class FleetOrchestrator:
             with self._connect(target) as client:
                 existing = self._remote_run(
                     client,
-                    "openclaw config get plugins.entries.kimi-claw.config.gateway.url 2>/dev/null | tail -n1 || true",
+                    "ordlctl config get plugins.entries.kimi-claw.config.gateway.url 2>/dev/null | tail -n1 || true",
                     timeout=40,
                 )
                 old_gateway = (existing.get("stdout") or "").strip()
                 steps = [
-                    "openclaw gateway stop || true",
+                    "ordlctl gateway stop || true",
                     "pkill -f '[o]penclaw-gateway' || true",
-                    f"openclaw config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(new_gateway_url)}",
-                    "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                    f"ordlctl config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(new_gateway_url)}",
+                    "nohup ordlctl gateway run --bind loopback > ~/ordlctl-worker.log 2>&1 &",
                     "sleep 10",
                     _gateway_probe_cmd(),
                     _signal_probe_cmd(limit=25),
@@ -430,10 +430,10 @@ class FleetOrchestrator:
             if not ok and rollback_on_fail and old_gateway:
                 with self._connect(target) as client:
                     rollback_steps = [
-                        "openclaw gateway stop || true",
+                        "ordlctl gateway stop || true",
                         "pkill -f '[o]penclaw-gateway' || true",
-                        f"openclaw config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(old_gateway)}",
-                        "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                        f"ordlctl config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(old_gateway)}",
+                        "nohup ordlctl gateway run --bind loopback > ~/ordlctl-worker.log 2>&1 &",
                         "sleep 10",
                         _gateway_probe_cmd(),
                         _signal_probe_cmd(limit=25),
@@ -550,20 +550,20 @@ class FleetOrchestrator:
             device_id = f"worker-discovered-{suffix}"
             hub_url = f"ws://{self.cfg.hub_host}:{self.cfg.hub_port}"
             steps = [
-                "openclaw gateway stop || true",
+                "ordlctl gateway stop || true",
                 "pkill -f '[o]penclaw-gateway' || true",
-                "openclaw config set gateway.mode local",
-                "openclaw config set gateway.bind loopback",
-                "openclaw config set plugins.entries.kimi-claw.enabled true",
-                "openclaw config set plugins.entries.kimi-claw.config.bridge.mode acp",
-                f"openclaw config set plugins.entries.kimi-claw.config.bridge.userId {shlex.quote(token_bundle['kimi_user_id'])}",
-                f"openclaw config set plugins.entries.kimi-claw.config.bridge.token {shlex.quote(token_bundle['kimi_token'])}",
-                f"openclaw config set plugins.entries.kimi-claw.config.bridge.instanceId {shlex.quote(instance_id)}",
-                f"openclaw config set plugins.entries.kimi-claw.config.bridge.deviceId {shlex.quote(device_id)}",
-                f"openclaw config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(hub_url)}",
-                f"openclaw config set plugins.entries.kimi-claw.config.gateway.token {shlex.quote(token_bundle['hub_token'])}",
-                f"openclaw config set plugins.entries.kimi-claw.config.gateway.agentId {shlex.quote(self.cfg.openclaw_agent_id)}",
-                "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                "ordlctl config set gateway.mode local",
+                "ordlctl config set gateway.bind loopback",
+                "ordlctl config set plugins.entries.kimi-claw.enabled true",
+                "ordlctl config set plugins.entries.kimi-claw.config.bridge.mode acp",
+                f"ordlctl config set plugins.entries.kimi-claw.config.bridge.userId {shlex.quote(token_bundle['kimi_user_id'])}",
+                f"ordlctl config set plugins.entries.kimi-claw.config.bridge.token {shlex.quote(token_bundle['kimi_token'])}",
+                f"ordlctl config set plugins.entries.kimi-claw.config.bridge.instanceId {shlex.quote(instance_id)}",
+                f"ordlctl config set plugins.entries.kimi-claw.config.bridge.deviceId {shlex.quote(device_id)}",
+                f"ordlctl config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(hub_url)}",
+                f"ordlctl config set plugins.entries.kimi-claw.config.gateway.token {shlex.quote(token_bundle['hub_token'])}",
+                f"ordlctl config set plugins.entries.kimi-claw.config.gateway.agentId {shlex.quote(self.cfg.ordlctl_agent_id)}",
+                "nohup ordlctl gateway run --bind loopback > ~/ordlctl-worker.log 2>&1 &",
                 "sleep 8",
                 _gateway_probe_cmd(),
                 _signal_probe_cmd(limit=20),
@@ -614,9 +614,9 @@ class FleetOrchestrator:
             target = self._target(role)
             with self._connect(target) as client:
                 steps = [
-                    "openclaw gateway stop || true",
+                    "ordlctl gateway stop || true",
                     "pkill -f '[o]penclaw-gateway' || true",
-                    "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                    "nohup ordlctl gateway run --bind loopback > ~/ordlctl-worker.log 2>&1 &",
                     "sleep 8",
                     _gateway_probe_cmd(),
                     (
@@ -655,27 +655,27 @@ class FleetOrchestrator:
                     progress(f"[resync] role={role} applying config and restarting gateway")
 
                 steps = [
-                    "openclaw gateway stop || true",
+                    "ordlctl gateway stop || true",
                     "pkill -f '[o]penclaw-gateway' || true",
-                    "openclaw config set gateway.mode local",
-                    "openclaw config set gateway.bind loopback",
-                    "openclaw config set channels.discord.enabled false",
-                    "openclaw config set hooks.enabled false",
-                    "openclaw config set plugins.entries.kimi-claw.enabled true",
-                    "openclaw config set plugins.entries.kimi-claw.config.bridge.mode acp",
-                    "openclaw config set plugins.entries.kimi-claw.config.bridge.url wss://www.kimi.com/api-claw/bots/agent-ws",
-                    "openclaw config set plugins.entries.kimi-claw.config.bridge.kimiapiHost https://www.kimi.com/api-claw",
-                    f"openclaw config set plugins.entries.kimi-claw.config.bridge.userId {shlex.quote(bundle['kimi_user_id'])}",
-                    f"openclaw config set plugins.entries.kimi-claw.config.bridge.token {shlex.quote(bundle['kimi_token'])}",
-                    f"openclaw config set plugins.entries.kimi-claw.config.bridge.instanceId {shlex.quote(instance_id)}",
-                    f"openclaw config set plugins.entries.kimi-claw.config.bridge.deviceId {shlex.quote(device_id)}",
-                    f"openclaw config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(hub_url)}",
-                    f"openclaw config set plugins.entries.kimi-claw.config.gateway.token {shlex.quote(bundle['hub_token'])}",
-                    f"openclaw config set plugins.entries.kimi-claw.config.gateway.agentId {shlex.quote(self.cfg.openclaw_agent_id)}",
-                    "openclaw config set plugins.allow '[\"kimi-claw\"]'",
-                    "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                    "ordlctl config set gateway.mode local",
+                    "ordlctl config set gateway.bind loopback",
+                    "ordlctl config set channels.discord.enabled false",
+                    "ordlctl config set hooks.enabled false",
+                    "ordlctl config set plugins.entries.kimi-claw.enabled true",
+                    "ordlctl config set plugins.entries.kimi-claw.config.bridge.mode acp",
+                    "ordlctl config set plugins.entries.kimi-claw.config.bridge.url wss://www.kimi.com/api-claw/bots/agent-ws",
+                    "ordlctl config set plugins.entries.kimi-claw.config.bridge.kimiapiHost https://www.kimi.com/api-claw",
+                    f"ordlctl config set plugins.entries.kimi-claw.config.bridge.userId {shlex.quote(bundle['kimi_user_id'])}",
+                    f"ordlctl config set plugins.entries.kimi-claw.config.bridge.token {shlex.quote(bundle['kimi_token'])}",
+                    f"ordlctl config set plugins.entries.kimi-claw.config.bridge.instanceId {shlex.quote(instance_id)}",
+                    f"ordlctl config set plugins.entries.kimi-claw.config.bridge.deviceId {shlex.quote(device_id)}",
+                    f"ordlctl config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(hub_url)}",
+                    f"ordlctl config set plugins.entries.kimi-claw.config.gateway.token {shlex.quote(bundle['hub_token'])}",
+                    f"ordlctl config set plugins.entries.kimi-claw.config.gateway.agentId {shlex.quote(self.cfg.ordlctl_agent_id)}",
+                    "ordlctl config set plugins.allow '[\"kimi-claw\"]'",
+                    "nohup ordlctl gateway run --bind loopback > ~/ordlctl-worker.log 2>&1 &",
                     "sleep 8",
-                    "pgrep -af openclaw-gateway || true",
+                    "pgrep -af ordlctl-gateway || true",
                     (
                         _signal_probe_cmd(limit=25)
                     ),
@@ -705,7 +705,7 @@ class FleetOrchestrator:
             req_id = item.get("requestId")
             if not req_id:
                 continue
-            result = self._run_openclaw(["devices", "approve", req_id], timeout=60)
+            result = self._run_ordlctl(["devices", "approve", req_id], timeout=60)
             approvals.append(
                 {
                     "request_id": req_id,
@@ -783,10 +783,10 @@ class FleetOrchestrator:
             selected = self._select_gateway_for_worker(client=client, role=role, candidates=candidates)
             gateway_url = selected["selected_gateway"]
             steps = [
-                "openclaw gateway stop || true",
+                "ordlctl gateway stop || true",
                 "pkill -f '[o]penclaw-gateway' || true",
-                f"openclaw config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(gateway_url)}",
-                "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                f"ordlctl config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(gateway_url)}",
+                "nohup ordlctl gateway run --bind loopback > ~/ordlctl-worker.log 2>&1 &",
                 "sleep 8",
                 _gateway_probe_cmd(),
                 _signal_probe_cmd(limit=25),
@@ -882,12 +882,12 @@ class FleetOrchestrator:
             "content": content["stdout"],
         }
 
-    def active_openclaw_session(self) -> dict[str, Any]:
-        result = self._run_openclaw(["sessions", "--json"], timeout=60)
+    def active_ordlctl_session(self) -> dict[str, Any]:
+        result = self._run_ordlctl(["sessions", "--json"], timeout=60)
         if not result["ok"]:
             return {
                 "ok": False,
-                "error": result["stderr"].strip() or "openclaw sessions --json failed",
+                "error": result["stderr"].strip() or "ordlctl sessions --json failed",
                 "session_id": None,
             }
         try:
@@ -896,7 +896,7 @@ class FleetOrchestrator:
             if not sessions:
                 return {
                     "ok": False,
-                    "error": "no openclaw sessions found",
+                    "error": "no ordlctl sessions found",
                     "session_id": None,
                 }
             sessions_sorted = sorted(sessions, key=lambda x: x.get("updatedAt", 0), reverse=True)
@@ -915,7 +915,7 @@ class FleetOrchestrator:
                 "session_id": None,
             }
 
-    def stage_text_to_openclaw_chat(
+    def stage_text_to_ordlctl_chat(
         self,
         title: str,
         body: str,
@@ -924,11 +924,11 @@ class FleetOrchestrator:
     ) -> dict[str, Any]:
         chosen = session_id
         if not chosen:
-            session = self.active_openclaw_session()
+            session = self.active_ordlctl_session()
             if not session.get("ok"):
                 return {
                     "ok": False,
-                    "error": session.get("error", "failed to resolve active openclaw session"),
+                    "error": session.get("error", "failed to resolve active ordlctl session"),
                     "session_id": None,
                     "chunks": [],
                 }
@@ -950,7 +950,7 @@ class FleetOrchestrator:
         for idx, chunk in enumerate(chunks, start=1):
             header = f"[WORKER-DUMP] {title} (part {idx}/{total})"
             message = f"{header}\n\n{chunk}"
-            result = self._run_openclaw(
+            result = self._run_ordlctl(
                 [
                     "agent",
                     "--session-id",
@@ -1013,7 +1013,7 @@ class FleetOrchestrator:
                 f"{handoff['content']}\n"
                 "----- END WORKER REPORT -----\n"
             )
-            stage = self.stage_text_to_openclaw_chat(
+            stage = self.stage_text_to_ordlctl_chat(
                 title=title,
                 body=body,
                 session_id=session_id,
@@ -1038,13 +1038,13 @@ class FleetOrchestrator:
 
     def _desktop_token_bundle(self) -> dict[str, Any]:
         # Read local config file first to avoid CLI redaction placeholders.
-        hub = self._read_openclaw_json_key("gateway.auth.token") or self._desktop_get_config("gateway.auth.token")
-        kimi = self._read_openclaw_json_key("plugins.entries.kimi-claw.config.bridge.token") or self._desktop_get_config("plugins.entries.kimi-claw.config.bridge.token")
-        user_id = self._read_openclaw_json_key("plugins.entries.kimi-claw.config.bridge.userId") or self._desktop_get_config("plugins.entries.kimi-claw.config.bridge.userId")
+        hub = self._read_ordlctl_json_key("gateway.auth.token") or self._desktop_get_config("gateway.auth.token")
+        kimi = self._read_ordlctl_json_key("plugins.entries.kimi-claw.config.bridge.token") or self._desktop_get_config("plugins.entries.kimi-claw.config.bridge.token")
+        user_id = self._read_ordlctl_json_key("plugins.entries.kimi-claw.config.bridge.userId") or self._desktop_get_config("plugins.entries.kimi-claw.config.bridge.userId")
         if not hub or not kimi or not user_id:
-            return {"ok": False, "error": "failed to read desktop openclaw token values"}
+            return {"ok": False, "error": "failed to read desktop ordlctl token values"}
         if _looks_redacted(hub) or _looks_redacted(kimi):
-            return {"ok": False, "error": "desktop token values are redacted; read from local ~/.openclaw/openclaw.json failed"}
+            return {"ok": False, "error": "desktop token values are redacted; read from local ~/.ordlctl/ordlctl.json failed"}
         return {
             "ok": True,
             "hub_token": hub,
@@ -1060,9 +1060,9 @@ class FleetOrchestrator:
         }
 
     def _desktop_get_config(self, key: str) -> str | None:
-        res = self._run_openclaw(["config", "get", key], timeout=40)
+        res = self._run_ordlctl(["config", "get", key], timeout=40)
         if not res["ok"]:
-            return self._read_openclaw_json_key(key)
+            return self._read_ordlctl_json_key(key)
         lines = [x.strip() for x in res["stdout"].splitlines() if x.strip()]
         if not lines:
             return None
@@ -1070,7 +1070,7 @@ class FleetOrchestrator:
         for line in lines:
             if line.startswith("🦞"):
                 continue
-            if "OpenClaw" in line and "202" in line:
+            if "ordlctl" in line and "202" in line:
                 continue
             if line.startswith("Config warnings"):
                 continue
@@ -1080,20 +1080,20 @@ class FleetOrchestrator:
         if filtered:
             val = filtered[-1]
             if _looks_redacted(val):
-                return self._read_openclaw_json_key(key)
+                return self._read_ordlctl_json_key(key)
             return val
         fallback = lines[-1]
         if _looks_redacted(fallback):
-            return self._read_openclaw_json_key(key)
-        return fallback or self._read_openclaw_json_key(key)
+            return self._read_ordlctl_json_key(key)
+        return fallback or self._read_ordlctl_json_key(key)
 
-    def _run_openclaw(self, args: list[str], timeout: int = 60) -> dict[str, Any]:
-        candidates = ["openclaw", "openclaw.cmd"]
+    def _run_ordlctl(self, args: list[str], timeout: int = 60) -> dict[str, Any]:
+        candidates = ["ordlctl", "ordlctl.cmd"]
         roaming = Path.home() / "AppData" / "Roaming" / "npm"
-        candidates.append(str(roaming / "openclaw.cmd"))
-        candidates.append(str(roaming / "openclaw"))
+        candidates.append(str(roaming / "ordlctl.cmd"))
+        candidates.append(str(roaming / "ordlctl"))
 
-        last = {"ok": False, "stdout": "", "stderr": "openclaw executable not found", "returncode": -1}
+        last = {"ok": False, "stdout": "", "stderr": "ordlctl executable not found", "returncode": -1}
         for bin_path in candidates:
             res = run_local([bin_path, *args], timeout=timeout)
             if res["ok"]:
@@ -1106,8 +1106,8 @@ class FleetOrchestrator:
             return res
         return last
 
-    def _read_openclaw_json_key(self, dotted_key: str) -> str | None:
-        cfg_path = Path.home() / ".openclaw" / "openclaw.json"
+    def _read_ordlctl_json_key(self, dotted_key: str) -> str | None:
+        cfg_path = Path.home() / ".ordlctl" / "ordlctl.json"
         try:
             data = read_json(cfg_path)
             if not isinstance(data, dict):
@@ -1293,7 +1293,7 @@ def _collect_host_facts(*, host: str, user: str, password: str) -> dict[str, Any
             "cpu_count": "nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0",
             "mem_mb": "awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo 2>/dev/null || echo 0",
             "disk_free_kb": "df -k / | awk 'NR==2 {print $4}' 2>/dev/null || echo 0",
-            "openclaw_version": "openclaw --version 2>/dev/null | head -n1 || true",
+            "ordlctl_version": "ordlctl --version 2>/dev/null | head -n1 || true",
             "node_version": "node -v 2>/dev/null || true",
             "python_version": "python3 --version 2>/dev/null || true",
         }
@@ -1316,7 +1316,7 @@ def _score_discovery_candidate(facts: dict[str, Any], *, gateway_open: bool) -> 
 
     cpu = int(str(facts.get("cpu_count", "0") or "0").strip() or "0")
     mem = int(str(facts.get("mem_mb", "0") or "0").strip() or "0")
-    has_openclaw = bool(str(facts.get("openclaw_version", "")).strip())
+    has_ordlctl = bool(str(facts.get("ordlctl_version", "")).strip())
     has_node = bool(str(facts.get("node_version", "")).strip())
 
     if cpu >= 2:
@@ -1329,14 +1329,14 @@ def _score_discovery_candidate(facts: dict[str, Any], *, gateway_open: bool) -> 
         score += 1
     if has_node:
         score += 1
-    if has_openclaw:
+    if has_ordlctl:
         score += 2
     if gateway_open:
         score += 1
 
-    if has_openclaw and cpu >= 2 and mem >= 4096:
+    if has_ordlctl and cpu >= 2 and mem >= 4096:
         roles.append("worker-node")
-    if has_openclaw and cpu >= 4 and mem >= 8192:
+    if has_ordlctl and cpu >= 4 and mem >= 8192:
         roles.append("batch-node")
     if gateway_open:
         roles.append("gateway-candidate")
@@ -1390,17 +1390,17 @@ def _ensure_remote_dir(sftp: paramiko.SFTPClient, remote_file: str) -> None:
 def _signal_probe_cmd(limit: int = 25) -> str:
     tail_n = max(5, min(limit, 500))
     return (
-        "latest=$(ls -1t /tmp/openclaw/openclaw-*.log 2>/dev/null | head -n 1); "
-        f"grep -aE '{SIGNAL_PATTERN}' ~/openclaw-worker.log $latest 2>/dev/null | tail -n {tail_n} || true"
+        "latest=$(ls -1t /tmp/ordlctl/ordlctl-*.log 2>/dev/null | head -n 1); "
+        f"grep -aE '{SIGNAL_PATTERN}' ~/ordlctl-worker.log $latest 2>/dev/null | tail -n {tail_n} || true"
     )
 
 
 def _gateway_probe_cmd() -> str:
-    # Some hosts expose a dedicated "openclaw-gateway" process, others only show
-    # the "openclaw gateway run ..." parent command.
+    # Some hosts expose a dedicated "ordlctl-gateway" process, others only show
+    # the "ordlctl gateway run ..." parent command.
     return (
-        "pgrep -af openclaw-gateway || "
-        "pgrep -af 'openclaw.*gateway run' || true"
+        "pgrep -af ordlctl-gateway || "
+        "pgrep -af 'ordlctl.*gateway run' || true"
     )
 
 
@@ -1569,7 +1569,7 @@ def _evaluate_pairings(paired_devices: list[dict[str, Any]], expected_hosts: lis
 def _looks_redacted(value: str | None) -> bool:
     if not value:
         return False
-    return "__OPENCLAW_REDACTED__" in value
+    return "__ordlctl_REDACTED__" in value
 
 
 def _safe_remote_glob(pattern: str) -> str:

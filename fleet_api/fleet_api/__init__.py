@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from flask import Flask, jsonify
+from werkzeug.exceptions import HTTPException
 
 from .config import load_config
 from .jobs import JobManager
@@ -34,6 +35,9 @@ def create_app() -> Flask:
 
     @app.errorhandler(Exception)
     def _handle_error(exc: Exception):
+        # Preserve intended HTTP status codes (404/401/etc.) instead of coercing to 500.
+        if isinstance(exc, HTTPException):
+            return exc
         return jsonify({"ok": False, "error": str(exc)}), 500
 
     app.register_blueprint(bp)

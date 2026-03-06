@@ -26,7 +26,10 @@ Base: `/v1`
 - `GET /audit` policy decision ledger view.
 - `GET /audit/events`, `GET /audit/verify`, `GET /audit/export`.
 - `POST /protocols/standards`, `GET /protocols/standards`, `POST /protocols/standards/{id}/versions`.
-- `GET /protocols/compatibility`, `POST /protocols/validate`, `POST /protocols/conformance/runs`.
+- `GET /protocols/standards/{id}/versions`.
+- `POST /protocols/bootstrap/adopted`.
+- `GET /protocols/compatibility`, `POST /protocols/validate`.
+- `POST /protocols/conformance/runs`, `GET /protocols/conformance/runs`.
 - `POST /digestion/run`, `GET /digestion/status/{project_id}`, `GET /digestion/gate/{project_id}`, `POST /digestion/export/{project_id}`.
 
 Decision semantics:

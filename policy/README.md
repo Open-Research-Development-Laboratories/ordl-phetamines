@@ -31,7 +31,7 @@ node policy/guarded-send.js /path/to/event.json
 - `POST /reevaluate` (manual reevaluation with full `event` payload)
 
 ## Alert fanout on block/hold
-- Discord ping/message via `openclaw message send`
+- Discord ping/message via `ordlctl message send`
 - Email via local `sendmail` when `POLICY_ALERT_EMAIL_TO` is set
 - Audit record in `policy/audit.log`
 - Block queue in `policy/blocked-queue.jsonl`
@@ -47,4 +47,4 @@ Use `specs/policy-schema.json`.
 
 ## Current scope
 This enforces automated sends routed through this wrapper.
-To make it universal for every agent action, integrate this decision call into OpenClaw outbound send path/plugin middleware.
+To make it universal for every agent action, integrate this decision call into ordlctl outbound send path/plugin middleware.

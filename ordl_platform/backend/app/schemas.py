@@ -163,7 +163,7 @@ class DispatchCreate(BaseModel):
     message_id: str | None = None
     target_scope: Literal["group", "worker", "project", "team", "org"] = "group"
     target_value: str = "all"
-    provider: Literal["openai_codex", "kimi"] = "openai_codex"
+    provider: str = "openai_codex"
     model: str
     payload: dict[str, Any] = Field(default_factory=dict)
 
@@ -217,7 +217,7 @@ class PolicyValidateRequest(BaseModel):
 
 class ProviderCredentialUpsert(BaseModel):
     tenant_id: str
-    provider: Literal["openai_codex", "kimi"]
+    provider: str
     auth_mode: Literal["managed_secret", "oauth_supported"]
     configured: bool = False
     metadata: dict[str, Any] = Field(default_factory=dict)
@@ -447,7 +447,7 @@ class JobRunOut(BaseModel):
 
 class JobDeliveryCreate(BaseModel):
     recipient: str
-    channel: str = "openclaw_chat"
+    channel: str = "ordlctl_chat"
     status: Literal["delivered", "failed", "queued"] = "delivered"
     detail: dict[str, Any] = Field(default_factory=dict)
 
@@ -461,6 +461,144 @@ class JobDeliveryOut(BaseModel):
     status: str
     detail: dict[str, Any]
     delivered_at: str | None
+
+
+class ProtocolStandardCreate(BaseModel):
+    code: str
+    name: str
+    domain: str = "general"
+    steward: str = ""
+    home_url: str = ""
+    status: Literal["adopted", "draft", "deprecated"] = "adopted"
+    adoption_tier: Literal["core", "recommended", "experimental"] = "recommended"
+    description: str = ""
+    tags: list[str] = Field(default_factory=list)
+    source_urls: list[str] = Field(default_factory=list)
+
+
+class ProtocolStandardOut(BaseModel):
+    id: str
+    tenant_id: str
+    code: str
+    name: str
+    domain: str
+    steward: str
+    home_url: str
+    status: str
+    adoption_tier: str
+    description: str
+    tags: list[str]
+    source_urls: list[str]
+    latest_version: str | None
+
+
+class ProtocolStandardVersionCreate(BaseModel):
+    version: str
+    lifecycle_status: Literal["adopted", "draft", "deprecated"] = "adopted"
+    specification_url: str = ""
+    schema_uri: str = ""
+    required_by_default: bool = False
+    change_notes: str = ""
+    compatibility: dict[str, Any] = Field(default_factory=dict)
+
+
+class ProtocolStandardVersionOut(BaseModel):
+    id: str
+    standard_id: str
+    version: str
+    lifecycle_status: str
+    specification_url: str
+    schema_uri: str
+    required_by_default: bool
+    change_notes: str
+    compatibility: dict[str, Any]
+    released_at: str | None
+    deprecated_at: str | None
+
+
+class ProtocolCompatibilityItemOut(BaseModel):
+    standard_id: str
+    code: str
+    name: str
+    adoption_tier: str
+    latest_version: str | None
+    required: bool
+    conformance_status: str
+    last_run_id: str | None
+    compatible: bool
+    reasons: list[str]
+
+
+class ProtocolCompatibilityOut(BaseModel):
+    project_id: str
+    compatible: bool
+    items: list[ProtocolCompatibilityItemOut]
+
+
+class ProtocolValidateRequirement(BaseModel):
+    standard_code: str
+    minimum_version: str | None = None
+    required_tier: Literal["core", "recommended", "experimental"] | None = None
+
+
+class ProtocolValidateRequest(BaseModel):
+    project_id: str
+    requirements: list[ProtocolValidateRequirement] = Field(default_factory=list)
+
+
+class ProtocolValidateItemOut(BaseModel):
+    standard_code: str
+    minimum_version: str | None
+    evaluated_version: str | None
+    result: Literal["pass", "fail"]
+    reasons: list[str]
+
+
+class ProtocolValidateOut(BaseModel):
+    project_id: str
+    ok: bool
+    items: list[ProtocolValidateItemOut]
+
+
+class ProtocolConformanceRunCreate(BaseModel):
+    project_id: str
+    standard_id: str | None = None
+    standard_code: str | None = None
+    standard_version_id: str | None = None
+    standard_version: str | None = None
+    suite_name: str = "default"
+    target_scope: str = "project"
+    status: Literal["pass", "warn", "fail"] = "pass"
+    score: int = Field(default=100, ge=0, le=100)
+    findings: list[str] = Field(default_factory=list)
+    evidence_refs: list[str] = Field(default_factory=list)
+    run_metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ProtocolConformanceRunOut(BaseModel):
+    id: str
+    project_id: str
+    standard_id: str
+    standard_version_id: str | None
+    suite_name: str
+    target_scope: str
+    status: str
+    score: int
+    findings: list[str]
+    evidence_refs: list[str]
+    run_metadata: dict[str, Any]
+    created_at: str
+
+
+class ProtocolBootstrapRequest(BaseModel):
+    overwrite_existing: bool = False
+    include_versions: bool = True
+
+
+class ProtocolBootstrapOut(BaseModel):
+    created_standards: list[str]
+    existing_standards: list[str]
+    created_versions: list[str]
 
 
 class DigestionRunRequest(BaseModel):

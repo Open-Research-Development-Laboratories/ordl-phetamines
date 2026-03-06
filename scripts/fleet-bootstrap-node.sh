@@ -15,31 +15,31 @@ if [[ -z "$HUB_HOST" || -z "$HUB_TOKEN" ]]; then
   exit 2
 fi
 
-if ! command -v openclaw >/dev/null 2>&1; then
-  echo "openclaw not found in PATH" >&2
+if ! command -v ordlctl >/dev/null 2>&1; then
+  echo "ordlctl not found in PATH" >&2
   exit 1
 fi
 
 echo "[node] configuring local remote target through SSH tunnel..."
-openclaw config set gateway.mode remote
-openclaw config set gateway.remote.url "ws://127.0.0.1:${LOCAL_PORT}"
-openclaw config set gateway.remote.token "${HUB_TOKEN}"
+ordlctl config set gateway.mode remote
+ordlctl config set gateway.remote.url "ws://127.0.0.1:${LOCAL_PORT}"
+ordlctl config set gateway.remote.token "${HUB_TOKEN}"
 
 echo "[node] ensuring node unit exists..."
 mkdir -p ~/.config/systemd/user
-cat > ~/.config/systemd/user/openclaw-node.service <<EOF
+cat > ~/.config/systemd/user/ordlctl-node.service <<EOF
 [Unit]
-Description=OpenClaw Node Host
+Description=ordlctl Node Host
 After=default.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/env bash -lc 'openclaw node run --host 127.0.0.1 --port ${LOCAL_PORT}'
+ExecStart=/usr/bin/env bash -lc 'ordlctl node run --host 127.0.0.1 --port ${LOCAL_PORT}'
 Restart=always
 RestartSec=2
 Environment=HOME=/home/$USER
 Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/$USER/.npm-global/bin
-Environment=OPENCLAW_GATEWAY_TOKEN=${HUB_TOKEN}
+Environment=ordlctl_GATEWAY_TOKEN=${HUB_TOKEN}
 
 [Install]
 WantedBy=default.target
@@ -47,7 +47,7 @@ EOF
 
 echo "[node] restarting node service..."
 systemctl --user daemon-reload
-systemctl --user enable --now openclaw-node.service
+systemctl --user enable --now ordlctl-node.service
 
 # kill old local forwards for chosen port
 pkill -f "ssh -N -L ${LOCAL_PORT}:127.0.0.1:18789" || true
@@ -60,6 +60,6 @@ ssh -fN -L ${LOCAL_PORT}:127.0.0.1:18789 "${USER}@${HUB_HOST}" || {
 }
 
 echo "[node] recent logs"
-journalctl --user -u openclaw-node.service -n 25 --no-pager || true
+journalctl --user -u ordlctl-node.service -n 25 --no-pager || true
 
-echo "[node] done; approve on hub with: openclaw devices approve"
+echo "[node] done; approve on hub with: ordlctl devices approve"

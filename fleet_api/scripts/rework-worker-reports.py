@@ -123,7 +123,7 @@ def main() -> int:
     parser.add_argument("--handoff-glob", default="/development/crew-handoff/*.md", help="Remote handoff glob")
     parser.add_argument("--feedback", required=True, help="Reviewer feedback for rework")
     parser.add_argument("--max-source-chars", type=int, default=12000, help="Max chars from source report")
-    parser.add_argument("--thinking", default="low", choices=["off", "minimal", "low", "medium", "high"], help="OpenClaw agent thinking level")
+    parser.add_argument("--thinking", default="low", choices=["off", "minimal", "low", "medium", "high"], help="ordlctl agent thinking level")
     parser.add_argument("--quiet", action="store_true", help="Print only JSON")
     args = parser.parse_args()
 
@@ -166,8 +166,8 @@ def main() -> int:
         revised = ""
         attempts = 2
         for attempt in range(1, attempts + 1):
-            status(f"[rework] role={role} requesting revised report from OpenClaw agent (attempt {attempt}/{attempts})")
-            agent = orch._run_openclaw(  # noqa: SLF001
+            status(f"[rework] role={role} requesting revised report from ordlctl agent (attempt {attempt}/{attempts})")
+            agent = orch._run_ordlctl(  # noqa: SLF001
                 [
                     "agent",
                     "--agent",
@@ -186,7 +186,7 @@ def main() -> int:
                         {
                             "role": role,
                             "ok": False,
-                            "error": "openclaw agent request failed",
+                            "error": "ordlctl agent request failed",
                             "stderr": agent.get("stderr", ""),
                         }
                     )

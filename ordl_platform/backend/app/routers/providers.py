@@ -28,6 +28,8 @@ def upsert_credentials(
 ) -> dict:
     if payload.tenant_id != principal.tenant_id:
         raise HTTPException(status_code=403, detail='tenant scope denied')
+    if payload.provider not in PROVIDER_REGISTRY:
+        raise HTTPException(status_code=400, detail=f"unsupported provider: {payload.provider}")
 
     row = db.scalar(
         select(ProviderCredential).where(

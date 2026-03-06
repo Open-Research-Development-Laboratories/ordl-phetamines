@@ -1,13 +1,13 @@
 param(
   [string]$RepoRoot = "C:\Users\Winsock\Documents\GitHub\ordl-phetamines",
-  [string]$HubTaskName = "OpenClawHub-Autostart",
+  [string]$HubTaskName = "ordlctlHub-Autostart",
   [string]$ApiTaskName = "FleetAPI-Autostart",
   [string]$TunnelTaskName = "FleetTunnel-Autostart"
 )
 
 $ErrorActionPreference = "Stop"
 
-$hubInstaller = Join-Path $RepoRoot "fleet_api\scripts\install-openclaw-hub-autostart.ps1"
+$hubInstaller = Join-Path $RepoRoot "fleet_api\scripts\install-gateway-hub-autostart.ps1"
 $apiInstaller = Join-Path $RepoRoot "fleet_api\scripts\install-desktop-autostart.ps1"
 $tunnelInstaller = Join-Path $RepoRoot "fleet_api\scripts\install-cloudflared-autostart.ps1"
 

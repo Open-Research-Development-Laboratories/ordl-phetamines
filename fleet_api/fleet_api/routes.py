@@ -34,7 +34,7 @@ def info():
             "port": cfg.port,
             "workspace_root": str(cfg.workspace_root),
             "remote_workspace_root": cfg.remote_workspace_root,
-            "hub": {"host": cfg.hub_host, "port": cfg.hub_port, "agent_id": cfg.openclaw_agent_id},
+            "hub": {"host": cfg.hub_host, "port": cfg.hub_port, "agent_id": cfg.ordlctl_agent_id},
             "workers": workers,
             "roles_enabled": orch.list_worker_roles(enabled_only=True),
         }

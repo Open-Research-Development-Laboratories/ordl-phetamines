@@ -19,6 +19,7 @@ from app.routers import (
     orchestration,
     ops,
     policy,
+    protocols,
     providers,
     seats,
     workers,
@@ -55,6 +56,7 @@ def create_app() -> FastAPI:
     app.include_router(workers.router, prefix=settings.api_prefix)
     app.include_router(orchestration.router, prefix=settings.api_prefix)
     app.include_router(audit.router, prefix=settings.api_prefix)
+    app.include_router(protocols.router, prefix=settings.api_prefix)
     app.include_router(digestion.router, prefix=settings.api_prefix)
     return app
 

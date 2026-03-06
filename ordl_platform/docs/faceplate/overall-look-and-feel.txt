@@ -1,0 +1,70 @@
+ORDL: The Fleet IDE
+Visual language: Brutalist terminal meets mechanical watch movement.
+The Aesthetic: "Monochrome Machinery"
+Black and cream, but not flat:
+
+    Deep charcoal (#0a0a0a) backgrounds with warm cream (#f5f2e9) text
+    Amber accents only for alerts/errors (like old radar screens)
+    CRT phosphor glow on focused elements—subtle, not gimmicky
+    Paper textures for documentation panels (actual scanned paper, not fake noise)
+
+Typography:
+
+    Code: IBM Plex Mono (technical, open source)
+    UI: Space Grotesk or Helvetica Now (brutalist, engineered)
+    Fleet status: Dot-matrix style for live data (authentic retro-futurism)
+
+Never-Seen-Before Patterns
+1. The "Swarm Topology" View
+Instead of file trees, you see live force-directed graphs:
+
+    Nodes = agents (pulsing if active, dim if dormant)
+    Edges = communication channels (thickness = throughput)
+    Cream lines trace message paths in real-time
+    Click a node → it expands into its internal state machine
+
+2. Temporal Debugging (The "Determinism Slider")
+Since your swarms are deterministic, the IDE has a timeline scrubber:
+
+    Drag left = rewind fleet state to any point
+    Cream highlight shows the causal chain that led to current state
+    Branch points where agents diverged glow amber
+    Save any moment as a "test scenario" with one click
+
+3. The "Mentality" Panel
+Fleet-wide behavioral constraints as physical switches and dials:
+
+    Think aircraft cockpit—every policy is a tangible control
+    Flip a switch = instant propagation to all agents
+    Monochrome meters show compliance across the fleet
+
+4. Split-View: Individual vs. Collective
+Screen divides with a diagonal cream line:
+
+    Left (individual): Single agent's code, logs, local state
+    Right (collective): Fleet aggregate behavior, emergent patterns
+    Changes on left immediately show impact on right
+
+5. "Ghost Fleets" for Testing
+Deploy shadow copies of your fleet in translucent cream outlines alongside production:
+
+    See both behaviors overlaid
+    Divergences highlighted in amber
+    Promote ghost to production by sliding opacity to 100%
+
+The Flow
+plain
+Copy
+
+[Topology View] → [Select Agent/Policy] → [Edit] → [Ghost Test] → [Fleet Deploy]
+       ↑                                                              ↓
+   [Timeline Debug] ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← ← [Monitor]
+
+No tabs. Instead, cards that stack and fan like physical blueprints on a desk.
+The Vibe
+Not "futuristic." Industrial.
+
+    Exposed grid lines like engineering paper
+    Status indicators look like analog gauges
+    Tooltips appear as stamped markings
+    Loading states = mechanical rotations, not spinners

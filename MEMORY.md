@@ -13,7 +13,7 @@
 
 ### Fleet operations memory
 
-- Restart/resync failure root cause: `pkill -f openclaw-gateway` matched its own wrapper command.
+- Restart/resync failure root cause: `pkill -f ordlctl-gateway` matched its own wrapper command.
 - Durable fix: use `pkill -f '[o]penclaw-gateway'` in orchestrator restart/resync steps.
 - After patch, both workers restart and handshake cleanly.
 

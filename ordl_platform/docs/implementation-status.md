@@ -43,12 +43,35 @@
   - `GET /v1/workers/connectivity`
   - deterministic reconnect target ordering (last-known gateway first)
   - keepalive/probe timestamps and reconnect-required evaluation
+- Implemented protocol standards governance contracts:
+  - `POST /v1/protocols/standards`
+  - `GET /v1/protocols/standards`
+  - `POST /v1/protocols/standards/{id}/versions`
+  - `GET /v1/protocols/standards/{id}/versions`
+  - `POST /v1/protocols/bootstrap/adopted`
+  - `GET /v1/protocols/compatibility`
+  - `POST /v1/protocols/validate`
+  - `POST /v1/protocols/conformance/runs`
+  - `GET /v1/protocols/conformance/runs`
+  - tenant-scoped registry, deterministic compatibility matrix, and conformance evidence recording.
+- Added shipping scripts:
+  - `ordl_platform/scripts/bootstrap-adopted-standards.ps1`
+  - `ordl_platform/scripts/release-gate.ps1`
+- Added ORDL pilot bootstrap script:
+  - `ordl_platform/scripts/bootstrap-ordl-pilot.ps1`
+- Added production-first deployment profile artifacts:
+  - `ordl_platform/docs/deployment-first-pipeline.md`
+  - `ordl_platform/infra/podman-compose.prod.yml`
+  - `ordl_platform/infra/.env.prod.example`
+- Added backend security foundation for production:
+  - OIDC token validation path (`OIDC + JWKS`).
+  - Vault-backed secret resolver (`secret_backend=vault`).
+  - Expanded provider registry for multi-vendor onboarding.
 
 ## Remaining major implementation items
 
-- OIDC/SAML identity federation with break-glass flow.
-- Full provider execution adapters (real outbound provider calls with secret vault integration).
-- Protocol registry and conformance runtime (`protocols/standards`, `protocols/validate`, `protocols/conformance`).
+- Full SAML federation with break-glass flow.
+- Full provider execution adapters (real outbound calls and response streaming).
 - High-volume audit retention and archival tiering strategy.
 - Approval queue UX depth (parallel reviewers, SLA timers, escalations).
 - Signed extension package verification with asymmetric keys (Sigstore/cert chain).

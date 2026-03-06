@@ -177,8 +177,8 @@ Reporting chain requirements:
 
 ## 11) Fleet identity map
 
-- worker-arch-desktop (desktop / OpenClaw-OPb): `19cbcddf-d222-8483-8000-0000ab88f699`
-- worker-build-laptop (laptop / OpenClaw-a7c): `19cbcf0a-ca02-8803-8000-000008ecda2a`
+- worker-arch-desktop (desktop / ordlctl-OPb): `19cbcddf-d222-8483-8000-0000ab88f699`
+- worker-build-laptop (laptop / ordlctl-a7c): `19cbcf0a-ca02-8803-8000-000008ecda2a`
 - worker-batch-server (server): `TBD`
 
 ## 12) Memory policy

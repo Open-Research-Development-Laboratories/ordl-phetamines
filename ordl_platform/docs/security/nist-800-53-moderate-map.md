@@ -16,8 +16,8 @@ This map is implementation-oriented and evidence-based.
 - CM-6: Security-relevant defaults (zero-trust ingress, signed extensions).
 
 ## Identification and Authentication
-- IA-2: Bearer token auth in v1, designed for OIDC/SAML federation.
-- IA-5: Secret-backed token signing and extension signature verification.
+- IA-2: Bearer token auth with OIDC JWT validation (JWKS) and scoped principal mapping.
+- IA-5: Vault-backed secret retrieval and secret-backed token signing/extension verification.
 
 ## System and Communications Protection
 - SC-7: Ingress policy defaults to zero-trust.

@@ -1,4 +1,4 @@
-﻿param(
+param(
   [int]$DurationSeconds = 600,
   [int]$PollSeconds = 2,
   [switch]$Once
@@ -6,11 +6,11 @@
 
 $ErrorActionPreference = "Stop"
 $deadline = (Get-Date).AddSeconds([Math]::Max(1, $DurationSeconds))
-Write-Host "Watching OpenClaw pending devices..."
+Write-Host "Watching ordlctl pending devices..."
 
 while ($true) {
   try {
-    $raw = openclaw devices list --json
+    $raw = ordlctl devices list --json
     $obj = $raw | ConvertFrom-Json
     $pending = @($obj.pending)
 
@@ -19,7 +19,7 @@ while ($true) {
       foreach ($req in $pending) {
         if ($null -ne $req.requestId -and "$($req.requestId)" -ne "") {
           Write-Host ("Approving requestId={0}" -f $req.requestId)
-          openclaw devices approve $req.requestId | Out-Host
+          ordlctl devices approve $req.requestId | Out-Host
         }
       }
     }

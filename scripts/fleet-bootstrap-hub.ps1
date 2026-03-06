@@ -4,8 +4,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-if (-not (Get-Command openclaw -ErrorAction SilentlyContinue)) {
-  throw "openclaw not found in PATH"
+if (-not (Get-Command ordlctl -ErrorAction SilentlyContinue)) {
+  throw "ordlctl not found in PATH"
 }
 
 function Get-DefaultLanIp {
@@ -24,7 +24,7 @@ if (-not $LanIp -or [string]::IsNullOrWhiteSpace($LanIp)) {
 }
 $LanIp = (($LanIp | Out-String).Trim())
 
-$cfgPath = Join-Path $HOME ".openclaw\openclaw.json"
+$cfgPath = Join-Path $HOME ".ordlctl\ordlctl.json"
 $cfg = Get-Content -Raw $cfgPath | ConvertFrom-Json
 
 if (-not $cfg.gateway) { $cfg | Add-Member -NotePropertyName gateway -NotePropertyValue ([pscustomobject]@{}) }
@@ -61,7 +61,7 @@ if ($LanIp -match '^\d{1,3}(\.\d{1,3}){3}$') {
 }
 
 Write-Host "[hub-win] token:"
-openclaw config get gateway.auth.token
+ordlctl config get gateway.auth.token
 
 Write-Host "[hub-win] run:"
-Write-Host "openclaw gateway run --bind lan"
+Write-Host "ordlctl gateway run --bind lan"

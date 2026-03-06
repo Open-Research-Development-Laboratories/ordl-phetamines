@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -17,6 +17,12 @@ router = APIRouter(prefix='/auth', tags=['auth'])
 
 @router.post('/token', response_model=TokenResponse)
 def issue_token(payload: TokenRequest, db: Session = Depends(get_db)) -> TokenResponse:
+    from app.config import get_settings
+
+    settings = get_settings()
+    if settings.oidc_required and not settings.allow_local_token_issuer:
+        raise HTTPException(status_code=403, detail="local token issuance disabled in oidc-required mode")
+
     tenant = db.scalar(select(Tenant).where(Tenant.name == payload.tenant_name))
     if tenant is None:
         tenant = Tenant(name=payload.tenant_name, tenant_type='organization')
@@ -38,9 +44,6 @@ def issue_token(payload: TokenRequest, db: Session = Depends(get_db)) -> TokenRe
         user.display_name = payload.display_name or user.display_name
         user.roles_json = json.dumps(payload.roles, sort_keys=True)
 
-    from app.config import get_settings
-
-    settings = get_settings()
     token = create_access_token(
         user_id=user.id,
         tenant_id=tenant.id,

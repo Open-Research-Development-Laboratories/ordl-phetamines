@@ -50,7 +50,7 @@ async function main() {
   }
 
   // Operator-facing dispatch path. This is for local controlled automation.
-  const result = execFileSync('openclaw', ['message', 'send', '--channel', channel, '--target', target, '--message', msg], { encoding: 'utf8' });
+  const result = execFileSync('ordlctl', ['message', 'send', '--channel', channel, '--target', target, '--message', msg], { encoding: 'utf8' });
   process.stdout.write(result);
 }
 

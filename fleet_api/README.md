@@ -1,10 +1,10 @@
 # Fleet API
 
-Flask control plane for your OpenClaw/Kimi fleet.
+Flask control plane for your ordlctl/Kimi fleet.
 
 It wraps:
 - Worker SSH orchestration (status, restart, resync, corpus sync)
-- Desktop OpenClaw pairing approvals
+- Desktop ordlctl pairing approvals
 - Dispatch contract build/validation
 - Local policy snapshot/tests/decisions
 - Async jobs with status tracking
@@ -45,7 +45,7 @@ Desktop autostart:
 powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\install-desktop-autostart.ps1
 ```
 
-Desktop autostart (OpenClaw hub + API + Cloudflare tunnel):
+Desktop autostart (ordlctl hub + API + Cloudflare tunnel):
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\install-all-autostart.ps1
@@ -69,10 +69,10 @@ Specific roles only:
 powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\resync-fleet-tokens.ps1 -Roles worker-build-laptop,worker-batch-server
 ```
 
-Stage latest worker handoff reports into OpenClaw chat (for human-in-the-middle review):
+Stage latest worker handoff reports into ordlctl chat (for human-in-the-middle review):
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\stage-worker-reports-to-openclaw-chat.ps1
+powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\stage-worker-reports-to-gateway-chat.ps1
 ```
 
 Run full middle-man checkpoint cycle (stage then operator pause):
@@ -140,12 +140,12 @@ Invoke-RestMethod http://127.0.0.1:8890/v1/fleet/stage-handoff -Method Post -Hea
 
 ## Notes
 
-- Resync pulls token values from local desktop `openclaw config get ...` outputs and pushes them to workers.
+- Resync pulls token values from local desktop `ordlctl config get ...` outputs and pushes them to workers.
 - Corpus sync may fail on root-owned remote files; the API reports each failed path so you can correct permissions.
 - `start-cloudflared.ps1` uses named tunnel mode when `CLOUDFLARE_TUNNEL_TOKEN` is set, else quick tunnel mode.
-- `start-openclaw-hub.ps1` starts `openclaw gateway run --bind lan` for worker connectivity.
+- `start-gateway-hub.ps1` starts `ordlctl gateway run --bind lan` for worker connectivity.
 - Run `install-linux-worker-autostart.sh` on each Linux worker host (laptop/server) to survive reboot.
 - Job events are written to:
   - `fleet_api/state/jobs-events.jsonl`
 - Middle-man flow runbook:
-  - `fleet_api/docs/middleman-openclaw-flow.md`
+  - `fleet_api/docs/middleman-gateway-flow.md`

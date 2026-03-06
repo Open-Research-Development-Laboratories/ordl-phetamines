@@ -10,6 +10,7 @@ from app.config import get_settings
 from app.db import get_db
 from app.dispatch import create_dispatch
 from app.models import CollabMessage, DispatchRequest, DispatchResult
+from app.providers import PROVIDER_REGISTRY
 from app.schemas import DispatchCreate, DispatchOut, DispatchResultOut
 from app.security import Principal, get_current_principal
 
@@ -37,6 +38,8 @@ def dispatch_work(
     db: Session = Depends(get_db),
 ) -> DispatchOut:
     ensure_project_scope(db, principal, payload.project_id)
+    if payload.provider not in PROVIDER_REGISTRY:
+        raise HTTPException(status_code=422, detail=f"unsupported provider: {payload.provider}")
 
     auth = evaluate_authorization(principal, action='dispatch', high_risk=True)
     if auth.decision != 'allow':

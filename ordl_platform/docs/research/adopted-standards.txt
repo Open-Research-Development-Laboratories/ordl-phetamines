@@ -1,0 +1,87 @@
+ORDL Adopted and Target Standards
+As of: 2026-03-06 (America/New_York)
+
+Purpose
+- This file is the canonical standards baseline for ORDL platform implementation.
+- "Adopted" means standard is in active implementation scope now.
+- "Target" means design-ready and tracked for staged adoption.
+
+1) Adopted now (implementation required)
+
+1.1 MCP (Model Context Protocol)
+- Role: agent-to-tool and agent-to-data interoperability.
+- Status in ecosystem: mature open standard with broad client/server support.
+- Governance signal: MCP moved under the Linux Foundation Agentic AI Foundation on 2025-12-09.
+- ORDL requirement:
+  - Provider/tool adapters MUST expose MCP-compatible interfaces where applicable.
+  - Capability metadata MUST be explicit and versioned.
+  - Policy gateway MUST gate outbound tool actions.
+
+1.2 A2A (Agent2Agent)
+- Role: agent-to-agent interoperability across frameworks/vendors.
+- Public launch date: 2025-04-09 (Google announcement).
+- Governance signal: Linux Foundation A2A project launch on 2025-06-23.
+- ORDL requirement:
+  - Fleet dispatch MUST support role/group/individual targeting with deterministic routing.
+  - Agent capability discovery and long-running task coordination MUST be supported.
+  - Cross-agent message exchange MUST be auditable and policy-gated.
+
+1.3 WebMCP
+- Role: browser-side agent tool exposure for web applications.
+- Public signal: Chrome early preview published 2026-02-10.
+- ORDL requirement:
+  - Web surfaces SHOULD support declarative and imperative tool interfaces.
+  - Browser-side agent actions MUST remain user-governed and observable.
+  - WebMCP support is enabled as "early support" feature flag in ORDL until broader standard stabilization.
+
+2) Active target standards (tracked and staged)
+
+2.1 W3C AI Agent Protocol Community Group
+- Scope: inter-agent communication, identity, metadata formats, and security/privacy mechanisms.
+- ORDL action:
+  - Track published drafts and protocol shape changes.
+  - Keep ORDL protocol contracts versioned and mapped to W3C draft concepts.
+
+2.2 Agent Network Protocol (ANP) drafts
+- Scope: decentralized inter-agent networking and identity-first collaboration patterns.
+- ORDL action:
+  - Track as an extension profile and evaluate for mesh/fallback routing.
+  - No hard dependency for GA until spec stability improves.
+
+2.3 NIST AI Agent Standards Initiative
+- NIST page created: 2026-02-17.
+- Strategic pillars include:
+  - industry-led standards and open protocols,
+  - open ecosystem/security collaboration,
+  - authentication/identity/security evaluation.
+- ORDL action:
+  - Keep controls mapped to NIST-aligned evidence artifacts.
+  - Treat interoperability and security posture as testable release gates.
+
+3) ORDL protocol implementation baseline
+
+3.1 Required platform capabilities
+- Protocol registry with version lifecycle.
+- Compatibility matrix per project.
+- Deterministic protocol validation endpoint.
+- Conformance run recording with evidence references.
+- Audit trail entries for all protocol governance mutations.
+
+3.2 Required API contract
+- POST /v1/protocols/standards
+- GET /v1/protocols/standards
+- POST /v1/protocols/standards/{id}/versions
+- GET /v1/protocols/compatibility
+- POST /v1/protocols/validate
+- POST /v1/protocols/conformance/runs
+
+4) Source anchors (primary)
+- MCP home: https://modelcontextprotocol.io/
+- MCP governance update (2025-12-09): https://blog.modelcontextprotocol.io/posts/2025-12-09-mcp-joins-agentic-ai-foundation/
+- A2A launch (Google, 2025-04-09): https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/
+- A2A under Linux Foundation (2025-06-23): https://www.linuxfoundation.org/press/linux-foundation-launches-the-agent2agent-protocol-project-to-enable-secure-intelligent-communication-between-ai-agents
+- A2A project repo: https://github.com/a2aproject/A2A
+- WebMCP early preview (Chrome, 2026-02-10): https://developer.chrome.com/blog/webmcp-epp
+- WebMCP repo/spec work: https://github.com/webmachinelearning/webmcp
+- W3C AI Agent Protocol Community Group: https://www.w3.org/community/agentprotocol/
+- NIST AI Agent Standards Initiative: https://www.nist.gov/caisi/ai-agent-standards-initiative

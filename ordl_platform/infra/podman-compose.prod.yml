@@ -1,0 +1,100 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ordl}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
+      POSTGRES_DB: ${POSTGRES_DB:-ordl}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  valkey:
+    image: valkey/valkey:8
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-ordlminio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-change-me}
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ..
+      dockerfile: ordl_platform/infra/Dockerfile.backend
+    environment:
+      ORDL_ENVIRONMENT: production
+      ORDL_DATABASE_URL: ${ORDL_DATABASE_URL:-postgresql+psycopg://ordl:change-me@postgres:5432/ordl}
+      ORDL_POLICY_SECRET: ${ORDL_POLICY_SECRET}
+      ORDL_AUTH_SECRET: ${ORDL_AUTH_SECRET}
+      ORDL_EXTENSION_SIGNING_SECRET: ${ORDL_EXTENSION_SIGNING_SECRET}
+      ORDL_SECRET_BACKEND: ${ORDL_SECRET_BACKEND:-vault}
+      ORDL_VAULT_URL: ${ORDL_VAULT_URL}
+      ORDL_VAULT_TOKEN_ENV_VAR: ${ORDL_VAULT_TOKEN_ENV_VAR:-VAULT_TOKEN}
+      ORDL_VAULT_KV_MOUNT: ${ORDL_VAULT_KV_MOUNT:-secret}
+      ORDL_VAULT_KV_PATH: ${ORDL_VAULT_KV_PATH:-ordl}
+      ORDL_OIDC_ENABLED: ${ORDL_OIDC_ENABLED:-true}
+      ORDL_OIDC_REQUIRED: ${ORDL_OIDC_REQUIRED:-true}
+      ORDL_OIDC_ISSUER: ${ORDL_OIDC_ISSUER}
+      ORDL_OIDC_JWKS_URL: ${ORDL_OIDC_JWKS_URL}
+      ORDL_OIDC_AUDIENCE: ${ORDL_OIDC_AUDIENCE}
+      ORDL_ALLOW_LOCAL_TOKEN_ISSUER: ${ORDL_ALLOW_LOCAL_TOKEN_ISSUER:-false}
+      ORDL_STORAGE_BACKEND: s3
+      ORDL_STORAGE_BUCKET: ${ORDL_STORAGE_BUCKET:-ordl-artifacts}
+      ORDL_STORAGE_LOCAL_ROOT: /data/artifacts
+      VAULT_TOKEN: ${VAULT_TOKEN}
+    depends_on:
+      - postgres
+      - valkey
+      - minio
+    ports:
+      - "8891:8891"
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: ..
+      dockerfile: ordl_platform/infra/Dockerfile.backend
+    command: ["python", "-m", "app.worker"]
+    environment:
+      ORDL_ENVIRONMENT: production
+      ORDL_DATABASE_URL: ${ORDL_DATABASE_URL:-postgresql+psycopg://ordl:change-me@postgres:5432/ordl}
+      ORDL_POLICY_SECRET: ${ORDL_POLICY_SECRET}
+      ORDL_AUTH_SECRET: ${ORDL_AUTH_SECRET}
+      ORDL_EXTENSION_SIGNING_SECRET: ${ORDL_EXTENSION_SIGNING_SECRET}
+      ORDL_SECRET_BACKEND: ${ORDL_SECRET_BACKEND:-vault}
+      ORDL_VAULT_URL: ${ORDL_VAULT_URL}
+      ORDL_VAULT_TOKEN_ENV_VAR: ${ORDL_VAULT_TOKEN_ENV_VAR:-VAULT_TOKEN}
+      ORDL_VAULT_KV_MOUNT: ${ORDL_VAULT_KV_MOUNT:-secret}
+      ORDL_VAULT_KV_PATH: ${ORDL_VAULT_KV_PATH:-ordl}
+      ORDL_OIDC_ENABLED: ${ORDL_OIDC_ENABLED:-true}
+      ORDL_OIDC_REQUIRED: ${ORDL_OIDC_REQUIRED:-true}
+      ORDL_OIDC_ISSUER: ${ORDL_OIDC_ISSUER}
+      ORDL_OIDC_JWKS_URL: ${ORDL_OIDC_JWKS_URL}
+      ORDL_OIDC_AUDIENCE: ${ORDL_OIDC_AUDIENCE}
+      ORDL_ALLOW_LOCAL_TOKEN_ISSUER: ${ORDL_ALLOW_LOCAL_TOKEN_ISSUER:-false}
+      VAULT_TOKEN: ${VAULT_TOKEN}
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: ordl_platform/infra/Dockerfile.frontend
+    environment:
+      VITE_ORDL_API_BASE: ${VITE_ORDL_API_BASE:-http://localhost:8891/v1}
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  minio_data:

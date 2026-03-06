@@ -12,7 +12,7 @@ function run(cmd, args) {
 async function sendDiscordAlert(params) {
   const { target, message } = params;
   if (!target) return { ok: false, skipped: true, reason: 'no target' };
-  return run('openclaw', ['message', 'send', '--channel', 'discord', '--target', target, '--message', message]);
+  return run('ordlctl', ['message', 'send', '--channel', 'discord', '--target', target, '--message', message]);
 }
 
 async function sendEmailAlert(params) {

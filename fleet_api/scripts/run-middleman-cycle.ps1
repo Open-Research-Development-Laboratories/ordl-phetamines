@@ -10,7 +10,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = "C:\Users\Winsock\Documents\GitHub\ordl-phetamines"
-$stageScript = Join-Path $repoRoot "fleet_api\scripts\stage-worker-reports-to-openclaw-chat.ps1"
+$stageScript = Join-Path $repoRoot "fleet_api\scripts\stage-worker-reports-to-gateway-chat.ps1"
 $reworkScript = Join-Path $repoRoot "fleet_api\scripts\rework-worker-reports.ps1"
 
 if (-not (Test-Path $stageScript)) {
@@ -22,7 +22,7 @@ if (-not (Test-Path $reworkScript)) {
 
 Write-Host ""
 Write-Host "=== Fleet Middle-Man Cycle ==="
-Write-Host "Step 1/3: Stage latest worker reports into OpenClaw chat..."
+Write-Host "Step 1/3: Stage latest worker reports into ordlctl chat..."
 Write-Host ""
 
 $stageParams = @{
@@ -40,10 +40,10 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host ""
 Write-Host "Step 2/3: Middle-man review checkpoint."
-Write-Host "Review/edit in OpenClaw chat."
+Write-Host "Review/edit in ordlctl chat."
 Write-Host ""
 Write-Host "Session status command:"
-Write-Host "  openclaw sessions --json"
+Write-Host "  ordlctl sessions --json"
 Write-Host ""
 
 if ($Feedback) {
@@ -61,7 +61,7 @@ if ($Feedback) {
     throw "Worker rework failed."
   }
   Write-Host ""
-  Write-Host "Step 3/3: Restaging revised reports into OpenClaw chat..."
+  Write-Host "Step 3/3: Restaging revised reports into ordlctl chat..."
   & $stageScript @stageParams
   if ($LASTEXITCODE -ne 0) {
     throw "Restaging revised reports failed."
@@ -109,14 +109,14 @@ while ($true) {
   }
 
   Write-Host ""
-  Write-Host "Step 3/3: Restaging revised reports into OpenClaw chat..."
+  Write-Host "Step 3/3: Restaging revised reports into ordlctl chat..."
   & $stageScript @stageParams
   if ($LASTEXITCODE -ne 0) {
     throw "Restaging revised reports failed."
   }
 
   Write-Host ""
-  Write-Host "Rework submitted and restaged. Review in OpenClaw chat, then choose next loop action."
+  Write-Host "Rework submitted and restaged. Review in ordlctl chat, then choose next loop action."
 }
 
 Write-Host ""

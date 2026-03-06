@@ -19,7 +19,7 @@ def _bootstrap_imports() -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Resync worker OpenClaw/Kimi credentials from desktop local config "
+            "Resync worker ordlctl/Kimi credentials from desktop local config "
             "without manually copying tokens."
         )
     )

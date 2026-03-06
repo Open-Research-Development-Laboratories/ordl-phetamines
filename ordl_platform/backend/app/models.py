@@ -227,7 +227,7 @@ class JobDeliveryReceipt(Base):
     job_run_id: Mapped[str] = mapped_column(String(36), ForeignKey("job_runs.id"), index=True)
     project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
     recipient: Mapped[str] = mapped_column(String(255), nullable=False)
-    channel: Mapped[str] = mapped_column(String(64), default="openclaw_chat")
+    channel: Mapped[str] = mapped_column(String(64), default="ordlctl_chat")
     status: Mapped[str] = mapped_column(String(32), default="delivered")
     detail_json: Mapped[str] = mapped_column(Text, default="{}")
     delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -333,6 +333,66 @@ class ProviderCredential(Base):
     configured: Mapped[str] = mapped_column(String(8), default="false")
     metadata_json: Mapped[str] = mapped_column(Text, default="{}")
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class ProtocolStandard(Base):
+    __tablename__ = "protocol_standards"
+    __table_args__ = (UniqueConstraint("tenant_id", "code", name="uq_protocol_standard_tenant_code"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    tenant_id: Mapped[str] = mapped_column(String(36), ForeignKey("tenants.id"), index=True)
+    code: Mapped[str] = mapped_column(String(64), nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    domain: Mapped[str] = mapped_column(String(64), default="general")
+    steward: Mapped[str] = mapped_column(String(200), default="")
+    home_url: Mapped[str] = mapped_column(String(512), default="")
+    status: Mapped[str] = mapped_column(String(32), default="adopted")
+    adoption_tier: Mapped[str] = mapped_column(String(32), default="recommended")
+    description: Mapped[str] = mapped_column(Text, default="")
+    tags_json: Mapped[str] = mapped_column(Text, default="[]")
+    source_urls_json: Mapped[str] = mapped_column(Text, default="[]")
+    created_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class ProtocolStandardVersion(Base):
+    __tablename__ = "protocol_standard_versions"
+    __table_args__ = (UniqueConstraint("standard_id", "version", name="uq_protocol_standard_version"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    standard_id: Mapped[str] = mapped_column(String(36), ForeignKey("protocol_standards.id"), index=True)
+    version: Mapped[str] = mapped_column(String(64), nullable=False)
+    lifecycle_status: Mapped[str] = mapped_column(String(32), default="adopted")
+    specification_url: Mapped[str] = mapped_column(String(512), default="")
+    schema_uri: Mapped[str] = mapped_column(String(512), default="")
+    required_by_default: Mapped[int] = mapped_column(Integer, default=0)
+    change_notes: Mapped[str] = mapped_column(Text, default="")
+    compatibility_json: Mapped[str] = mapped_column(Text, default="{}")
+    released_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    deprecated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class ProtocolConformanceRun(Base):
+    __tablename__ = "protocol_conformance_runs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    standard_id: Mapped[str] = mapped_column(String(36), ForeignKey("protocol_standards.id"), index=True)
+    standard_version_id: Mapped[str | None] = mapped_column(
+        String(36), ForeignKey("protocol_standard_versions.id"), nullable=True, index=True
+    )
+    suite_name: Mapped[str] = mapped_column(String(200), default="default")
+    target_scope: Mapped[str] = mapped_column(String(64), default="project")
+    status: Mapped[str] = mapped_column(String(16), default="pass")
+    score: Mapped[int] = mapped_column(Integer, default=100)
+    findings_json: Mapped[str] = mapped_column(Text, default="[]")
+    evidence_refs_json: Mapped[str] = mapped_column(Text, default="[]")
+    run_metadata_json: Mapped[str] = mapped_column(Text, default="{}")
+    executed_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
 class AuditEvent(Base):
