@@ -75,6 +75,11 @@
   - Added queue-throttled probe/reconnect action scheduling based on stale keepalive/down state.
   - Added optional daemon lifecycle loop (FastAPI lifespan) to execute enabled monitor runs continuously when configured.
   - Added regression tests for monitor run behavior, throttle dedupe, and force-run semantics.
+- Implemented worker action execution pipeline contracts:
+  - `GET /v1/workers/{worker_id}/actions/pending` for worker pull-based action retrieval.
+  - `POST /v1/workers/actions/{action_id}/ack` for explicit progress/final acknowledgement.
+  - Added terminal-state transition guardrails and audit logging for acknowledged actions.
+  - Added regression tests for pending/ack flow and tenant isolation.
 
 ## Remaining major implementation items
 

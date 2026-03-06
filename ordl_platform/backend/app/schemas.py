@@ -181,6 +181,32 @@ class DispatchOut(BaseModel):
     state: str
 
 
+class DispatchExecuteRequest(BaseModel):
+    force: bool = False
+
+
+class DispatchExecutionOut(BaseModel):
+    id: str
+    dispatch_request_id: str
+    started_by_user_id: str
+    status: str
+    provider_reference: str
+    output_text: str
+    error_text: str
+    started_at: str | None
+    completed_at: str | None
+
+
+class DispatchEventOut(BaseModel):
+    id: str
+    execution_id: str
+    dispatch_request_id: str
+    sequence: int
+    event_type: str
+    event_payload: dict[str, Any]
+    created_at: str | None
+
+
 class DispatchResultOut(BaseModel):
     id: str
     dispatch_request_id: str
@@ -263,6 +289,22 @@ class WorkerOut(BaseModel):
 
 class WorkerActionRequest(BaseModel):
     action: str
+    notes: str = ""
+
+
+class WorkerActionOut(BaseModel):
+    id: str
+    worker_id: str
+    action: str
+    status: str
+    notes: str
+    created_at: str | None
+
+
+class WorkerActionAckRequest(BaseModel):
+    status: Literal["in_progress", "completed", "failed", "deferred"] = "completed"
+    result: dict[str, Any] = Field(default_factory=dict)
+    error: str = ""
     notes: str = ""
 
 

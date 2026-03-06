@@ -391,6 +391,35 @@ class DispatchResult(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+class DispatchExecution(Base):
+    __tablename__ = "dispatch_executions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    dispatch_request_id: Mapped[str] = mapped_column(String(36), ForeignKey("dispatch_requests.id"), index=True)
+    started_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    status: Mapped[str] = mapped_column(String(32), default="running", index=True)
+    provider_reference: Mapped[str] = mapped_column(String(255), default="")
+    output_text: Mapped[str] = mapped_column(Text, default="")
+    error_text: Mapped[str] = mapped_column(Text, default="")
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class DispatchEvent(Base):
+    __tablename__ = "dispatch_events"
+    __table_args__ = (UniqueConstraint("execution_id", "sequence", name="uq_dispatch_event_execution_sequence"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    execution_id: Mapped[str] = mapped_column(String(36), ForeignKey("dispatch_executions.id"), index=True)
+    dispatch_request_id: Mapped[str] = mapped_column(String(36), ForeignKey("dispatch_requests.id"), index=True)
+    sequence: Mapped[int] = mapped_column(Integer, default=1)
+    event_type: Mapped[str] = mapped_column(String(64), default="info")
+    event_payload_json: Mapped[str] = mapped_column(Text, default="{}")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 class PolicyDecision(Base):
     __tablename__ = "policy_decisions"
 

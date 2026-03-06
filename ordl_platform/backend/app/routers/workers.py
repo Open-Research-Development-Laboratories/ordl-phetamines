@@ -27,6 +27,8 @@ from app.models import (
 )
 from app.policy import hash_request, validate_policy_token
 from app.schemas import (
+    WorkerActionAckRequest,
+    WorkerActionOut,
     WorkerActionRequest,
     WorkerConnectivityOut,
     WorkerMonitorConfigOut,
@@ -217,6 +219,17 @@ def _monitor_out(row: WorkerConnectivityMonitor) -> WorkerMonitorConfigOut:
     )
 
 
+def _action_out(row: WorkerAction) -> WorkerActionOut:
+    return WorkerActionOut(
+        id=row.id,
+        worker_id=row.worker_id,
+        action=row.action,
+        status=row.status,
+        notes=row.notes,
+        created_at=_iso_or_none(row.created_at),
+    )
+
+
 def _select_workers_for_campaign(
     campaign: WorkerUpdateCampaign,
     workers: list[WorkerInstance],
@@ -383,6 +396,83 @@ def queue_worker_action(
     db.add(action)
     db.commit()
     return {'worker_action_id': action.id, 'status': action.status}
+
+
+@router.get('/{worker_id}/actions/pending', response_model=list[WorkerActionOut])
+def list_pending_worker_actions(
+    worker_id: str,
+    limit: int = 50,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> list[WorkerActionOut]:
+    worker = db.get(WorkerInstance, worker_id)
+    if worker is None:
+        raise HTTPException(status_code=404, detail='worker not found')
+    ensure_project_scope(db, principal, worker.project_id)
+    _authorize_worker_action(principal)
+
+    safe_limit = max(1, min(limit, 200))
+    rows = db.scalars(
+        select(WorkerAction)
+        .where(
+            WorkerAction.worker_id == worker.id,
+            WorkerAction.status.in_(['queued', 'in_progress', 'deferred']),
+        )
+        .order_by(WorkerAction.created_at.asc())
+        .limit(safe_limit)
+    ).all()
+    return [_action_out(row) for row in rows]
+
+
+@router.post('/actions/{action_id}/ack', response_model=WorkerActionOut)
+def acknowledge_worker_action(
+    action_id: str,
+    payload: WorkerActionAckRequest,
+    principal: Principal = Depends(get_current_principal),
+    db: Session = Depends(get_db),
+) -> WorkerActionOut:
+    row = db.get(WorkerAction, action_id)
+    if row is None:
+        raise HTTPException(status_code=404, detail='worker action not found')
+    worker = db.get(WorkerInstance, row.worker_id)
+    if worker is None:
+        raise HTTPException(status_code=404, detail='worker not found')
+    ensure_project_scope(db, principal, worker.project_id)
+    _authorize_worker_action(principal)
+
+    if row.status in {'completed', 'failed'} and row.status != payload.status:
+        raise HTTPException(status_code=400, detail='terminal action cannot change status')
+
+    now = datetime.now(timezone.utc)
+    row.status = payload.status
+    ack_payload = {
+        'acked_at': now.isoformat(),
+        'acked_by_user_id': principal.user_id,
+        'status': payload.status,
+        'result': payload.result,
+        'error': payload.error,
+        'notes': payload.notes,
+    }
+    ack_line = _dump_json(ack_payload)
+    row.notes = f"{row.notes}\n{ack_line}".strip() if row.notes else ack_line
+
+    append_audit_event(
+        db,
+        tenant_id=principal.tenant_id,
+        project_id=worker.project_id,
+        event_type='worker_action.acknowledged',
+        payload={
+            'worker_action_id': row.id,
+            'worker_id': worker.id,
+            'action': row.action,
+            'status': row.status,
+            'has_error': bool(payload.error),
+        },
+        actor=build_actor_snapshot(db, principal, worker.project_id),
+        resource={'resource_type': 'worker_action', 'resource_id': row.id},
+    )
+    db.commit()
+    return _action_out(row)
 
 
 @router.post('/{worker_id}/heartbeat')
