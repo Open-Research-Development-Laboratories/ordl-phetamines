@@ -4,6 +4,9 @@ from datetime import datetime, timezone
 
 from fleet_api.fleet_api.orchestrator import (
     _evaluate_pairings,
+    _order_gateway_candidates,
+    _order_roles_for_canary,
+    _line_timestamp,
     _normalize_signal_lines,
     _summarize_worker_signals,
 )
@@ -42,3 +45,42 @@ def test_evaluate_pairings_marks_missing_hosts() -> None:
     result = _evaluate_pairings(paired, expected_hosts=["10.0.0.28", "10.0.0.27"])
     assert result["all_paired"] is False
     assert result["missing_hosts"] == ["10.0.0.27"]
+
+
+def test_line_timestamp_parses_prefixed_worker_log_line() -> None:
+    line = "/home/winsock/openclaw-worker.log:2026-03-06T09:07:40.190Z [gateway] [kimi-bridge] [gateway] handshake complete"
+    ts = _line_timestamp(line)
+    assert ts is not None
+    assert ts.isoformat().startswith("2026-03-06T09:07:40.190")
+
+
+def test_summarize_worker_signals_treats_auth_failed_as_warning_only() -> None:
+    now = datetime.fromisoformat("2026-03-06T09:09:00+00:00").astimezone(timezone.utc)
+    lines = [
+        "2026-03-06T09:08:05.271Z [gateway] [kimi-bridge] [gateway] handshake complete",
+        "2026-03-06T09:08:05.272Z [gateway] [kimi-bridge] local gateway connected url=ws://10.0.0.48:18789",
+        "2026-03-06T09:08:06.432Z [gateway] [kimi-bridge] [bridge-acp] auth failed (http 401), will not retry",
+    ]
+    summary = _summarize_worker_signals(lines, max_age_seconds=5 * 60, now=now)
+
+    assert summary["has_handshake"] is True
+    assert summary["has_local_gateway"] is True
+    assert summary["recent_handshake"] is True
+    assert summary["recent_local_gateway"] is True
+    assert summary["has_critical_errors"] is False
+    assert summary["has_warning_errors"] is True
+
+
+def test_order_gateway_candidates_prioritizes_last_success() -> None:
+    ordered = _order_gateway_candidates(
+        "ws://10.0.0.48:18789",
+        ["wss://flint.org.org", "ws://10.0.0.48:18789"],
+    )
+    assert ordered[0] == "ws://10.0.0.48:18789"
+    assert ordered[1] == "wss://flint.org.org"
+
+
+def test_order_roles_for_canary() -> None:
+    roles = ["worker-build-laptop", "worker-batch-server"]
+    ordered = _order_roles_for_canary(roles, "worker-batch-server")
+    assert ordered == ["worker-batch-server", "worker-build-laptop"]

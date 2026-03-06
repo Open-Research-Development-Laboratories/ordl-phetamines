@@ -7,3 +7,10 @@
 2026-03-06T03:59:08.722Z [ws] closed before connect conn=c3e7b212-c402-41c8-a2e2-2a6e7862b4f8 remote=10.0.0.48 fwd=n/a origin=http://127.0.0.1:18789 host=10.0.0.48:18789 ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:148.0) Gecko/20100101 Firefox/148.0 code=1001 reason=n/a
 2026-03-06T04:54:04.248Z [gateway] [kimi-bridge] [acp] request failed code=-32020 message=invalid agent params: unknown agent id "arch"
 2026-03-06T07:06:15.778Z [bonjour] watchdog detected non-announced service; attempting re-advertise (gateway fqdn=DESKTOP-INGSFGP (OpenClaw) (2)._openclaw-gw._tcp.local. host=openclaw-(2).local. port=18789 state=probing)
+2026-03-06T08:15:16.306Z [bonjour] watchdog detected non-announced service; attempting re-advertise (gateway fqdn=DESKTOP-INGSFGP (OpenClaw) (2)._openclaw-gw._tcp.local. host=openclaw-(2).local. port=18789 state=probing)
+2026-03-06T08:48:16.000Z [gateway] [kimi-bridge] [bridge-acp] closed code=1006 reason=
+2026-03-06T08:48:16.005Z [gateway] [kimi-bridge] bridge ACP disconnected
+2026-03-06T08:48:18.677Z [gateway] [kimi-bridge] [bridge-acp] auth failed (http 401), will not retry
+2026-03-06T08:49:18.684Z [gateway] [kimi-bridge] [bridge-acp] error: Error: Opening handshake has timed out
+2026-03-06T08:49:18.690Z [gateway] [kimi-bridge] [bridge-acp] closed code=1006 reason=
+2026-03-06T08:49:18.694Z [gateway] [kimi-bridge] bridge ACP disconnected

@@ -281,3 +281,30 @@ B
 2026-03-06T07:37:16.148Z [discord] logged in to discord as 1478622492850524361 (ordl-phetamines)
 2026-03-06T08:02:51.006Z [discord] gateway: Attempting resume with backoff: 1000ms
 2026-03-06T08:02:51.046Z [discord] gateway: WebSocket connection closed with code 1005
+2026-03-06T08:37:14.426Z [health-monitor] [discord:default] health-monitor: restarting (reason: stale-socket)
+2026-03-06T08:37:15.065Z [discord] [default] Discord Message Content Intent is limited; bots under 100 servers can use it without verification.
+2026-03-06T08:37:15.071Z [discord] [default] starting provider (@ordl-phetamines)
+2026-03-06T08:37:15.238Z [discord] channels resolved: guild:1379869404359295048→1379869404359295048 (guild:Open Research and Development Laboratories)
+2026-03-06T08:37:15.244Z [discord] users resolved: 324723660042534922→324723660042534922
+2026-03-06T08:37:15.249Z [discord] channel users resolved: 324723660042534922→324723660042534922
+2026-03-06T08:37:17.058Z [discord] logged in to discord as 1478622492850524361 (ordl-phetamines)
+2026-03-06T08:47:52.358Z [ws] webchat disconnected code=1006 reason=n/a conn=9b8191d3-a82f-42d1-916a-c2d142c526b3
+2026-03-06T08:47:59.840Z [ws] webchat connected conn=3dc0e55a-25e9-4656-82de-9bf4f3dd74ed remote=127.0.0.1 client=openclaw-control-ui webchat vdev
+2026-03-06T08:48:11.682Z [discord] gateway: WebSocket connection closed with code 1006
+2026-03-06T08:48:11.688Z [discord] gateway: Attempting resume with backoff: 1000ms after code 1006
+2026-03-06T08:48:17.016Z [gateway] [kimi-bridge] [bridge-acp] connecting to wss://www.kimi.com/api-claw/bots/agent-ws
+2026-03-06T09:15:38.203Z [ws] webchat disconnected code=1001 reason=n/a conn=9596ff3f-9ace-49ea-b058-4270a2b5da25
+2026-03-06T09:15:38.450Z [ws] webchat connected conn=638f31e0-52fe-4f10-abb7-41bf204486de remote=10.0.0.48 client=openclaw-control-ui webchat vdev
+2026-03-06T09:21:50.644Z [ws] webchat disconnected code=1001 reason=n/a conn=638f31e0-52fe-4f10-abb7-41bf204486de
+2026-03-06T09:21:50.895Z [ws] webchat connected conn=eae5897a-0a2f-415d-9ad3-ee0106dc33d8 remote=10.0.0.48 client=openclaw-control-ui webchat vdev
+2026-03-06T09:22:14.487Z [health-monitor] [discord:default] health-monitor: restarting (reason: stale-socket)
+2026-03-06T09:22:14.896Z [discord] [default] Discord Message Content Intent is limited; bots under 100 servers can use it without verification.
+2026-03-06T09:22:14.900Z [discord] [default] starting provider (@ordl-phetamines)
+2026-03-06T09:22:15.053Z [discord] channels resolved: guild:1379869404359295048→1379869404359295048 (guild:Open Research and Development Laboratories)
+2026-03-06T09:22:15.059Z [discord] users resolved: 324723660042534922→324723660042534922
+2026-03-06T09:22:15.062Z [discord] channel users resolved: 324723660042534922→324723660042534922
+2026-03-06T09:22:16.229Z [discord] logged in to discord as 1478622492850524361 (ordl-phetamines)
+2026-03-06T09:25:03.571Z [ws] webchat disconnected code=1001 reason=n/a conn=eae5897a-0a2f-415d-9ad3-ee0106dc33d8
+2026-03-06T09:25:03.806Z [ws] webchat connected conn=32b0c822-a5f4-4580-bb54-affe353c97c8 remote=10.0.0.48 client=openclaw-control-ui webchat vdev
+2026-03-06T09:25:32.598Z [ws] webchat disconnected code=1006 reason=n/a conn=3dc0e55a-25e9-4656-82de-9bf4f3dd74ed
+2026-03-06T09:25:33.886Z [ws] webchat connected conn=0b652ba4-b2be-4669-a84f-ff494fe4b7a0 remote=127.0.0.1 client=openclaw-control-ui webchat vdev

@@ -130,6 +130,8 @@ Workspace policy:
 - Keep skills focused and deterministic.
 - Prefer instruction-first skills; add scripts only for repeatability.
 - Disable obsolete skills via `[[skills.config]]` instead of deleting immediately.
+- Strict system rule: for every non-trivial task, invoke `$kimi-fleet-orchestrator` first and route heavy execution through fleet workers before local final integration.
+- Strict system rule: when an MCP server applies to the task, use MCP tools first; fallback to local-only flow only when MCP is unavailable or inapplicable.
 
 ## 10) Multi-agent standard
 
@@ -158,6 +160,7 @@ Collision rule:
 - Only one worker edits a given target file at a time.
 - Fleet delegation default: every non-trivial process is delegated through fleet roles first.
 - Main control path remains final arbiter and integrator, but local-only execution is exception-only.
+- `$kimi-fleet-orchestrator` is mandatory for fleet dispatch, restart, resync, health, and worker-task routing in this workspace.
 
 Mandatory worker completion behavior:
 

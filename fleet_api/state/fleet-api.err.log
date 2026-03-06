@@ -1,8 +1,7 @@
 WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
  * Running on http://127.0.0.1:8890
 Press CTRL+C to quit
-127.0.0.1 - - [05/Mar/2026 23:35:48] "GET /v1/playbooks HTTP/1.1" 200 -
-127.0.0.1 - - [05/Mar/2026 23:36:16] "GET /v1/fleet/status HTTP/1.1" 200 -
-127.0.0.1 - - [05/Mar/2026 23:36:33] "GET /v1/fleet/health HTTP/1.1" 200 -
-127.0.0.1 - - [05/Mar/2026 23:48:47] "GET /v1/fleet/health HTTP/1.1" 200 -
-127.0.0.1 - - [05/Mar/2026 23:48:47] "GET /v1/fleet/status HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 04:22:54] "GET /v1/fleet/health?recency_minutes=15 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 04:23:22] "GET /v1/fleet/health?recency_minutes=15 HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 04:24:16] "POST /v1/fleet/restart HTTP/1.1" 200 -
+127.0.0.1 - - [06/Mar/2026 04:24:42] "GET /v1/fleet/health?recency_minutes=15 HTTP/1.1" 200 -

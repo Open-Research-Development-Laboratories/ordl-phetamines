@@ -100,6 +100,14 @@ class WorkerInstance(Base):
     device_id: Mapped[str] = mapped_column(String(128), nullable=False)
     status: Mapped[str] = mapped_column(String(32), default="online")
     capabilities_json: Mapped[str] = mapped_column(Text, default="[]")
+    connectivity_state: Mapped[str] = mapped_column(String(32), default="unknown")
+    last_gateway_url: Mapped[str] = mapped_column(String(512), default="")
+    gateway_candidates_json: Mapped[str] = mapped_column(Text, default="[]")
+    gateway_rtt_ms: Mapped[int] = mapped_column(Integer, default=-1)
+    keepalive_interval_seconds: Mapped[int] = mapped_column(Integer, default=30)
+    keepalive_miss_threshold: Mapped[int] = mapped_column(Integer, default=3)
+    last_keepalive_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_probe_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
@@ -112,6 +120,117 @@ class WorkerAction(Base):
     requested_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
     status: Mapped[str] = mapped_column(String(32), default="queued")
     notes: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class WorkerGroup(Base):
+    __tablename__ = "worker_groups"
+    __table_args__ = (UniqueConstraint("project_id", "name", name="uq_worker_group_project_name"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    routing_strategy: Mapped[str] = mapped_column(String(32), default="round_robin")
+    selection_mode: Mapped[str] = mapped_column(String(32), default="explicit")
+    target_role: Mapped[str] = mapped_column(String(64), default="")
+    capability_tags_json: Mapped[str] = mapped_column(Text, default="[]")
+    worker_ids_json: Mapped[str] = mapped_column(Text, default="[]")
+    failover_group_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("worker_groups.id"), nullable=True)
+    created_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class OrchestrationProfile(Base):
+    __tablename__ = "orchestration_profiles"
+    __table_args__ = (UniqueConstraint("project_id", "name", name="uq_orchestration_profile_project_name"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    routing_mode: Mapped[str] = mapped_column(String(32), default="group")
+    target_group_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("worker_groups.id"), nullable=True)
+    failover_group_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("worker_groups.id"), nullable=True)
+    quality_bar: Mapped[str] = mapped_column(String(32), default="standard")
+    max_parallel: Mapped[int] = mapped_column(Integer, default=1)
+    retry_max_attempts: Mapped[int] = mapped_column(Integer, default=0)
+    retry_backoff_seconds: Mapped[int] = mapped_column(Integer, default=30)
+    postback_required: Mapped[int] = mapped_column(Integer, default=1)
+    visible_body_required: Mapped[int] = mapped_column(Integer, default=1)
+    max_chunk_chars: Mapped[int] = mapped_column(Integer, default=1800)
+    owner_principal_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    report_to_json: Mapped[str] = mapped_column(Text, default="[]")
+    escalation_to_json: Mapped[str] = mapped_column(Text, default="[]")
+    visibility_mode: Mapped[str] = mapped_column(String(32), default="team")
+    status: Mapped[str] = mapped_column(String(32), default="active")
+    created_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class JobTemplate(Base):
+    __tablename__ = "job_templates"
+    __table_args__ = (UniqueConstraint("project_id", "name", "version", name="uq_job_template_project_name_version"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    version: Mapped[str] = mapped_column(String(64), default="v1")
+    objective: Mapped[str] = mapped_column(Text, default="")
+    required_inputs_json: Mapped[str] = mapped_column(Text, default="[]")
+    constraints_json: Mapped[str] = mapped_column(Text, default="{}")
+    output_schema_json: Mapped[str] = mapped_column(Text, default="{}")
+    default_profile_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("orchestration_profiles.id"), nullable=True)
+    report_to_json: Mapped[str] = mapped_column(Text, default="[]")
+    escalation_to_json: Mapped[str] = mapped_column(Text, default="[]")
+    visibility_mode: Mapped[str] = mapped_column(String(32), default="team")
+    status: Mapped[str] = mapped_column(String(32), default="active")
+    created_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class JobRun(Base):
+    __tablename__ = "job_runs"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    template_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("job_templates.id"), nullable=True, index=True)
+    profile_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("orchestration_profiles.id"), nullable=True, index=True)
+    owner_principal_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    report_to_json: Mapped[str] = mapped_column(Text, default="[]")
+    escalation_to_json: Mapped[str] = mapped_column(Text, default="[]")
+    visibility_mode: Mapped[str] = mapped_column(String(32), default="team")
+    routing_mode: Mapped[str] = mapped_column(String(32), default="group")
+    target_group_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("worker_groups.id"), nullable=True)
+    target_worker_id: Mapped[str | None] = mapped_column(String(36), ForeignKey("worker_instances.id"), nullable=True)
+    target_role: Mapped[str] = mapped_column(String(64), default="")
+    objective: Mapped[str] = mapped_column(Text, default="")
+    input_payload_json: Mapped[str] = mapped_column(Text, default="{}")
+    state: Mapped[str] = mapped_column(String(32), default="created", index=True)
+    attempt_count: Mapped[int] = mapped_column(Integer, default=0)
+    artifact_summary_json: Mapped[str] = mapped_column(Text, default="[]")
+    last_error: Mapped[str] = mapped_column(Text, default="")
+    state_reason: Mapped[str] = mapped_column(Text, default="")
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    canceled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_by_user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class JobDeliveryReceipt(Base):
+    __tablename__ = "job_delivery_receipts"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uuid_str)
+    job_run_id: Mapped[str] = mapped_column(String(36), ForeignKey("job_runs.id"), index=True)
+    project_id: Mapped[str] = mapped_column(String(36), ForeignKey("projects.id"), index=True)
+    recipient: Mapped[str] = mapped_column(String(255), nullable=False)
+    channel: Mapped[str] = mapped_column(String(64), default="openclaw_chat")
+    status: Mapped[str] = mapped_column(String(32), default="delivered")
+    detail_json: Mapped[str] = mapped_column(Text, default="{}")
+    delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 

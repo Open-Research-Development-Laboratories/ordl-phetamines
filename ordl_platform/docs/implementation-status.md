@@ -25,16 +25,34 @@
 - Expanded backend audit trail event model and API:
   - `GET /v1/audit/events`
   - `GET /v1/audit/verify`
+- Implemented orchestration control-plane APIs:
+  - `POST/GET /v1/worker-groups`
+  - `POST/GET /v1/orchestration/profiles`
+  - `POST/GET /v1/jobs/templates`
+  - `POST/GET /v1/jobs/runs`
+  - `POST /v1/jobs/runs/{id}/state`
+  - `POST /v1/jobs/runs/{id}/cancel`
+  - `GET /v1/jobs/runs/{id}/artifacts`
+  - `POST/GET /v1/jobs/runs/{id}/delivery`
+- Implemented audit export API and expanded query filters:
+  - `GET /v1/audit/export`
+  - added filtering dimensions: `actor_id`, `event_type`, `trace_id`, `run_id`, `severity`, `start_time`, `end_time`
+- Implemented worker connectivity enforcement contracts:
+  - `POST /v1/workers/{id}/heartbeat`
+  - `POST /v1/workers/{id}/probe`
+  - `GET /v1/workers/connectivity`
+  - deterministic reconnect target ordering (last-known gateway first)
+  - keepalive/probe timestamps and reconnect-required evaluation
 
 ## Remaining major implementation items
 
 - OIDC/SAML identity federation with break-glass flow.
 - Full provider execution adapters (real outbound provider calls with secret vault integration).
-- Worker-group orchestration runtime (`worker-groups`, `orchestration-profiles`, `jobs/templates`, `jobs/runs`) and postback visibility enforcement.
 - Protocol registry and conformance runtime (`protocols/standards`, `protocols/validate`, `protocols/conformance`).
-- Audit export and delivery receipt persistence with high-volume retention strategy.
+- High-volume audit retention and archival tiering strategy.
 - Approval queue UX depth (parallel reviewers, SLA timers, escalations).
 - Signed extension package verification with asymmetric keys (Sigstore/cert chain).
 - Advanced multi-tenant guardrails and row-level security at database level.
 - Kubernetes manifests/Helm baseline.
 - Formal control evidence pack generation automation.
+- Active gateway daemon for continuous worker probe scheduling and autonomous reconnect execution.

@@ -118,22 +118,35 @@ Failure branches:
 - Every delivery/postback event is signed in audit chain.
 - Jobs without explicit recipients are rejected.
 
-## 10) Build Sequence
+## 10) Connectivity Control Contract
+
+- Workers and backend nodes must continuously attempt reconnect when disconnected.
+- Reconnect ordering is deterministic:
+  1) last-known closest gateway
+  2) remaining ordered gateway candidates
+- Gateways must actively probe worker liveness on schedule, not rely only on worker-initiated reconnect.
+- Keepalive and probe data are first-class records (`last_keepalive_at`, `last_probe_at`, `gateway_rtt_ms`, `connectivity_state`).
+- A worker is considered degraded when keepalive is stale past policy threshold.
+- A worker is considered down when probe fails or keepalive misses exceed threshold.
+- Reconnect-required state is computed and exposed by API for deterministic controller behavior.
+
+## 11) Build Sequence
 
 Phase 1:
 
 - Profile + group + template models
 - JobRun state machine in backend
 - Visible postback enforcement checks
+- Worker heartbeat + gateway probe + reconnect policy endpoints
 
 Phase 2:
 
 - Adapter SDK for provider plugins
 - Failover orchestration and retry policies
 - Delivery receipts and escalation routing
+- Autonomous gateway probe/reconnect scheduler
 
 Phase 3:
 
 - UI configuration panels for profiles/groups/reporting chains
 - Analytics for throughput, failure rate, and recipient SLA
-

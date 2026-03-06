@@ -11,6 +11,13 @@ def _as_bool(value: str | None, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _as_list(value: str | None, default: list[str] | None = None) -> list[str]:
+    if value is None:
+        return list(default or [])
+    items = [x.strip() for x in value.split(",")]
+    return [x for x in items if x]
+
+
 @dataclass(frozen=True)
 class WorkerTarget:
     role: str
@@ -36,6 +43,15 @@ class AppConfig:
     openclaw_agent_id: str
     status_max_parallel: int
     health_signal_recency_minutes: int
+    gateway_candidates: tuple[str, ...]
+    connectivity_monitor_enabled: bool
+    connectivity_monitor_interval_seconds: int
+    connectivity_reconnect_attempts: int
+    update_default_command: str
+    update_rollback_template: str
+    update_verify_recency_minutes: int
+    discovery_default_cidrs: tuple[str, ...]
+    discovery_max_hosts: int
     included_corpus_paths: tuple[str, ...] = field(default_factory=tuple)
     workers: dict[str, WorkerTarget] = field(default_factory=dict)
 
@@ -84,6 +100,20 @@ def load_config() -> AppConfig:
         "skills",
     )
 
+    default_gateway = f"ws://{os.getenv('FLEET_HUB_HOST', '10.0.0.48')}:{int(os.getenv('FLEET_HUB_PORT', '18789'))}"
+    gateway_candidates = tuple(
+        _as_list(
+            os.getenv("FLEET_GATEWAY_CANDIDATES"),
+            default=[default_gateway],
+        )
+    )
+    discovery_cidrs = tuple(
+        _as_list(
+            os.getenv("FLEET_DISCOVERY_CIDRS"),
+            default=["10.0.0.0/24"],
+        )
+    )
+
     return AppConfig(
         bind=os.getenv("FLEET_API_BIND", "127.0.0.1"),
         port=int(os.getenv("FLEET_API_PORT", "8890")),
@@ -99,6 +129,15 @@ def load_config() -> AppConfig:
         openclaw_agent_id=os.getenv("FLEET_AGENT_ID", "arch"),
         status_max_parallel=int(os.getenv("FLEET_STATUS_MAX_PARALLEL", "4")),
         health_signal_recency_minutes=int(os.getenv("FLEET_HEALTH_SIGNAL_RECENCY_MINUTES", "180")),
+        gateway_candidates=gateway_candidates,
+        connectivity_monitor_enabled=_as_bool(os.getenv("FLEET_CONNECTIVITY_MONITOR_ENABLED"), True),
+        connectivity_monitor_interval_seconds=int(os.getenv("FLEET_CONNECTIVITY_MONITOR_INTERVAL_SECONDS", "90")),
+        connectivity_reconnect_attempts=int(os.getenv("FLEET_CONNECTIVITY_RECONNECT_ATTEMPTS", "2")),
+        update_default_command=os.getenv("FLEET_UPDATE_DEFAULT_COMMAND", "npm install -g openclaw@latest"),
+        update_rollback_template=os.getenv("FLEET_UPDATE_ROLLBACK_TEMPLATE", "npm install -g openclaw@{version}"),
+        update_verify_recency_minutes=int(os.getenv("FLEET_UPDATE_VERIFY_RECENCY_MINUTES", "15")),
+        discovery_default_cidrs=discovery_cidrs,
+        discovery_max_hosts=int(os.getenv("FLEET_DISCOVERY_MAX_HOSTS", "256")),
         included_corpus_paths=corpus,
         workers=workers,
     )

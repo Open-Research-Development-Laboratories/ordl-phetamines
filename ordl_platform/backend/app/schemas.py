@@ -265,6 +265,204 @@ class WorkerActionRequest(BaseModel):
     notes: str = ""
 
 
+class WorkerHeartbeatRequest(BaseModel):
+    gateway_url: str
+    gateway_candidates: list[str] = Field(default_factory=list)
+    gateway_rtt_ms: int = Field(default=-1, ge=-1)
+    keepalive_interval_seconds: int = Field(default=30, ge=5, le=300)
+    keepalive_miss_threshold: int = Field(default=3, ge=1, le=20)
+    connectivity_state: Literal["online", "degraded", "down"] = "online"
+
+
+class WorkerProbeRequest(BaseModel):
+    reachable: bool
+    gateway_url: str = ""
+    gateway_rtt_ms: int = Field(default=-1, ge=-1)
+    reason: str = ""
+
+
+class WorkerConnectivityOut(BaseModel):
+    worker_id: str
+    worker_name: str
+    role: str
+    status: str
+    connectivity_state: str
+    last_seen_at: str | None
+    last_keepalive_at: str | None
+    last_probe_at: str | None
+    last_gateway_url: str
+    gateway_rtt_ms: int
+    reconnect_required: bool
+    reconnect_targets: list[str]
+
+
+class WorkerGroupCreate(BaseModel):
+    project_id: str
+    name: str
+    routing_strategy: Literal["round_robin", "least_loaded", "priority", "sticky"] = "round_robin"
+    selection_mode: Literal["explicit", "role", "capability"] = "explicit"
+    target_role: str = ""
+    capability_tags: list[str] = Field(default_factory=list)
+    worker_ids: list[str] = Field(default_factory=list)
+    failover_group_id: str | None = None
+
+
+class WorkerGroupOut(BaseModel):
+    id: str
+    project_id: str
+    name: str
+    routing_strategy: str
+    selection_mode: str
+    target_role: str
+    capability_tags: list[str]
+    worker_ids: list[str]
+    failover_group_id: str | None
+
+
+class OrchestrationProfileCreate(BaseModel):
+    project_id: str
+    name: str
+    routing_mode: Literal["individual", "group", "hybrid"] = "group"
+    target_group_id: str | None = None
+    failover_group_id: str | None = None
+    quality_bar: str = "standard"
+    max_parallel: int = Field(default=1, ge=1, le=50)
+    retry_max_attempts: int = Field(default=0, ge=0, le=10)
+    retry_backoff_seconds: int = Field(default=30, ge=0, le=3600)
+    postback_required: bool = True
+    visible_body_required: bool = True
+    max_chunk_chars: int = Field(default=1800, ge=100, le=8000)
+    owner_principal_id: str
+    report_to: list[str] = Field(default_factory=list)
+    escalation_to: list[str] = Field(default_factory=list)
+    visibility_mode: Literal["private", "team", "board", "public-internal"] = "team"
+    status: str = "active"
+
+
+class OrchestrationProfileOut(BaseModel):
+    id: str
+    project_id: str
+    name: str
+    routing_mode: str
+    target_group_id: str | None
+    failover_group_id: str | None
+    quality_bar: str
+    max_parallel: int
+    retry_max_attempts: int
+    retry_backoff_seconds: int
+    postback_required: bool
+    visible_body_required: bool
+    max_chunk_chars: int
+    owner_principal_id: str
+    report_to: list[str]
+    escalation_to: list[str]
+    visibility_mode: str
+    status: str
+
+
+class JobTemplateCreate(BaseModel):
+    project_id: str
+    name: str
+    version: str = "v1"
+    objective: str = ""
+    required_inputs: list[str] = Field(default_factory=list)
+    constraints: dict[str, Any] = Field(default_factory=dict)
+    output_schema: dict[str, Any] = Field(default_factory=dict)
+    default_profile_id: str | None = None
+    report_to: list[str] = Field(default_factory=list)
+    escalation_to: list[str] = Field(default_factory=list)
+    visibility_mode: Literal["private", "team", "board", "public-internal"] = "team"
+    status: str = "active"
+
+
+class JobTemplateOut(BaseModel):
+    id: str
+    project_id: str
+    name: str
+    version: str
+    objective: str
+    required_inputs: list[str]
+    constraints: dict[str, Any]
+    output_schema: dict[str, Any]
+    default_profile_id: str | None
+    report_to: list[str]
+    escalation_to: list[str]
+    visibility_mode: str
+    status: str
+
+
+class JobRunCreate(BaseModel):
+    project_id: str
+    template_id: str | None = None
+    profile_id: str | None = None
+    owner_principal_id: str
+    report_to: list[str] = Field(default_factory=list)
+    escalation_to: list[str] = Field(default_factory=list)
+    visibility_mode: Literal["private", "team", "board", "public-internal"] = "team"
+    routing_mode: Literal["individual", "group", "hybrid"] = "group"
+    target_group_id: str | None = None
+    target_worker_id: str | None = None
+    target_role: str = ""
+    objective: str = ""
+    input_payload: dict[str, Any] = Field(default_factory=dict)
+
+
+class JobRunStateTransition(BaseModel):
+    target_state: Literal[
+        "queued",
+        "dispatching",
+        "running",
+        "postback_pending",
+        "delivered",
+        "closed",
+        "retrying",
+        "failed",
+        "failed_visibility",
+        "escalated",
+    ]
+    state_reason: str = ""
+
+
+class JobRunOut(BaseModel):
+    id: str
+    project_id: str
+    template_id: str | None
+    profile_id: str | None
+    owner_principal_id: str
+    report_to: list[str]
+    escalation_to: list[str]
+    visibility_mode: str
+    routing_mode: str
+    target_group_id: str | None
+    target_worker_id: str | None
+    target_role: str
+    objective: str
+    input_payload: dict[str, Any]
+    state: str
+    attempt_count: int
+    artifact_summary: list[dict[str, Any]]
+    last_error: str
+    state_reason: str
+
+
+class JobDeliveryCreate(BaseModel):
+    recipient: str
+    channel: str = "openclaw_chat"
+    status: Literal["delivered", "failed", "queued"] = "delivered"
+    detail: dict[str, Any] = Field(default_factory=dict)
+
+
+class JobDeliveryOut(BaseModel):
+    id: str
+    job_run_id: str
+    project_id: str
+    recipient: str
+    channel: str
+    status: str
+    detail: dict[str, Any]
+    delivered_at: str | None
+
+
 class DigestionRunRequest(BaseModel):
     project_id: str
     repo_root: str

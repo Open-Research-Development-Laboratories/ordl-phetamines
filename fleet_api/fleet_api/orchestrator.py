@@ -3,14 +3,18 @@ from __future__ import annotations
 import base64
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
+import ipaddress
 import json
 import posixpath
 import re
 import shlex
+import socket
 import time
 from dataclasses import asdict
 from pathlib import Path
+from threading import Lock
 from typing import Any, Callable, Iterable
+from urllib.parse import urlparse
 
 import paramiko
 
@@ -27,6 +31,8 @@ SIGNAL_PATTERN = (
 class FleetOrchestrator:
     def __init__(self, cfg: AppConfig) -> None:
         self.cfg = cfg
+        self._connectivity_state_path = self.cfg.state_dir / "connectivity-state.json"
+        self._connectivity_lock = Lock()
 
     def list_worker_roles(self, enabled_only: bool = True) -> list[str]:
         roles: list[str] = []
@@ -34,6 +40,58 @@ class FleetOrchestrator:
             if not enabled_only or target.enabled:
                 roles.append(role)
         return roles
+
+    def _load_connectivity_state(self) -> dict[str, Any]:
+        with self._connectivity_lock:
+            try:
+                payload = read_json(self._connectivity_state_path)
+                if isinstance(payload, dict):
+                    workers = payload.get("workers")
+                    if isinstance(workers, dict):
+                        return payload
+            except Exception:  # noqa: BLE001
+                pass
+            return {"workers": {}}
+
+    def _save_connectivity_state(self, payload: dict[str, Any]) -> None:
+        with self._connectivity_lock:
+            self._connectivity_state_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp = self._connectivity_state_path.with_suffix(".tmp")
+            with tmp.open("w", encoding="utf-8") as fh:
+                json.dump(payload, fh, indent=2, sort_keys=True)
+            tmp.replace(self._connectivity_state_path)
+
+    def _record_gateway_success(self, role: str, gateway_url: str, gateway_rtt_ms: float | None = None) -> None:
+        state = self._load_connectivity_state()
+        workers = state.setdefault("workers", {})
+        entry = workers.setdefault(role, {})
+        entry["last_success_gateway"] = gateway_url
+        entry["last_success_at"] = datetime.now(timezone.utc).isoformat()
+        if gateway_rtt_ms is not None:
+            entry["last_gateway_rtt_ms"] = round(gateway_rtt_ms, 3)
+        state["updated_at"] = datetime.now(timezone.utc).isoformat()
+        self._save_connectivity_state(state)
+
+    def _get_last_success_gateway(self, role: str) -> str | None:
+        state = self._load_connectivity_state()
+        workers = state.get("workers", {})
+        if not isinstance(workers, dict):
+            return None
+        entry = workers.get(role, {})
+        if isinstance(entry, dict):
+            value = entry.get("last_success_gateway")
+            return value if isinstance(value, str) and value.strip() else None
+        return None
+
+    def _gateway_candidates(self) -> list[str]:
+        out: list[str] = []
+        default_gateway = f"ws://{self.cfg.hub_host}:{self.cfg.hub_port}"
+        for item in [default_gateway, *self.cfg.gateway_candidates]:
+            if not isinstance(item, str) or not item.strip():
+                continue
+            if item not in out:
+                out.append(item)
+        return out
 
     def desktop_devices(self) -> dict[str, Any]:
         result = self._run_openclaw(["devices", "list", "--json"], timeout=60)
@@ -145,6 +203,373 @@ class FleetOrchestrator:
             "recency_minutes": recency,
             "expected_roles": roles,
         }
+
+    def reconnect_policy(self, roles: list[str] | None = None) -> dict[str, Any]:
+        roles = roles or self.list_worker_roles()
+        state = self._load_connectivity_state()
+        items: dict[str, Any] = {}
+        for role in roles:
+            target = self._target(role)
+            last_gateway = self._get_last_success_gateway(role)
+            candidates = self._gateway_candidates()
+            ordered = _order_gateway_candidates(last_gateway, candidates)
+            items[role] = {
+                "role": role,
+                "host": target.host,
+                "last_success_gateway": last_gateway,
+                "ordered_candidates": ordered,
+                "state": state.get("workers", {}).get(role, {}),
+            }
+        return {
+            "ok": True,
+            "roles": roles,
+            "policy": items,
+        }
+
+    def ensure_connectivity(
+        self,
+        roles: list[str] | None = None,
+        recency_minutes: int | None = None,
+        reconnect_attempts: int | None = None,
+    ) -> dict[str, Any]:
+        roles = roles or self.list_worker_roles()
+        recency = max(5, recency_minutes or self.cfg.health_signal_recency_minutes)
+        max_age_seconds = recency * 60
+        attempts = max(1, reconnect_attempts or self.cfg.connectivity_reconnect_attempts)
+
+        outcome: dict[str, Any] = {}
+        all_ok = True
+        for role in roles:
+            status = self.worker_status(role)
+            signal = _summarize_worker_signals(status.get("log_lines", []), max_age_seconds=max_age_seconds)
+            healthy = _worker_signal_ok(status, signal)
+            role_result: dict[str, Any] = {
+                "role": role,
+                "host": self._target(role).host,
+                "initial_status": status,
+                "initial_signal": signal,
+                "healthy_before": healthy,
+                "attempts": [],
+            }
+            if healthy:
+                role_result["healthy_after"] = True
+                outcome[role] = role_result
+                continue
+
+            for idx in range(1, attempts + 1):
+                attempt = self._reconnect_worker(role=role, recency_minutes=recency)
+                role_result["attempts"].append(attempt)
+                if attempt.get("ok"):
+                    break
+
+            final_status = self.worker_status(role)
+            final_signal = _summarize_worker_signals(final_status.get("log_lines", []), max_age_seconds=max_age_seconds)
+            final_ok = _worker_signal_ok(final_status, final_signal)
+            role_result["final_status"] = final_status
+            role_result["final_signal"] = final_signal
+            role_result["healthy_after"] = final_ok
+            outcome[role] = role_result
+            all_ok = all_ok and final_ok
+
+        return {
+            "ok": all_ok,
+            "roles": roles,
+            "recency_minutes": recency,
+            "reconnect_attempts": attempts,
+            "workers": outcome,
+        }
+
+    def rolling_update(
+        self,
+        roles: list[str] | None = None,
+        *,
+        canary_role: str | None = None,
+        update_command: str | None = None,
+        rollback_on_fail: bool = True,
+        verify_recency_minutes: int | None = None,
+    ) -> dict[str, Any]:
+        roles = roles or self.list_worker_roles()
+        ordered_roles = _order_roles_for_canary(roles, canary_role)
+        command = (update_command or self.cfg.update_default_command).strip()
+        recency = max(5, verify_recency_minutes or self.cfg.update_verify_recency_minutes)
+        results: dict[str, Any] = {}
+        all_ok = True
+
+        for role in ordered_roles:
+            target = self._target(role)
+            with self._connect(target) as client:
+                pre = self._remote_run(client, "openclaw --version 2>/dev/null | head -n 1 || true", timeout=40)
+                pre_version = (pre.get("stdout") or "").strip()
+                semver = _extract_semver(pre_version)
+                pre_gateway = self._remote_run(
+                    client,
+                    "openclaw config get plugins.entries.kimi-claw.config.gateway.url 2>/dev/null | tail -n 1 || true",
+                    timeout=40,
+                )
+                previous_gateway = (pre_gateway.get("stdout") or "").strip()
+                update_steps = [
+                    "openclaw gateway stop || true",
+                    "pkill -f '[o]penclaw-gateway' || true",
+                    command,
+                    "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                    "sleep 10",
+                    _gateway_probe_cmd(),
+                    _signal_probe_cmd(limit=30),
+                ]
+                run = self._run_steps(client, update_steps, timeout=120)
+
+            final_status = self.worker_status(role)
+            final_signal = _summarize_worker_signals(final_status.get("log_lines", []), max_age_seconds=recency * 60)
+            ok = _worker_signal_ok(final_status, final_signal)
+
+            role_result: dict[str, Any] = {
+                "role": role,
+                "host": target.host,
+                "pre_version": pre_version,
+                "previous_gateway": previous_gateway,
+                "update_command": command,
+                "update_steps": run.get("steps", []),
+                "status_after_update": final_status,
+                "signal_after_update": final_signal,
+                "ok": ok,
+            }
+
+            if not ok and rollback_on_fail and semver:
+                rollback_cmd = self.cfg.update_rollback_template.format(version=semver)
+                with self._connect(target) as client:
+                    rollback_steps = [
+                        "openclaw gateway stop || true",
+                        "pkill -f '[o]penclaw-gateway' || true",
+                        rollback_cmd,
+                        "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                        "sleep 10",
+                        _gateway_probe_cmd(),
+                        _signal_probe_cmd(limit=30),
+                    ]
+                    rollback_run = self._run_steps(client, rollback_steps, timeout=120)
+                post_rollback_status = self.worker_status(role)
+                post_rollback_signal = _summarize_worker_signals(
+                    post_rollback_status.get("log_lines", []),
+                    max_age_seconds=recency * 60,
+                )
+                rollback_ok = _worker_signal_ok(post_rollback_status, post_rollback_signal)
+                role_result["rollback"] = {
+                    "rollback_command": rollback_cmd,
+                    "steps": rollback_run.get("steps", []),
+                    "status_after_rollback": post_rollback_status,
+                    "signal_after_rollback": post_rollback_signal,
+                    "ok": rollback_ok,
+                }
+                role_result["ok"] = rollback_ok
+                ok = rollback_ok
+
+            results[role] = role_result
+            all_ok = all_ok and ok
+            if not ok:
+                break
+
+        return {
+            "ok": all_ok,
+            "ordered_roles": ordered_roles,
+            "canary_role": canary_role,
+            "results": results,
+        }
+
+    def rollout_gateway_endpoint(
+        self,
+        *,
+        new_gateway_url: str,
+        roles: list[str] | None = None,
+        canary_role: str | None = None,
+        verify_recency_minutes: int | None = None,
+        rollback_on_fail: bool = True,
+    ) -> dict[str, Any]:
+        roles = roles or self.list_worker_roles()
+        ordered_roles = _order_roles_for_canary(roles, canary_role)
+        recency = max(5, verify_recency_minutes or self.cfg.update_verify_recency_minutes)
+        results: dict[str, Any] = {}
+        all_ok = True
+
+        for role in ordered_roles:
+            target = self._target(role)
+            with self._connect(target) as client:
+                existing = self._remote_run(
+                    client,
+                    "openclaw config get plugins.entries.kimi-claw.config.gateway.url 2>/dev/null | tail -n1 || true",
+                    timeout=40,
+                )
+                old_gateway = (existing.get("stdout") or "").strip()
+                steps = [
+                    "openclaw gateway stop || true",
+                    "pkill -f '[o]penclaw-gateway' || true",
+                    f"openclaw config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(new_gateway_url)}",
+                    "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                    "sleep 10",
+                    _gateway_probe_cmd(),
+                    _signal_probe_cmd(limit=25),
+                ]
+                run = self._run_steps(client, steps, timeout=120)
+
+            status = self.worker_status(role)
+            signal = _summarize_worker_signals(status.get("log_lines", []), max_age_seconds=recency * 60)
+            ok = _worker_signal_ok(status, signal)
+            role_result: dict[str, Any] = {
+                "role": role,
+                "host": target.host,
+                "old_gateway_url": old_gateway,
+                "new_gateway_url": new_gateway_url,
+                "steps": run.get("steps", []),
+                "status_after_rollout": status,
+                "signal_after_rollout": signal,
+                "ok": ok,
+            }
+
+            if ok:
+                self._record_gateway_success(role=role, gateway_url=new_gateway_url)
+
+            if not ok and rollback_on_fail and old_gateway:
+                with self._connect(target) as client:
+                    rollback_steps = [
+                        "openclaw gateway stop || true",
+                        "pkill -f '[o]penclaw-gateway' || true",
+                        f"openclaw config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(old_gateway)}",
+                        "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                        "sleep 10",
+                        _gateway_probe_cmd(),
+                        _signal_probe_cmd(limit=25),
+                    ]
+                    rollback_run = self._run_steps(client, rollback_steps, timeout=120)
+                rollback_status = self.worker_status(role)
+                rollback_signal = _summarize_worker_signals(
+                    rollback_status.get("log_lines", []),
+                    max_age_seconds=recency * 60,
+                )
+                rollback_ok = _worker_signal_ok(rollback_status, rollback_signal)
+                role_result["rollback"] = {
+                    "steps": rollback_run.get("steps", []),
+                    "status_after_rollback": rollback_status,
+                    "signal_after_rollback": rollback_signal,
+                    "ok": rollback_ok,
+                }
+                role_result["ok"] = rollback_ok
+                ok = rollback_ok
+
+            results[role] = role_result
+            all_ok = all_ok and ok
+            if not ok:
+                break
+
+        return {
+            "ok": all_ok,
+            "new_gateway_url": new_gateway_url,
+            "ordered_roles": ordered_roles,
+            "canary_role": canary_role,
+            "results": results,
+        }
+
+    def discover_node_candidates(
+        self,
+        *,
+        cidrs: list[str] | None = None,
+        hosts: list[str] | None = None,
+        max_hosts: int | None = None,
+        attempt_ssh: bool = True,
+        auto_deploy: bool = False,
+    ) -> dict[str, Any]:
+        limit = max(1, min(max_hosts or self.cfg.discovery_max_hosts, 2048))
+        cidr_list = cidrs or list(self.cfg.discovery_default_cidrs)
+        explicit_hosts = [h.strip() for h in (hosts or []) if isinstance(h, str) and h.strip()]
+        scan_hosts = _expand_scan_hosts(cidr_list=cidr_list, explicit_hosts=explicit_hosts, max_hosts=limit)
+
+        known_hosts = {self.cfg.hub_host}
+        known_hosts.update(t.host for t in self.cfg.workers.values())
+
+        findings: list[dict[str, Any]] = []
+        default_user = "winsock"
+        if self.cfg.workers:
+            default_user = next(iter(self.cfg.workers.values())).user
+
+        for host in scan_hosts:
+            ssh_open = _tcp_open(host, 22, timeout=0.5)
+            gateway_open = _tcp_open(host, self.cfg.hub_port, timeout=0.5)
+            entry: dict[str, Any] = {
+                "host": host,
+                "known_host": host in known_hosts,
+                "ports": {"ssh_22": ssh_open, f"gateway_{self.cfg.hub_port}": gateway_open},
+                "ssh_probe": None,
+                "score": 0,
+                "recommended_roles": [],
+                "auto_deploy": None,
+            }
+
+            if attempt_ssh and ssh_open and self.cfg.ssh_password:
+                try:
+                    facts = _collect_host_facts(host=host, user=default_user, password=self.cfg.ssh_password)
+                    entry["ssh_probe"] = facts
+                    score, roles = _score_discovery_candidate(facts, gateway_open=gateway_open)
+                    entry["score"] = score
+                    entry["recommended_roles"] = roles
+
+                    if auto_deploy and not entry["known_host"] and "worker-node" in roles:
+                        deployed = self._bootstrap_discovered_host(host=host)
+                        entry["auto_deploy"] = deployed
+                except Exception as exc:  # noqa: BLE001
+                    entry["ssh_probe"] = {"ok": False, "error": str(exc)}
+            findings.append(entry)
+
+        report = {
+            "ok": True,
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "cidrs": cidr_list,
+            "hosts": explicit_hosts,
+            "max_hosts": limit,
+            "count": len(findings),
+            "findings": findings,
+        }
+        report_path = self.cfg.state_dir / f"discovery-report-{int(time.time())}.json"
+        with report_path.open("w", encoding="utf-8") as fh:
+            json.dump(report, fh, indent=2, sort_keys=True)
+        report["report_path"] = str(report_path)
+        return report
+
+    def _bootstrap_discovered_host(self, host: str) -> dict[str, Any]:
+        token_bundle = self._desktop_token_bundle()
+        if not token_bundle.get("ok"):
+            return {"ok": False, "error": token_bundle.get("error", "missing desktop token bundle")}
+        target_user = self.cfg.workers[next(iter(self.cfg.workers))].user
+        target = WorkerTarget(
+            role=f"discovered-{host}",
+            host=host,
+            user=target_user,
+            workspace=self.cfg.remote_workspace_root,
+            enabled=True,
+        )
+        with self._connect(target) as client:
+            suffix = host.replace(".", "-")
+            instance_id = f"connector-worker-discovered-{suffix}"
+            device_id = f"worker-discovered-{suffix}"
+            hub_url = f"ws://{self.cfg.hub_host}:{self.cfg.hub_port}"
+            steps = [
+                "openclaw gateway stop || true",
+                "pkill -f '[o]penclaw-gateway' || true",
+                "openclaw config set gateway.mode local",
+                "openclaw config set gateway.bind loopback",
+                "openclaw config set plugins.entries.kimi-claw.enabled true",
+                "openclaw config set plugins.entries.kimi-claw.config.bridge.mode acp",
+                f"openclaw config set plugins.entries.kimi-claw.config.bridge.userId {shlex.quote(token_bundle['kimi_user_id'])}",
+                f"openclaw config set plugins.entries.kimi-claw.config.bridge.token {shlex.quote(token_bundle['kimi_token'])}",
+                f"openclaw config set plugins.entries.kimi-claw.config.bridge.instanceId {shlex.quote(instance_id)}",
+                f"openclaw config set plugins.entries.kimi-claw.config.bridge.deviceId {shlex.quote(device_id)}",
+                f"openclaw config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(hub_url)}",
+                f"openclaw config set plugins.entries.kimi-claw.config.gateway.token {shlex.quote(token_bundle['hub_token'])}",
+                f"openclaw config set plugins.entries.kimi-claw.config.gateway.agentId {shlex.quote(self.cfg.openclaw_agent_id)}",
+                "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                "sleep 8",
+                _gateway_probe_cmd(),
+                _signal_probe_cmd(limit=20),
+            ]
+            out = self._run_steps(client, steps, timeout=90)
+        return {"ok": True, "steps": out.get("steps", [])}
 
     def worker_status(self, role: str) -> dict[str, Any]:
         target = self._target(role)
@@ -350,6 +775,83 @@ class FleetOrchestrator:
             "command": command,
             **out,
         }
+
+    def _reconnect_worker(self, role: str, recency_minutes: int) -> dict[str, Any]:
+        target = self._target(role)
+        candidates = self._gateway_candidates()
+        with self._connect(target) as client:
+            selected = self._select_gateway_for_worker(client=client, role=role, candidates=candidates)
+            gateway_url = selected["selected_gateway"]
+            steps = [
+                "openclaw gateway stop || true",
+                "pkill -f '[o]penclaw-gateway' || true",
+                f"openclaw config set plugins.entries.kimi-claw.config.gateway.url {shlex.quote(gateway_url)}",
+                "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
+                "sleep 8",
+                _gateway_probe_cmd(),
+                _signal_probe_cmd(limit=25),
+            ]
+            run = self._run_steps(client, steps, timeout=60)
+
+        status = self.worker_status(role)
+        signal = _summarize_worker_signals(status.get("log_lines", []), max_age_seconds=max(5, recency_minutes) * 60)
+        ok = _worker_signal_ok(status, signal)
+        if ok:
+            self._record_gateway_success(role=role, gateway_url=gateway_url, gateway_rtt_ms=selected.get("selected_rtt_ms"))
+        return {
+            "ok": ok,
+            "role": role,
+            "host": target.host,
+            "selected_gateway": gateway_url,
+            "gateway_rtts_ms": selected.get("gateway_rtts_ms", {}),
+            "steps": run.get("steps", []),
+            "status": status,
+            "signal": signal,
+        }
+
+    def _select_gateway_for_worker(
+        self,
+        *,
+        client: paramiko.SSHClient,
+        role: str,
+        candidates: list[str],
+    ) -> dict[str, Any]:
+        last_success = self._get_last_success_gateway(role)
+        ordered = _order_gateway_candidates(last_success, candidates)
+        rtts: dict[str, float | None] = {}
+        for url in ordered:
+            host = _gateway_host(url)
+            rtts[url] = self._remote_ping_ms(client, host) if host else None
+
+        if last_success and last_success in ordered:
+            selected = last_success
+        else:
+            ranked = sorted(
+                ordered,
+                key=lambda x: (999999 if rtts.get(x) is None else float(rtts[x]), ordered.index(x)),
+            )
+            selected = ranked[0] if ranked else ordered[0]
+
+        return {
+            "selected_gateway": selected,
+            "selected_rtt_ms": rtts.get(selected),
+            "gateway_rtts_ms": rtts,
+            "ordered_candidates": ordered,
+        }
+
+    def _remote_ping_ms(self, client: paramiko.SSHClient, host: str) -> float | None:
+        cmd = (
+            f"ping -c 1 -W 1 {shlex.quote(host)} 2>/dev/null | "
+            "grep -o 'time=[0-9.]*' | head -n1 | cut -d= -f2 || true"
+        )
+        out = self._remote_run(client, cmd, timeout=10)
+        token = (out.get("stdout") or "").strip()
+        if not token:
+            return None
+        try:
+            return float(token)
+        except ValueError:
+            return None
 
     def latest_worker_handoff(self, role: str, handoff_glob: str = "/development/crew-handoff/*.md") -> dict[str, Any]:
         target = self._target(role)
@@ -708,6 +1210,142 @@ class FleetOrchestrator:
         }
 
 
+def _worker_signal_ok(status: dict[str, Any], signal: dict[str, Any]) -> bool:
+    return bool(status.get("process_up")) and signal.get("has_handshake", False) and signal.get("has_local_gateway", False) and signal.get("recent_handshake", False) and signal.get("recent_local_gateway", False) and not signal.get("has_critical_errors", False)
+
+
+def _order_gateway_candidates(last_success: str | None, candidates: list[str]) -> list[str]:
+    ordered: list[str] = []
+    if last_success and last_success in candidates:
+        ordered.append(last_success)
+    for item in candidates:
+        if item not in ordered:
+            ordered.append(item)
+    return ordered
+
+
+def _gateway_host(url: str) -> str | None:
+    try:
+        parsed = urlparse(url)
+    except Exception:  # noqa: BLE001
+        return None
+    return parsed.hostname
+
+
+def _order_roles_for_canary(roles: list[str], canary_role: str | None) -> list[str]:
+    if not canary_role or canary_role not in roles:
+        return list(roles)
+    return [canary_role, *[x for x in roles if x != canary_role]]
+
+
+def _extract_semver(value: str | None) -> str | None:
+    if not value:
+        return None
+    m = re.search(r"(\d+\.\d+\.\d+)", value)
+    if not m:
+        return None
+    return m.group(1)
+
+
+def _expand_scan_hosts(*, cidr_list: list[str], explicit_hosts: list[str], max_hosts: int) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+
+    for host in explicit_hosts:
+        if host not in seen:
+            seen.add(host)
+            out.append(host)
+        if len(out) >= max_hosts:
+            return out
+
+    for cidr in cidr_list:
+        try:
+            network = ipaddress.ip_network(cidr, strict=False)
+        except ValueError:
+            continue
+        for ip in network.hosts():
+            host = str(ip)
+            if host in seen:
+                continue
+            seen.add(host)
+            out.append(host)
+            if len(out) >= max_hosts:
+                return out
+    return out
+
+
+def _tcp_open(host: str, port: int, timeout: float = 0.5) -> bool:
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def _collect_host_facts(*, host: str, user: str, password: str) -> dict[str, Any]:
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    client.connect(hostname=host, username=user, password=password, timeout=10, banner_timeout=15)
+    try:
+        commands = {
+            "hostname": "hostname",
+            "uname": "uname -srm || true",
+            "cpu_count": "nproc 2>/dev/null || getconf _NPROCESSORS_ONLN 2>/dev/null || echo 0",
+            "mem_mb": "awk '/MemTotal/ {print int($2/1024)}' /proc/meminfo 2>/dev/null || echo 0",
+            "disk_free_kb": "df -k / | awk 'NR==2 {print $4}' 2>/dev/null || echo 0",
+            "openclaw_version": "openclaw --version 2>/dev/null | head -n1 || true",
+            "node_version": "node -v 2>/dev/null || true",
+            "python_version": "python3 --version 2>/dev/null || true",
+        }
+        output: dict[str, Any] = {"ok": True}
+        for key, cmd in commands.items():
+            _, stdout, stderr = client.exec_command(cmd, timeout=20)
+            val = stdout.read().decode("utf-8", errors="replace").strip()
+            err = stderr.read().decode("utf-8", errors="replace").strip()
+            output[key] = val
+            if err:
+                output[f"{key}_stderr"] = err
+        return output
+    finally:
+        client.close()
+
+
+def _score_discovery_candidate(facts: dict[str, Any], *, gateway_open: bool) -> tuple[int, list[str]]:
+    score = 0
+    roles: list[str] = []
+
+    cpu = int(str(facts.get("cpu_count", "0") or "0").strip() or "0")
+    mem = int(str(facts.get("mem_mb", "0") or "0").strip() or "0")
+    has_openclaw = bool(str(facts.get("openclaw_version", "")).strip())
+    has_node = bool(str(facts.get("node_version", "")).strip())
+
+    if cpu >= 2:
+        score += 1
+    if cpu >= 4:
+        score += 1
+    if mem >= 4096:
+        score += 1
+    if mem >= 8192:
+        score += 1
+    if has_node:
+        score += 1
+    if has_openclaw:
+        score += 2
+    if gateway_open:
+        score += 1
+
+    if has_openclaw and cpu >= 2 and mem >= 4096:
+        roles.append("worker-node")
+    if has_openclaw and cpu >= 4 and mem >= 8192:
+        roles.append("batch-node")
+    if gateway_open:
+        roles.append("gateway-candidate")
+
+    if not roles:
+        roles.append("observer-only")
+    return score, roles
+
+
 def _role_suffix(role: str) -> str:
     if role == "worker-build-laptop":
         return "build-laptop"
@@ -769,8 +1407,11 @@ def _gateway_probe_cmd() -> str:
 CRITICAL_SIGNAL_PATTERNS = (
     "device signature expired",
     "token mismatch",
-    "auth failed",
     "pairing required",
+)
+
+WARNING_SIGNAL_PATTERNS = (
+    "auth failed",
 )
 
 
@@ -825,7 +1466,20 @@ def _parse_iso_timestamp(value: str) -> datetime | None:
 
 def _line_timestamp(line: str) -> datetime | None:
     token = line.split(" ", 1)[0]
-    return _parse_iso_timestamp(token)
+    parsed = _parse_iso_timestamp(token)
+    if parsed is not None:
+        return parsed
+
+    for candidate in re.split(r"\s+", line):
+        cleaned = candidate.strip("[](),")
+        parsed = _parse_iso_timestamp(cleaned)
+        if parsed is not None:
+            return parsed
+
+    m = re.search(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})", line)
+    if m:
+        return _parse_iso_timestamp(m.group(0))
+    return None
 
 
 def _summarize_worker_signals(
@@ -859,11 +1513,15 @@ def _summarize_worker_signals(
             last_success_idx = idx
 
     critical_errors: list[str] = []
+    warning_errors: list[str] = []
     for idx, line, lower, _ in parsed_entries:
         if last_success_idx >= 0 and idx < last_success_idx:
             continue
         if any(pattern in lower for pattern in CRITICAL_SIGNAL_PATTERNS):
             critical_errors.append(line)
+            continue
+        if any(pattern in lower for pattern in WARNING_SIGNAL_PATTERNS):
+            warning_errors.append(line)
 
     recent_handshake = (
         (now_utc - last_handshake).total_seconds() <= max_age_seconds if last_handshake else False
@@ -881,6 +1539,8 @@ def _summarize_worker_signals(
         "last_local_gateway_at": last_local_gateway.isoformat() if last_local_gateway else None,
         "has_critical_errors": bool(critical_errors),
         "critical_errors": critical_errors[-5:],
+        "has_warning_errors": bool(warning_errors),
+        "warning_errors": warning_errors[-5:],
     }
 
 

@@ -17,11 +17,12 @@ Base: `/v1`
 - `GET /providers`, `POST /providers/credentials` provider auth metadata.
 - `POST /extensions`, `GET /extensions`, `POST /extensions/{id}/status` signed extension governance.
 - `POST /workers/register`, `GET /workers`, `POST /workers/{id}/action`.
-- `POST /worker-groups`, `GET /worker-groups`, `GET /worker-groups/{id}`, `PATCH /worker-groups/{id}`.
-- `POST /orchestration/profiles`, `GET /orchestration/profiles`, `GET /orchestration/profiles/{id}`, `PATCH /orchestration/profiles/{id}`.
-- `POST /jobs/templates`, `GET /jobs/templates`, `GET /jobs/templates/{id}`, `PATCH /jobs/templates/{id}`.
-- `POST /jobs/runs`, `GET /jobs/runs`, `GET /jobs/runs/{id}`, `POST /jobs/runs/{id}/cancel`.
-- `GET /jobs/runs/{id}/artifacts`, `GET /jobs/runs/{id}/delivery`.
+- `POST /workers/{id}/heartbeat`, `POST /workers/{id}/probe`, `GET /workers/connectivity`.
+- `POST /worker-groups`, `GET /worker-groups`.
+- `POST /orchestration/profiles`, `GET /orchestration/profiles`.
+- `POST /jobs/templates`, `GET /jobs/templates`.
+- `POST /jobs/runs`, `GET /jobs/runs`, `POST /jobs/runs/{id}/state`, `POST /jobs/runs/{id}/cancel`.
+- `GET /jobs/runs/{id}/artifacts`, `POST /jobs/runs/{id}/delivery`, `GET /jobs/runs/{id}/delivery`.
 - `GET /audit` policy decision ledger view.
 - `GET /audit/events`, `GET /audit/verify`, `GET /audit/export`.
 - `POST /protocols/standards`, `GET /protocols/standards`, `POST /protocols/standards/{id}/versions`.
@@ -39,6 +40,11 @@ Message workflow states:
 Job run workflow states:
 - `created -> queued -> dispatching -> running -> postback_pending -> delivered -> closed`.
 - failure branches: `running -> retrying -> running`, `running -> failed -> escalated`, `postback_pending -> failed_visibility -> escalated`.
+
+Connectivity control states:
+- worker heartbeat updates `last_gateway_url`, ordered reconnect targets, and keepalive timing.
+- probe failures force `connectivity_state=down` and set `reconnect_required=true`.
+- reconnect policy always prefers last-known closest gateway first.
 
 Clearance tiers:
 - `public`, `internal`, `confidential`, `restricted`.

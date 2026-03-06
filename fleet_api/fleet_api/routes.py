@@ -85,6 +85,56 @@ def fleet_health():
     return jsonify({"ok": data.get("ok", False), "result": data})
 
 
+@bp.get("/v1/fleet/monitor")
+@require_api_key
+def fleet_monitor_status():
+    monitor = current_app.extensions["fleet.monitor"]
+    return jsonify({"ok": True, "result": monitor.status()})
+
+
+@bp.post("/v1/fleet/monitor/run-once")
+@require_api_key
+def fleet_monitor_run_once():
+    monitor = current_app.extensions["fleet.monitor"]
+    result = monitor.run_once()
+    return jsonify({"ok": result.get("ok", False), "result": result})
+
+
+@bp.get("/v1/fleet/reconnect-policy")
+@require_api_key
+def fleet_reconnect_policy():
+    orch = current_app.extensions["fleet.orchestrator"]
+    roles = _roles_from_request()
+    data = orch.reconnect_policy(roles=roles)
+    return jsonify({"ok": True, "result": data})
+
+
+@bp.post("/v1/fleet/ensure-connectivity")
+@require_api_key
+def fleet_ensure_connectivity():
+    orch = current_app.extensions["fleet.orchestrator"]
+    jobs = current_app.extensions["fleet.jobs"]
+    payload = request.get_json(silent=True) or {}
+    roles = _roles_from_payload(payload)
+    recency_minutes = payload.get("recency_minutes")
+    reconnect_attempts = payload.get("reconnect_attempts")
+    if _want_async(payload):
+        rec = jobs.submit(
+            "fleet.ensure-connectivity",
+            orch.ensure_connectivity,
+            roles,
+            recency_minutes,
+            reconnect_attempts,
+        )
+        return jsonify({"ok": True, "job": asdict(rec)}), 202
+    result = orch.ensure_connectivity(
+        roles=roles,
+        recency_minutes=recency_minutes,
+        reconnect_attempts=reconnect_attempts,
+    )
+    return jsonify({"ok": result.get("ok", False), "result": result})
+
+
 @bp.post("/v1/fleet/restart")
 @require_api_key
 def fleet_restart():
@@ -190,6 +240,123 @@ def fleet_stage_handoff():
             ),
         }
     )
+
+
+@bp.post("/v1/fleet/update/rolling")
+@require_api_key
+def fleet_update_rolling():
+    orch = current_app.extensions["fleet.orchestrator"]
+    jobs = current_app.extensions["fleet.jobs"]
+    payload = request.get_json(silent=True) or {}
+    roles = _roles_from_payload(payload)
+    canary_role = payload.get("canary_role")
+    update_command = payload.get("update_command")
+    rollback_on_fail = bool(payload.get("rollback_on_fail", True))
+    verify_recency_minutes = payload.get("verify_recency_minutes")
+    if _want_async(payload):
+        rec = jobs.submit(
+            "fleet.update.rolling",
+            orch.rolling_update,
+            roles,
+            canary_role=canary_role,
+            update_command=update_command,
+            rollback_on_fail=rollback_on_fail,
+            verify_recency_minutes=verify_recency_minutes,
+        )
+        return jsonify({"ok": True, "job": asdict(rec)}), 202
+    result = orch.rolling_update(
+        roles=roles,
+        canary_role=canary_role,
+        update_command=update_command,
+        rollback_on_fail=rollback_on_fail,
+        verify_recency_minutes=verify_recency_minutes,
+    )
+    return jsonify({"ok": result.get("ok", False), "result": result})
+
+
+@bp.post("/v1/fleet/gateway/rollout")
+@require_api_key
+def fleet_gateway_rollout():
+    orch = current_app.extensions["fleet.orchestrator"]
+    jobs = current_app.extensions["fleet.jobs"]
+    payload = request.get_json(silent=True) or {}
+    roles = _roles_from_payload(payload)
+    new_gateway_url = str(payload.get("new_gateway_url", "")).strip()
+    if not new_gateway_url:
+        return jsonify({"ok": False, "error": "new_gateway_url is required"}), 400
+    canary_role = payload.get("canary_role")
+    verify_recency_minutes = payload.get("verify_recency_minutes")
+    rollback_on_fail = bool(payload.get("rollback_on_fail", True))
+    if _want_async(payload):
+        rec = jobs.submit(
+            "fleet.gateway.rollout",
+            orch.rollout_gateway_endpoint,
+            new_gateway_url=new_gateway_url,
+            roles=roles,
+            canary_role=canary_role,
+            verify_recency_minutes=verify_recency_minutes,
+            rollback_on_fail=rollback_on_fail,
+        )
+        return jsonify({"ok": True, "job": asdict(rec)}), 202
+    result = orch.rollout_gateway_endpoint(
+        new_gateway_url=new_gateway_url,
+        roles=roles,
+        canary_role=canary_role,
+        verify_recency_minutes=verify_recency_minutes,
+        rollback_on_fail=rollback_on_fail,
+    )
+    return jsonify({"ok": result.get("ok", False), "result": result})
+
+
+@bp.post("/v1/fleet/discovery/scan")
+@require_api_key
+def fleet_discovery_scan():
+    orch = current_app.extensions["fleet.orchestrator"]
+    jobs = current_app.extensions["fleet.jobs"]
+    payload = request.get_json(silent=True) or {}
+    cidrs = payload.get("cidrs")
+    hosts = payload.get("hosts")
+    max_hosts = payload.get("max_hosts")
+    attempt_ssh = bool(payload.get("attempt_ssh", True))
+    auto_deploy = bool(payload.get("auto_deploy", False))
+    if _want_async(payload):
+        rec = jobs.submit(
+            "fleet.discovery.scan",
+            orch.discover_node_candidates,
+            cidrs=cidrs,
+            hosts=hosts,
+            max_hosts=max_hosts,
+            attempt_ssh=attempt_ssh,
+            auto_deploy=auto_deploy,
+        )
+        return jsonify({"ok": True, "job": asdict(rec)}), 202
+    result = orch.discover_node_candidates(
+        cidrs=cidrs,
+        hosts=hosts,
+        max_hosts=max_hosts,
+        attempt_ssh=attempt_ssh,
+        auto_deploy=auto_deploy,
+    )
+    return jsonify({"ok": result.get("ok", False), "result": result})
+
+
+@bp.get("/v1/fleet/discovery/reports")
+@require_api_key
+def fleet_discovery_reports():
+    cfg = current_app.extensions["fleet.config"]
+    limit = int(request.args.get("limit", "20"))
+    files = sorted(cfg.state_dir.glob("discovery-report-*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    out = []
+    for p in files[: max(1, min(limit, 200))]:
+        out.append(
+            {
+                "path": str(p),
+                "name": p.name,
+                "size_bytes": p.stat().st_size,
+                "modified_at_epoch": int(p.stat().st_mtime),
+            }
+        )
+    return jsonify({"ok": True, "result": out})
 
 
 @bp.post("/v1/dispatch/build")

@@ -4,6 +4,7 @@ from flask import Flask, jsonify
 
 from .config import load_config
 from .jobs import JobManager
+from .monitor import FleetConnectivityMonitor
 from .orchestrator import FleetOrchestrator
 from .policy_ops import PolicyOps
 from .routes import bp
@@ -28,6 +29,7 @@ def create_app() -> Flask:
     app.extensions["fleet.config"] = cfg
     app.extensions["fleet.jobs"] = JobManager(max_workers=cfg.jobs_max_workers, state_dir=cfg.state_dir)
     app.extensions["fleet.orchestrator"] = FleetOrchestrator(cfg)
+    app.extensions["fleet.monitor"] = FleetConnectivityMonitor(cfg, app.extensions["fleet.orchestrator"])
     app.extensions["fleet.policy"] = PolicyOps(workspace_root=cfg.workspace_root)
 
     @app.errorhandler(Exception)
@@ -35,5 +37,5 @@ def create_app() -> Flask:
         return jsonify({"ok": False, "error": str(exc)}), 500
 
     app.register_blueprint(bp)
+    app.extensions["fleet.monitor"].start()
     return app
-
