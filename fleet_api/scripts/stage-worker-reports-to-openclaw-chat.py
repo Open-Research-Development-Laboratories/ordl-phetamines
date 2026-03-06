@@ -67,73 +67,17 @@ def main() -> int:
         return 2
 
     status(f"[2/4] Collecting latest handoff files for roles: {', '.join(roles)}")
-    handoffs = []
-    for role in roles:
-        handoff = orch.latest_worker_handoff(role=role, handoff_glob=args.handoff_glob)
-        handoffs.append(handoff)
-
-    failures = [x for x in handoffs if not x.get("ok")]
-    if failures:
-        print(
-            json.dumps(
-                {
-                    "ok": False,
-                    "error": "failed to collect one or more worker handoffs",
-                    "handoffs": handoffs,
-                },
-                indent=2,
-            )
-        )
-        return 1
-
     status("[3/4] Staging worker dumps to OpenClaw chat...")
-    staged = []
-    for item in handoffs:
-        role = item["role"]
-        host = item["host"]
-        path = item["path"]
-        content = item["content"]
-        title = f"{role} @ {host} :: {Path(path).name}"
-        body = (
-            "UNREVIEWED WORKER DUMP\n"
-            "Human-in-the-middle review is expected before final synthesis.\n\n"
-            f"role: {role}\n"
-            f"host: {host}\n"
-            f"source: {path}\n\n"
-            "----- BEGIN WORKER REPORT -----\n"
-            f"{content}\n"
-            "----- END WORKER REPORT -----\n"
-        )
-        stage_result = orch.stage_text_to_openclaw_chat(
-            title=title,
-            body=body,
-            session_id=args.session_id,
-            max_chunk_chars=args.max_chars,
-        )
-        staged.append(
-            {
-                "role": role,
-                "host": host,
-                "path": path,
-                "content_chars": len(content),
-                "stage": stage_result,
-            }
-        )
+    result = orch.stage_worker_handoffs(
+        roles=roles,
+        handoff_glob=args.handoff_glob,
+        session_id=args.session_id or None,
+        max_chunk_chars=args.max_chars,
+    )
 
     status("[4/4] Done. Emitting JSON summary.")
-    ok = all(x["stage"].get("ok") for x in staged)
-    print(
-        json.dumps(
-            {
-                "ok": ok,
-                "roles": roles,
-                "handoff_glob": args.handoff_glob,
-                "staged": staged,
-            },
-            indent=2,
-        )
-    )
-    return 0 if ok else 1
+    print(json.dumps(result, indent=2))
+    return 0 if result.get("ok") else 1
 
 
 if __name__ == "__main__":

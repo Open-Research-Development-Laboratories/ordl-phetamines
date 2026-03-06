@@ -1,0 +1,25 @@
+# Domain Glossary
+
+- Tenant: Top-level ownership boundary.
+- Org: Governance unit under a tenant.
+- Team: Delivery unit within an org.
+- Project: Operational workspace and policy scope.
+- SeatAssignment: Named project seat with role, rank, position, group, clearance, and compartment tags.
+- Principal: Authenticated actor (human or service identity).
+- AuthorizationDecision: Deterministic allow/deny/hold result.
+- CollabMessage: Reviewable collaborative unit with workflow state.
+- DispatchRequest: Routed model-work request to group/role/individual targets.
+- PolicyToken: Signed outbound authorization token.
+- Extension: Signed plugin/skill/MCP package registration.
+- CodeDigestRun: Full-code ingestion run with line-coverage proof.
+- ProviderAdapter: Provider plugin implementing standard dispatch/poll/cancel/normalize contract.
+- WorkerIdentity: Stable worker runtime identity with role, capabilities, and health.
+- WorkerGroup: Named worker pool with assignment strategy and failover metadata.
+- OrchestrationProfile: Versioned runtime configuration for routing, retries, quality bar, and postback policy.
+- JobTemplate: Versioned task blueprint with required inputs, constraints, and reporting defaults.
+- JobRun: Runtime execution instance with state transitions, artifacts, and delivery receipts.
+- ReportRoute: Required mapping from job output to designated recipients.
+- ProtocolStandard: Versioned ORDL protocol artifact with normative schema and conformance tests.
+- ProtocolConformanceRun: Executed validation run proving pass/fail compliance against a standard version.
+- DeliveryReceipt: Verifiable record that job output reached designated recipients.
+- AuditChainVerification: Hash-chain integrity check result for ordered audit events.

@@ -68,6 +68,23 @@ def fleet_status():
     return jsonify({"ok": True, **data})
 
 
+@bp.get("/v1/fleet/health")
+@require_api_key
+def fleet_health():
+    orch = current_app.extensions["fleet.orchestrator"]
+    roles = _roles_from_request()
+    recency_arg = request.args.get("recency_minutes")
+    if recency_arg:
+        try:
+            recency_minutes = int(recency_arg)
+        except ValueError:
+            return jsonify({"ok": False, "error": "recency_minutes must be an integer"}), 400
+    else:
+        recency_minutes = None
+    data = orch.fleet_health(roles=roles, recency_minutes=recency_minutes)
+    return jsonify({"ok": data.get("ok", False), "result": data})
+
+
 @bp.post("/v1/fleet/restart")
 @require_api_key
 def fleet_restart():
@@ -142,6 +159,39 @@ def fleet_command():
     return jsonify({"ok": True, "result": orch.remote_command(role=role, command=command, timeout=timeout)})
 
 
+@bp.post("/v1/fleet/stage-handoff")
+@require_api_key
+def fleet_stage_handoff():
+    orch = current_app.extensions["fleet.orchestrator"]
+    jobs = current_app.extensions["fleet.jobs"]
+    payload = request.get_json(silent=True) or {}
+    roles = _roles_from_payload(payload)
+    handoff_glob = str(payload.get("handoff_glob", "/development/crew-handoff/*.md"))
+    session_id = payload.get("session_id")
+    max_chars = int(payload.get("max_chars", 3200))
+    if _want_async(payload):
+        rec = jobs.submit(
+            "fleet.stage-handoff",
+            orch.stage_worker_handoffs,
+            roles,
+            handoff_glob,
+            session_id,
+            max_chars,
+        )
+        return jsonify({"ok": True, "job": asdict(rec)}), 202
+    return jsonify(
+        {
+            "ok": True,
+            "result": orch.stage_worker_handoffs(
+                roles=roles,
+                handoff_glob=handoff_glob,
+                session_id=session_id,
+                max_chunk_chars=max_chars,
+            ),
+        }
+    )
+
+
 @bp.post("/v1/dispatch/build")
 @require_api_key
 def dispatch_build():
@@ -213,6 +263,7 @@ def playbooks():
                 "dispatch_output_order": ["Summary", "Risks", "Action List", "Open Questions"],
                 "recommended_flow": [
                     "GET /v1/fleet/status",
+                    "GET /v1/fleet/health",
                     "POST /v1/fleet/resync",
                     "POST /v1/fleet/sync-corpus",
                     "POST /v1/dispatch/build",
@@ -244,4 +295,3 @@ def _roles_from_payload(payload: dict[str, Any]) -> list[str]:
 
 def _want_async(payload: dict[str, Any]) -> bool:
     return bool(payload.get("async", True))
-

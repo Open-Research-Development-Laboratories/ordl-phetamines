@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import base64
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timezone
 import json
 import posixpath
 import re
@@ -54,12 +57,93 @@ class FleetOrchestrator:
 
     def fleet_status(self, roles: list[str] | None = None) -> dict[str, Any]:
         roles = roles or self.list_worker_roles()
+        desktop = self.desktop_devices()
+        if not roles:
+            return {"desktop": desktop, "workers": {}}
+
         workers: dict[str, Any] = {}
-        for role in roles:
-            workers[role] = self.worker_status(role)
+        max_workers = max(1, min(len(roles), self.cfg.status_max_parallel))
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            future_to_role = {pool.submit(self.worker_status, role): role for role in roles}
+            for fut in as_completed(future_to_role):
+                role = future_to_role[fut]
+                try:
+                    workers[role] = fut.result()
+                except Exception as exc:  # noqa: BLE001
+                    workers[role] = {
+                        "role": role,
+                        "host": self._target(role).host,
+                        "user": self._target(role).user,
+                        "process_up": False,
+                        "process_raw": "",
+                        "log_lines": [],
+                        "corpus": {"ok": False, "missing": ["status_probe_failed"], "present": []},
+                        "error": str(exc),
+                    }
+
+        ordered_workers = {role: workers[role] for role in roles if role in workers}
         return {
-            "desktop": self.desktop_devices(),
-            "workers": workers,
+            "desktop": desktop,
+            "workers": ordered_workers,
+        }
+
+    def fleet_health(
+        self,
+        roles: list[str] | None = None,
+        recency_minutes: int | None = None,
+    ) -> dict[str, Any]:
+        status = self.fleet_status(roles=roles)
+        desktop = status["desktop"]
+        workers = status["workers"]
+        roles = list(workers.keys())
+
+        recency = max(5, recency_minutes or self.cfg.health_signal_recency_minutes)
+        max_age_seconds = recency * 60
+
+        expected_hosts = [self._target(role).host for role in roles]
+        pairing = _evaluate_pairings(desktop.get("paired", []) if desktop.get("ok") else [], expected_hosts)
+
+        worker_checks: dict[str, Any] = {}
+        workers_ok = True
+        for role, item in workers.items():
+            signal = _summarize_worker_signals(item.get("log_lines", []), max_age_seconds=max_age_seconds)
+            corpus_ok = bool(item.get("corpus", {}).get("ok"))
+            process_up = bool(item.get("process_up"))
+            role_ok = (
+                process_up
+                and corpus_ok
+                and signal["has_handshake"]
+                and signal["has_local_gateway"]
+                and signal["recent_handshake"]
+                and signal["recent_local_gateway"]
+                and not signal["has_critical_errors"]
+            )
+            workers_ok = workers_ok and role_ok
+            worker_checks[role] = {
+                "ok": role_ok,
+                "process_up": process_up,
+                "corpus_ok": corpus_ok,
+                **signal,
+            }
+
+        desktop_ok = (
+            bool(desktop.get("ok"))
+            and int(desktop.get("pending_count", 0)) == 0
+            and bool(pairing["all_paired"])
+        )
+        fleet_ok = desktop_ok and workers_ok
+
+        return {
+            "ok": fleet_ok,
+            "desktop": {
+                "ok": desktop_ok,
+                "pending_count": int(desktop.get("pending_count", 0) if desktop.get("ok") else 0),
+                "paired_count": int(desktop.get("paired_count", 0) if desktop.get("ok") else 0),
+                "pairing": pairing,
+            },
+            "workers": worker_checks,
+            "recency_minutes": recency,
+            "expected_roles": roles,
         }
 
     def worker_status(self, role: str) -> dict[str, Any]:
@@ -106,7 +190,7 @@ class FleetOrchestrator:
             with self._connect(target) as client:
                 steps = [
                     "openclaw gateway stop || true",
-                    "pkill -f openclaw-gateway || true",
+                    "pkill -f '[o]penclaw-gateway' || true",
                     "OPENCLAW_SKIP_GMAIL_WATCHER=1 nohup openclaw gateway run --bind loopback > ~/openclaw-worker.log 2>&1 &",
                     "sleep 8",
                     _gateway_probe_cmd(),
@@ -147,7 +231,7 @@ class FleetOrchestrator:
 
                 steps = [
                     "openclaw gateway stop || true",
-                    "pkill -f openclaw-gateway || true",
+                    "pkill -f '[o]penclaw-gateway' || true",
                     "openclaw config set gateway.mode local",
                     "openclaw config set gateway.bind loopback",
                     "openclaw config set channels.discord.enabled false",
@@ -269,10 +353,11 @@ class FleetOrchestrator:
 
     def latest_worker_handoff(self, role: str, handoff_glob: str = "/development/crew-handoff/*.md") -> dict[str, Any]:
         target = self._target(role)
+        safe_glob = _safe_remote_glob(handoff_glob)
         with self._connect(target) as client:
             latest = self._remote_run(
                 client,
-                f"ls -1t {shlex.quote(handoff_glob)} 2>/dev/null | head -n 1",
+                f"ls -1t {safe_glob} 2>/dev/null | head -n 1",
                 timeout=30,
             )
             path = latest["stdout"].strip()
@@ -395,6 +480,60 @@ class FleetOrchestrator:
             "chunks": posted,
         }
 
+    def stage_worker_handoffs(
+        self,
+        roles: list[str],
+        handoff_glob: str = "/development/crew-handoff/*.md",
+        session_id: str | None = None,
+        max_chunk_chars: int = 3200,
+    ) -> dict[str, Any]:
+        staged: list[dict[str, Any]] = []
+        for role in roles:
+            handoff = self.latest_worker_handoff(role=role, handoff_glob=handoff_glob)
+            if not handoff.get("ok"):
+                staged.append(
+                    {
+                        "role": role,
+                        "ok": False,
+                        "error": handoff.get("error", "failed to collect handoff"),
+                        "handoff": handoff,
+                    }
+                )
+                continue
+            title = f"{handoff['role']} @ {handoff['host']} :: {Path(handoff['path']).name}"
+            body = (
+                "UNREVIEWED WORKER DUMP\n"
+                "Human-in-the-middle review is expected before final synthesis.\n\n"
+                f"role: {handoff['role']}\n"
+                f"host: {handoff['host']}\n"
+                f"source: {handoff['path']}\n\n"
+                "----- BEGIN WORKER REPORT -----\n"
+                f"{handoff['content']}\n"
+                "----- END WORKER REPORT -----\n"
+            )
+            stage = self.stage_text_to_openclaw_chat(
+                title=title,
+                body=body,
+                session_id=session_id,
+                max_chunk_chars=max_chunk_chars,
+            )
+            staged.append(
+                {
+                    "role": handoff["role"],
+                    "host": handoff["host"],
+                    "path": handoff["path"],
+                    "content_chars": len(handoff["content"]),
+                    "ok": stage.get("ok", False),
+                    "stage": stage,
+                }
+            )
+        return {
+            "ok": all(x.get("ok", False) for x in staged) if staged else False,
+            "roles": roles,
+            "handoff_glob": handoff_glob,
+            "staged": staged,
+        }
+
     def _desktop_token_bundle(self) -> dict[str, Any]:
         # Read local config file first to avoid CLI redaction placeholders.
         hub = self._read_openclaw_json_key("gateway.auth.token") or self._desktop_get_config("gateway.auth.token")
@@ -504,12 +643,26 @@ class FleetOrchestrator:
 
     def _remote_run(self, client: paramiko.SSHClient, command: str, timeout: int = 120) -> dict[str, Any]:
         try:
-            wrapped = f"bash -lc {json.dumps(command)}"
-            stdin, stdout, stderr = client.exec_command(wrapped, timeout=timeout)
+            payload = base64.b64encode(command.encode("utf-8")).decode("ascii")
+            wrapped = (
+                "python3 - <<'PY'\n"
+                "import base64\n"
+                "import subprocess\n"
+                "import sys\n"
+                f"cmd = base64.b64decode('{payload}').decode('utf-8', errors='replace')\n"
+                "proc = subprocess.run(['bash', '-lc', cmd], text=True, capture_output=True)\n"
+                "sys.stdout.write(proc.stdout)\n"
+                "sys.stderr.write(proc.stderr)\n"
+                "sys.exit(proc.returncode)\n"
+                "PY"
+            )
+            _, stdout, stderr = client.exec_command(wrapped, timeout=timeout)
             out = stdout.read().decode("utf-8", errors="replace")
             err = stderr.read().decode("utf-8", errors="replace")
+            rc = stdout.channel.recv_exit_status()
             return {
-                "ok": True,
+                "ok": rc == 0,
+                "returncode": rc,
                 "stdout": out.strip(),
                 "stderr": err.strip(),
                 "command": command,
@@ -517,6 +670,7 @@ class FleetOrchestrator:
         except Exception as exc:  # noqa: BLE001
             return {
                 "ok": False,
+                "returncode": -1,
                 "stdout": "",
                 "stderr": str(exc),
                 "command": command,
@@ -612,39 +766,156 @@ def _gateway_probe_cmd() -> str:
     )
 
 
+CRITICAL_SIGNAL_PATTERNS = (
+    "device signature expired",
+    "token mismatch",
+    "auth failed",
+    "pairing required",
+)
+
+
 def _normalize_signal_lines(lines: list[str]) -> list[str]:
     out: list[str] = []
+    seen: set[str] = set()
     for raw in lines:
         line = raw.strip()
         if not line:
             continue
-        if ":{\"" in line:
-            _, _, json_part = line.partition(":{")
-            payload = "{" + json_part
+        normalized = line
+
+        first_brace = line.find("{")
+        if first_brace >= 0:
+            payload = line[first_brace:]
             try:
                 obj = json.loads(payload)
-                msg = obj.get("1")
+                msg = obj.get("1") or obj.get("message") or obj.get("0")
                 ts = obj.get("time") or obj.get("_meta", {}).get("date")
                 if msg and ts:
-                    out.append(f"{ts} {msg}")
-                    continue
-                if msg:
-                    out.append(str(msg))
-                    continue
+                    normalized = f"{ts} {msg}"
+                elif msg:
+                    normalized = str(msg)
             except Exception:  # noqa: BLE001
                 pass
-        m = re.search(r'"1":"([^"]+)"', line)
-        if m:
-            out.append(m.group(1))
-        else:
-            out.append(line)
+
+        if normalized == line:
+            m = re.search(r'"1":"([^"]+)"', line)
+            if m:
+                normalized = m.group(1)
+
+        if normalized not in seen:
+            seen.add(normalized)
+            out.append(normalized)
     return out
+
+
+def _parse_iso_timestamp(value: str) -> datetime | None:
+    token = value.strip()
+    if not token:
+        return None
+    if token.endswith("Z"):
+        token = token[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(token)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _line_timestamp(line: str) -> datetime | None:
+    token = line.split(" ", 1)[0]
+    return _parse_iso_timestamp(token)
+
+
+def _summarize_worker_signals(
+    lines: list[str],
+    *,
+    max_age_seconds: int,
+    now: datetime | None = None,
+) -> dict[str, Any]:
+    now_utc = now.astimezone(timezone.utc) if now else datetime.now(timezone.utc)
+
+    has_handshake = False
+    has_local_gateway = False
+    last_handshake: datetime | None = None
+    last_local_gateway: datetime | None = None
+    last_success_idx = -1
+    parsed_entries: list[tuple[int, str, str, datetime | None]] = []
+
+    for idx, line in enumerate(lines):
+        lower = line.lower()
+        ts = _line_timestamp(line)
+        parsed_entries.append((idx, line, lower, ts))
+        if "handshake complete" in lower:
+            has_handshake = True
+            if ts and (last_handshake is None or ts > last_handshake):
+                last_handshake = ts
+            last_success_idx = idx
+        if "local gateway connected" in lower:
+            has_local_gateway = True
+            if ts and (last_local_gateway is None or ts > last_local_gateway):
+                last_local_gateway = ts
+            last_success_idx = idx
+
+    critical_errors: list[str] = []
+    for idx, line, lower, _ in parsed_entries:
+        if last_success_idx >= 0 and idx < last_success_idx:
+            continue
+        if any(pattern in lower for pattern in CRITICAL_SIGNAL_PATTERNS):
+            critical_errors.append(line)
+
+    recent_handshake = (
+        (now_utc - last_handshake).total_seconds() <= max_age_seconds if last_handshake else False
+    )
+    recent_local_gateway = (
+        (now_utc - last_local_gateway).total_seconds() <= max_age_seconds if last_local_gateway else False
+    )
+
+    return {
+        "has_handshake": has_handshake,
+        "has_local_gateway": has_local_gateway,
+        "recent_handshake": recent_handshake,
+        "recent_local_gateway": recent_local_gateway,
+        "last_handshake_at": last_handshake.isoformat() if last_handshake else None,
+        "last_local_gateway_at": last_local_gateway.isoformat() if last_local_gateway else None,
+        "has_critical_errors": bool(critical_errors),
+        "critical_errors": critical_errors[-5:],
+    }
+
+
+def _evaluate_pairings(paired_devices: list[dict[str, Any]], expected_hosts: list[str]) -> dict[str, Any]:
+    observed: set[str] = set()
+    for item in paired_devices:
+        for key in ("remoteIp", "displayName", "host"):
+            value = item.get(key)
+            if isinstance(value, str) and value.strip():
+                observed.add(value.strip())
+
+    missing = []
+    for host in expected_hosts:
+        if any(host == seen or host in seen for seen in observed):
+            continue
+        missing.append(host)
+
+    return {
+        "expected_hosts": expected_hosts,
+        "observed_markers": sorted(observed),
+        "missing_hosts": missing,
+        "all_paired": len(missing) == 0,
+    }
 
 
 def _looks_redacted(value: str | None) -> bool:
     if not value:
         return False
     return "__OPENCLAW_REDACTED__" in value
+
+
+def _safe_remote_glob(pattern: str) -> str:
+    if not re.fullmatch(r"[A-Za-z0-9_./*?-]+", pattern or ""):
+        raise ValueError(f"unsupported handoff glob: {pattern!r}")
+    return pattern
 
 
 def _chunk_text_for_messages(text: str, max_chars: int = 3200) -> list[str]:

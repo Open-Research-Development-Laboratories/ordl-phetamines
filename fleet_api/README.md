@@ -28,6 +28,8 @@ $env:FLEET_WORKSPACE_ROOT = "C:\development"
 $env:FLEET_LAPTOP_HOST = "10.0.0.28"
 $env:FLEET_SERVER_HOST = "10.0.0.27"
 $env:FLEET_HUB_HOST = "10.0.0.48"
+$env:FLEET_STATUS_MAX_PARALLEL = "4"
+$env:FLEET_HEALTH_SIGNAL_RECENCY_MINUTES = "180"
 $env:CLOUDFLARE_TUNNEL_TOKEN = "optional-named-tunnel-token"
 ```
 
@@ -67,6 +69,24 @@ Specific roles only:
 powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\resync-fleet-tokens.ps1 -Roles worker-build-laptop,worker-batch-server
 ```
 
+Stage latest worker handoff reports into OpenClaw chat (for human-in-the-middle review):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\stage-worker-reports-to-openclaw-chat.ps1
+```
+
+Run full middle-man checkpoint cycle (stage then operator pause):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\run-middleman-cycle.ps1
+```
+
+If needed, pass worker SSH password directly:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\run-middleman-cycle.ps1 -SshPassword 'War7!HolyOptSysGo'
+```
+
 UI:
 - <http://127.0.0.1:8890/>
 
@@ -85,12 +105,14 @@ Core:
 
 Fleet:
 - `GET /v1/fleet/status`
+- `GET /v1/fleet/health`
 - `POST /v1/fleet/restart`
 - `POST /v1/fleet/resync`
 - `POST /v1/fleet/sync-corpus`
 - `POST /v1/fleet/verify-corpus`
 - `GET /v1/fleet/logs/{role}`
 - `POST /v1/fleet/command` (disabled by default; set `FLEET_ENABLE_REMOTE_COMMAND=true`)
+- `POST /v1/fleet/stage-handoff`
 
 Dispatch:
 - `POST /v1/dispatch/build`
@@ -109,8 +131,11 @@ Playbooks:
 ```powershell
 $h = @{ "X-API-Key" = $env:FLEET_API_KEY; "Content-Type" = "application/json" }
 Invoke-RestMethod http://127.0.0.1:8890/v1/fleet/status -Headers $h
+Invoke-RestMethod http://127.0.0.1:8890/v1/fleet/health -Headers $h
+Invoke-RestMethod "http://127.0.0.1:8890/v1/fleet/health?recency_minutes=120" -Headers $h
 Invoke-RestMethod http://127.0.0.1:8890/v1/fleet/resync -Method Post -Headers $h -Body '{"async":true}'
 Invoke-RestMethod http://127.0.0.1:8890/v1/policy/tests -Method Post -Headers $h -Body '{"async":true}'
+Invoke-RestMethod http://127.0.0.1:8890/v1/fleet/stage-handoff -Method Post -Headers $h -Body '{"async":true}'
 ```
 
 ## Notes
@@ -122,3 +147,5 @@ Invoke-RestMethod http://127.0.0.1:8890/v1/policy/tests -Method Post -Headers $h
 - Run `install-linux-worker-autostart.sh` on each Linux worker host (laptop/server) to survive reboot.
 - Job events are written to:
   - `fleet_api/state/jobs-events.jsonl`
+- Middle-man flow runbook:
+  - `fleet_api/docs/middleman-openclaw-flow.md`

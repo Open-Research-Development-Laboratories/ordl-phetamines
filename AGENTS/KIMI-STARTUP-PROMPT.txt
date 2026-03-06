@@ -1,7 +1,2 @@
-Acknowledge every upload by exact filename.
-Then return outputs in this order:
-1) Summary
-2) Risks
-3) Action List
-4) Open Questions
-If any required file is missing, ask specifically for that filename.
+Canonical startup prompt contract is in:
+C:/Users/Winsock/Documents/GitHub/ordl-phetamines/AGENTS.md

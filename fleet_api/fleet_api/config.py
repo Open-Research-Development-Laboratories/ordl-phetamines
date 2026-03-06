@@ -34,6 +34,8 @@ class AppConfig:
     hub_host: str
     hub_port: int
     openclaw_agent_id: str
+    status_max_parallel: int
+    health_signal_recency_minutes: int
     included_corpus_paths: tuple[str, ...] = field(default_factory=tuple)
     workers: dict[str, WorkerTarget] = field(default_factory=dict)
 
@@ -95,6 +97,8 @@ def load_config() -> AppConfig:
         hub_host=os.getenv("FLEET_HUB_HOST", "10.0.0.48"),
         hub_port=int(os.getenv("FLEET_HUB_PORT", "18789")),
         openclaw_agent_id=os.getenv("FLEET_AGENT_ID", "arch"),
+        status_max_parallel=int(os.getenv("FLEET_STATUS_MAX_PARALLEL", "4")),
+        health_signal_recency_minutes=int(os.getenv("FLEET_HEALTH_SIGNAL_RECENCY_MINUTES", "180")),
         included_corpus_paths=corpus,
         workers=workers,
     )
