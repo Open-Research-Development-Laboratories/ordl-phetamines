@@ -149,7 +149,7 @@ curl -s http://localhost:18000/health || echo "Router not responding"
 ### Step 5.1: Set Environment Variables
 ```bash
 export JWT_SECRET_KEY=$(openssl rand -hex 32)
-export NEXUS_TOKEN="WINSOCK!IS!GOAT!ORDL3991!-3dc65a69fda7069b53e40ff05c9f5620"
+export NEXUS_TOKEN="REPLACE_WITH_ENV_NEXUS_TOKEN"
 export DATA_DIR="/opt/codex-swarm/command-post/data"
 export UPLOADS_DIR="/opt/codex-swarm/command-post/uploads"
 export ROUTER_URL="http://localhost:18000"

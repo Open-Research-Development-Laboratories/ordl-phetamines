@@ -61,9 +61,9 @@ limiter = Limiter(
 )
 
 # Configuration
-BEARER_TOKEN = os.environ.get('NEXUS_TOKEN', 'WINSOCK!IS!GOAT!ORDL3991!-3dc65a69fda7069b53e40ff05c9f5620')
+BEARER_TOKEN = os.environ.get('NEXUS_TOKEN', 'REPLACE_WITH_ENV_NEXUS_TOKEN')
 ROUTER_URL = os.environ.get('ROUTER_URL', 'http://localhost:18000')
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY', 'gsk_S5W3wBRqM1v0GY1kC3UAWGdyb3FYVH1N3A6YXOc5WF7l0LAX')
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', 'REPLACE_WITH_ENV_GROQ_API_KEY')
 DB_PATH = os.path.join(DATA_DIR, 'nexus.db')
 
 # =============================================================================

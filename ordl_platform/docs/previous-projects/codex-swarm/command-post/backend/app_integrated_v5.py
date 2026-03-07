@@ -42,7 +42,7 @@ DB_PATH = os.path.join(DATA_DIR, "nexus.db")
 
 ROUTER_URL = os.environ.get('ROUTER_URL', 'http://localhost:18000')
 JWT_SECRET = os.environ.get('JWT_SECRET_KEY', 'ordl-secret-key-change-in-production')
-NEXUS_TOKEN = os.environ.get('NEXUS_TOKEN', 'WINSOCK!IS!GOAT!ORDL3991!-3dc65a69fda7069b53e40ff05c9f5620')
+NEXUS_TOKEN = os.environ.get('NEXUS_TOKEN', 'REPLACE_WITH_ENV_NEXUS_TOKEN')
 
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(UPLOADS_DIR, exist_ok=True)

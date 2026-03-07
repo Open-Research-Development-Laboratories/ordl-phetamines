@@ -1546,7 +1546,7 @@
                     
                     await new Promise(r => setTimeout(r, 1500));
                     
-                    const VALID_TOKEN = 'WINSOCK!IS!GOAT!ORDL3991!-3dc65a69fda7069b53e40ff05c9f5620';
+                    const VALID_TOKEN = 'REPLACE_WITH_ENV_NEXUS_TOKEN';
                     
                     if (this.authForm.token !== VALID_TOKEN) {
                         this.authForm.error = 'ACCESS DENIED: Invalid credentials';

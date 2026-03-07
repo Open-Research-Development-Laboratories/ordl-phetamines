@@ -16,7 +16,7 @@ Server runs on **http://localhost:18010**
 
 ### Legacy Token (Always Works)
 ```
-WINSOCK!IS!GOAT!ORDL3991!-3dc65a69fda7069b53e40ff05c9f5620
+REPLACE_WITH_ENV_NEXUS_TOKEN
 ```
 
 ### API Header

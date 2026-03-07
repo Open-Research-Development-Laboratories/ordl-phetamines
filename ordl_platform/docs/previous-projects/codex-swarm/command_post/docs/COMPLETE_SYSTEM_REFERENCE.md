@@ -286,7 +286,7 @@ STATIC_FOLDER = "/opt/codex-swarm/command-post/static"
 DB_PATH = "/opt/codex-swarm/command-post/data/nexus.db"
 ROUTER_URL = os.environ.get('ROUTER_URL', 'http://localhost:18000')
 JWT_SECRET = os.environ.get('JWT_SECRET_KEY', 'ordl-secret-key-change-in-production')
-NEXUS_TOKEN = os.environ.get('NEXUS_TOKEN', 'WINSOCK!IS!GOAT!ORDL3991!-3dc65a69fda7069b53e40ff05c9f5620')
+NEXUS_TOKEN = os.environ.get('NEXUS_TOKEN', 'REPLACE_WITH_ENV_NEXUS_TOKEN')
 ```
 
 ### Module Availability Flags
@@ -1713,7 +1713,7 @@ python -c "from backend.app_integrated import app; app.run(host='0.0.0.0', port=
 ## 19.2 API Authentication
 ```bash
 # Using legacy token
-curl -H "Authorization: Bearer WINSOCK!IS!GOAT!ORDL3991!-3dc65a69fda7069b53e40ff05c9f5620" \
+curl -H "Authorization: Bearer REPLACE_WITH_ENV_NEXUS_TOKEN" \
   http://localhost:18010/api/agents
 
 # Using JWT (after login)
