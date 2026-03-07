@@ -3,6 +3,15 @@
 # Local Codex runtime
 .codex/
 
+# Local-only workspace artifacts
+.secrets/
+memory/
+logs/
+.pytest_cache/
+.pytest-tmp/
+pytesttmp/
+*.db
+
 # Python caches
 **/__pycache__/
 *.pyc
@@ -18,3 +27,6 @@ fleet_api/state/**
 # Local deployment secrets
 ordl_platform/infra/.env.local
 ordl_platform/infra/.env.*.local
+
+# Archived project runtime logs
+ordl_platform/docs/previous-projects/**/logs/*.log

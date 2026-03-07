@@ -1,11 +1,15 @@
 param(
-  [string]$RepoRoot = "C:\Users\Winsock\Documents\GitHub\ordl-phetamines",
+  [string]$RepoRoot = "",
   [string]$ApiKey = $env:FLEET_API_KEY,
   [string]$SshPassword = $env:FLEET_SSH_PASSWORD,
   [int]$ApiPort = 8890
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $RepoRoot) {
+  $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+}
 
 $runPy = Join-Path $RepoRoot "fleet_api\run.py"
 $stateDir = Join-Path $RepoRoot "fleet_api\state"

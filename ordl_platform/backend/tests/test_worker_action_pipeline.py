@@ -54,7 +54,7 @@ def test_worker_action_pending_and_ack_flow(client):
         operator,
         project_id,
         'worker-build-laptop',
-        '10.0.0.28',
+        '198.51.100.28',
         'device-build-laptop',
     )
 
@@ -87,7 +87,7 @@ def test_worker_action_pending_and_ack_flow(client):
     completed = client.post(
         f'/v1/workers/actions/{action_id}/ack',
         headers=bearer(operator),
-        json={'status': 'completed', 'result': {'gateway': 'ws://10.0.0.48:18789'}, 'error': '', 'notes': 'done'},
+        json={'status': 'completed', 'result': {'gateway': 'ws://198.51.100.48:18789'}, 'error': '', 'notes': 'done'},
     )
     assert completed.status_code == 200, completed.text
     assert completed.json()['status'] == 'completed'
@@ -121,7 +121,7 @@ def test_worker_action_tenant_isolation(client):
         operator_a,
         project_a,
         'worker-a',
-        '10.0.0.31',
+        '198.51.100.31',
         'device-worker-a',
     )
     queued = client.post(

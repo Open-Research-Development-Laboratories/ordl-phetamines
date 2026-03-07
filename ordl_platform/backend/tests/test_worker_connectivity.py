@@ -36,7 +36,7 @@ def test_worker_reconnect_policy_surface(client):
             'project_id': project_id,
             'name': 'worker-build-laptop',
             'role': 'builder',
-            'host': '10.0.0.28',
+            'host': '198.51.100.28',
             'device_id': 'device-build-laptop',
             'capabilities': ['python', 'tests'],
         },
@@ -48,8 +48,8 @@ def test_worker_reconnect_policy_surface(client):
         f'/v1/workers/{worker_id}/heartbeat',
         headers=bearer(operator),
         json={
-            'gateway_url': 'ws://10.0.0.48:18789',
-            'gateway_candidates': ['ws://10.0.0.48:18789', 'wss://flint.org.org'],
+            'gateway_url': 'ws://198.51.100.48:18789',
+            'gateway_candidates': ['ws://198.51.100.48:18789', 'wss://fleet.example.org'],
             'gateway_rtt_ms': 18,
             'keepalive_interval_seconds': 20,
             'keepalive_miss_threshold': 3,
@@ -68,12 +68,12 @@ def test_worker_reconnect_policy_surface(client):
     assert rows
     row = rows[0]
     assert row['reconnect_required'] is False
-    assert row['reconnect_targets'][0] == 'ws://10.0.0.48:18789'
+    assert row['reconnect_targets'][0] == 'ws://198.51.100.48:18789'
 
     probe_down = client.post(
         f'/v1/workers/{worker_id}/probe',
         headers=bearer(operator),
-        json={'reachable': False, 'gateway_url': 'ws://10.0.0.48:18789', 'gateway_rtt_ms': -1, 'reason': 'probe_timeout'},
+        json={'reachable': False, 'gateway_url': 'ws://198.51.100.48:18789', 'gateway_rtt_ms': -1, 'reason': 'probe_timeout'},
     )
     assert probe_down.status_code == 200, probe_down.text
 

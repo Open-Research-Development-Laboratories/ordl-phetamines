@@ -1,9 +1,13 @@
 param(
-  [string]$RepoRoot = "C:\Users\Winsock\Documents\GitHub\ordl-phetamines",
+  [string]$RepoRoot = "",
   [string]$TaskName = "FleetTunnel-Autostart"
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $RepoRoot) {
+  $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+}
 
 $startScript = Join-Path $RepoRoot "fleet_api\scripts\start-cloudflared.ps1"
 if (!(Test-Path $startScript)) {

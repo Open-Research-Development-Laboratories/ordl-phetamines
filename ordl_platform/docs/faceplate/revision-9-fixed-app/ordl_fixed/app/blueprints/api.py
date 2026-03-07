@@ -1135,7 +1135,7 @@ def nodes_discovery():
         'status': 'scanning',
         'discovered': 3,
         'pending': 2,
-        'networks': ['10.0.0.0/24', '192.168.1.0/24']
+        'networks': ['198.51.100.0/24', '192.168.1.0/24']
     })
 
 @bp.route('/v1/nodes/autoupdate')

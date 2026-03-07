@@ -1,11 +1,15 @@
 param(
-  [string]$RepoRoot = "C:\Users\Winsock\Documents\GitHub\ordl-phetamines",
+  [string]$RepoRoot = "",
   [string]$HubTaskName = "ordlctlHub-Autostart",
   [string]$ApiTaskName = "FleetAPI-Autostart",
   [string]$TunnelTaskName = "FleetTunnel-Autostart"
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $RepoRoot) {
+  $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+}
 
 $hubInstaller = Join-Path $RepoRoot "fleet_api\scripts\install-gateway-hub-autostart.ps1"
 $apiInstaller = Join-Path $RepoRoot "fleet_api\scripts\install-desktop-autostart.ps1"

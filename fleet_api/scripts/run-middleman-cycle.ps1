@@ -9,7 +9,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$repoRoot = "C:\Users\Winsock\Documents\GitHub\ordl-phetamines"
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
 $stageScript = Join-Path $repoRoot "fleet_api\scripts\stage-worker-reports-to-gateway-chat.ps1"
 $reworkScript = Join-Path $repoRoot "fleet_api\scripts\rework-worker-reports.ps1"
 

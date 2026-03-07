@@ -2,6 +2,13 @@
 
 This module is a clean-room enterprise fleet platform implementation.
 
+## Public blueprint pack
+
+Start with:
+
+- [`docs/ordl-blueprint-pack/README.md`](docs/ordl-blueprint-pack/README.md)
+- [`docs/ordl-blueprint-pack/ordl-ultimate-platform-blueprint.md`](docs/ordl-blueprint-pack/ordl-ultimate-platform-blueprint.md)
+
 ## Scope in this implementation
 
 - FastAPI backend with governance, authorization, policy-token, dispatch, extension-signing, worker actions, audit, and code-digestion APIs.
@@ -133,6 +140,6 @@ python ordl_platform\scripts\lint-md-instruction-dialect.py ordl_platform\docs\t
 
 See:
 
-- [deployment-first-pipeline.md](/C:/Users/Winsock/Documents/GitHub/ordl-phetamines/ordl_platform/docs/deployment-first-pipeline.md)
+- [`docs/deployment-first-pipeline.md`](docs/deployment-first-pipeline.md)
 - `ordl_platform/infra/podman-compose.prod.yml`
 - `ordl_platform/infra/.env.prod.example`

@@ -21,13 +21,13 @@ This intentionally avoids app-internal clickable links (`app://...`) and uses di
 ## One Command (Stage to Chat)
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File C:\Users\Winsock\Documents\GitHub\ordl-phetamines\fleet_api\scripts\run-middleman-cycle.ps1
+powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\run-middleman-cycle.ps1
 ```
 
 If prompt entry is flaky, pass password explicitly:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File C:\Users\Winsock\Documents\GitHub\ordl-phetamines\fleet_api\scripts\run-middleman-cycle.ps1 -SshPassword 'War7!HolyOptSysGo'
+powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\run-middleman-cycle.ps1 -SshPassword $env:FLEET_SSH_PASSWORD
 ```
 
 What this does:
@@ -45,13 +45,13 @@ What this does:
 ## Direct Command (No Wrapper)
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File C:\Users\Winsock\Documents\GitHub\ordl-phetamines\fleet_api\scripts\stage-worker-reports-to-gateway-chat.ps1
+powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\stage-worker-reports-to-gateway-chat.ps1
 ```
 
 ## Direct Rework Command
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File C:\Users\Winsock\Documents\GitHub\ordl-phetamines\fleet_api\scripts\rework-worker-reports.ps1 -Feedback "Tighten claims, add scripture citations, remove repetition"
+powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\rework-worker-reports.ps1 -Feedback "Tighten claims, add references, remove repetition"
 ```
 
 ## API Trigger
@@ -77,7 +77,7 @@ If staging worked, the session `updatedAt` will move forward right after the com
 - `FLEET_SSH_PASSWORD is required for remote orchestration`
   - Restart Fleet API with `FLEET_SSH_PASSWORD` in its process environment.
 - `Authentication failed`
-  - Re-run with `-SshPassword '...'` to avoid prompt paste/input issues.
+  - Re-run with `-SshPassword $env:FLEET_SSH_PASSWORD` to avoid prompt paste/input issues.
 - `no handoff files matched /development/crew-handoff/*.md`
   - Workers have not produced report files yet; generate reports first.
 - `origin not allowed`

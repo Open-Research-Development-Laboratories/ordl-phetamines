@@ -105,7 +105,7 @@ def test_worker_update_campaign_and_discovery_workflow(client):
         project_id,
         'worker-build-laptop',
         'builder',
-        '10.0.0.28',
+        '198.51.100.28',
         'device-build-laptop',
     )
     _register_worker(
@@ -114,7 +114,7 @@ def test_worker_update_campaign_and_discovery_workflow(client):
         project_id,
         'worker-batch-server',
         'batch',
-        '10.0.0.27',
+        '198.51.100.27',
         'device-batch-server',
     )
 
@@ -221,7 +221,7 @@ def test_worker_update_campaign_and_discovery_workflow(client):
         json={
             'project_id': project_id,
             'network_scope': 'lan-segment-a',
-            'candidate_hosts': ['10.0.0.50', '10.0.0.28'],
+            'candidate_hosts': ['198.51.100.50', '198.51.100.28'],
             'auto_enroll': False,
             'notes': 'nightly discovery run',
         },
@@ -261,7 +261,7 @@ def test_update_campaign_tenant_isolation(client):
         project_a,
         'worker-a',
         'builder',
-        '10.0.0.31',
+        '198.51.100.31',
         'device-worker-a',
     )
 
@@ -342,7 +342,7 @@ def test_canary_halt_and_auto_rollback(client):
         project_id,
         'worker-down',
         'builder',
-        '10.0.0.61',
+        '198.51.100.61',
         'device-worker-down',
     )
     _register_worker(
@@ -351,13 +351,13 @@ def test_canary_halt_and_auto_rollback(client):
         project_id,
         'worker-up',
         'builder',
-        '10.0.0.62',
+        '198.51.100.62',
         'device-worker-up',
     )
     probe_down = client.post(
         f'/v1/workers/{worker_down}/probe',
         headers=bearer(operator),
-        json={'reachable': False, 'gateway_url': 'ws://10.0.0.48:18789', 'gateway_rtt_ms': -1, 'reason': 'canary test'},
+        json={'reachable': False, 'gateway_url': 'ws://198.51.100.48:18789', 'gateway_rtt_ms': -1, 'reason': 'canary test'},
     )
     assert probe_down.status_code == 200, probe_down.text
 

@@ -17,10 +17,10 @@ Objective:
 Normalize Revision 10 architecture and migration documents so they match the current ORDL backend contract and repo topology exactly.
 
 Inputs (exact filenames):
-- C:\Users\Winsock\Documents\GitHub\ordl-phetamines\ordl_platform\docs\faceplate\revision-10\ORDL_API_ADAPTER_PLAN.md
-- C:\Users\Winsock\Documents\GitHub\ordl-phetamines\ordl_platform\docs\faceplate\revision-10\ORDL_REV9_PRODUCTION_MIGRATION_SPEC.md
-- C:\Users\Winsock\Documents\GitHub\ordl-phetamines\ordl_platform\docs\contracts\api-v1-contract.json
-- C:\Users\Winsock\Documents\GitHub\ordl-phetamines\ordl_platform\docs\contracts\api-v1-routes.md
+- ordl_platform\docs\faceplate\revision-10\ORDL_API_ADAPTER_PLAN.md
+- ordl_platform\docs\faceplate\revision-10\ORDL_REV9_PRODUCTION_MIGRATION_SPEC.md
+- ordl_platform\docs\contracts\api-v1-contract.json
+- ordl_platform\docs\contracts\api-v1-routes.md
 
 Constraints / Invariants:
 - No legacy product naming or paths.
@@ -41,9 +41,9 @@ Objective:
 Convert the Revision 10 adapter plan into an implementation-ready Flask BFF change list against the current ORDL backend.
 
 Inputs (exact filenames):
-- C:\Users\Winsock\Documents\GitHub\ordl-phetamines\ordl_platform\docs\faceplate\revision-9-fixed-app\ordl_fixed\app\blueprints\api.py
-- C:\Users\Winsock\Documents\GitHub\ordl-phetamines\ordl_platform\docs\faceplate\revision-10\ORDL_API_ADAPTER_PLAN.md
-- C:\Users\Winsock\Documents\GitHub\ordl-phetamines\ordl_platform\docs\contracts\api-v1-contract.json
+- ordl_platform\docs\faceplate\revision-9-fixed-app\ordl_fixed\app\blueprints\api.py
+- ordl_platform\docs\faceplate\revision-10\ORDL_API_ADAPTER_PLAN.md
+- ordl_platform\docs\contracts\api-v1-contract.json
 
 Constraints / Invariants:
 - Flask remains the frontend BFF stack.
@@ -64,9 +64,9 @@ Objective:
 Regenerate a reliability validation report for Revision 10 using only reproducible commands and current tests from this workspace.
 
 Inputs (exact filenames):
-- C:\Users\Winsock\Documents\GitHub\ordl-phetamines\ordl_platform\docs\faceplate\revision-10\ordl_platform\RELIABILITY_VALIDATION_REPORT.md
-- C:\Users\Winsock\Documents\GitHub\ordl-phetamines\ordl_platform\backend\tests\test_model_governance_policies.py
-- C:\Users\Winsock\Documents\GitHub\ordl-phetamines\ordl_platform\backend\tests
+- ordl_platform\docs\faceplate\revision-10\ordl_platform\RELIABILITY_VALIDATION_REPORT.md
+- ordl_platform\backend\tests\test_model_governance_policies.py
+- ordl_platform\backend\tests
 
 Constraints / Invariants:
 - Use only tests that exist in this repo right now.

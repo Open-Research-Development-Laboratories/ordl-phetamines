@@ -66,14 +66,14 @@ def load_config() -> AppConfig:
     workers = {
         "worker-build-laptop": WorkerTarget(
             role="worker-build-laptop",
-            host=os.getenv("FLEET_LAPTOP_HOST", "10.0.0.28"),
+            host=os.getenv("FLEET_LAPTOP_HOST", "worker-laptop.example.internal"),
             user=user,
             workspace=remote_workspace,
             enabled=not _as_bool(os.getenv("FLEET_DISABLE_LAPTOP"), False),
         ),
         "worker-batch-server": WorkerTarget(
             role="worker-batch-server",
-            host=os.getenv("FLEET_SERVER_HOST", "10.0.0.27"),
+            host=os.getenv("FLEET_SERVER_HOST", "worker-batch.example.internal"),
             user=user,
             workspace=remote_workspace,
             enabled=not _as_bool(os.getenv("FLEET_DISABLE_SERVER"), False),
@@ -100,7 +100,7 @@ def load_config() -> AppConfig:
         "skills",
     )
 
-    default_gateway = f"ws://{os.getenv('FLEET_HUB_HOST', '10.0.0.48')}:{int(os.getenv('FLEET_HUB_PORT', '18789'))}"
+    default_gateway = f"ws://{os.getenv('FLEET_HUB_HOST', 'fleet-gateway.example.internal')}:{int(os.getenv('FLEET_HUB_PORT', '18789'))}"
     gateway_candidates = tuple(
         _as_list(
             os.getenv("FLEET_GATEWAY_CANDIDATES"),
@@ -110,7 +110,7 @@ def load_config() -> AppConfig:
     discovery_cidrs = tuple(
         _as_list(
             os.getenv("FLEET_DISCOVERY_CIDRS"),
-            default=["10.0.0.0/24"],
+            default=["198.51.100.0/24"],
         )
     )
 
@@ -124,7 +124,7 @@ def load_config() -> AppConfig:
         remote_workspace_root=remote_workspace,
         remote_command_enabled=_as_bool(os.getenv("FLEET_ENABLE_REMOTE_COMMAND"), False),
         ssh_password=os.getenv("FLEET_SSH_PASSWORD"),
-        hub_host=os.getenv("FLEET_HUB_HOST", "10.0.0.48"),
+        hub_host=os.getenv("FLEET_HUB_HOST", "fleet-gateway.example.internal"),
         hub_port=int(os.getenv("FLEET_HUB_PORT", "18789")),
         ordlctl_agent_id=os.getenv("FLEET_AGENT_ID", "arch"),
         status_max_parallel=int(os.getenv("FLEET_STATUS_MAX_PARALLEL", "4")),

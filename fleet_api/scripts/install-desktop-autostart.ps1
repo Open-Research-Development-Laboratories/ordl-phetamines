@@ -1,9 +1,13 @@
 param(
-  [string]$RepoRoot = "C:\Users\Winsock\Documents\GitHub\ordl-phetamines",
+  [string]$RepoRoot = "",
   [string]$TaskName = "FleetAPI-Autostart"
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $RepoRoot) {
+  $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+}
 
 $startScript = Join-Path $RepoRoot "fleet_api\scripts\start-fleet-api.ps1"
 if (!(Test-Path $startScript)) {

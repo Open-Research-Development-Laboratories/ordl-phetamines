@@ -57,7 +57,7 @@ def test_worker_monitor_run_once_queues_actions_and_throttles(client):
         operator,
         project_id,
         'worker-build-laptop',
-        '10.0.0.28',
+        '198.51.100.28',
         'device-build-laptop',
     )
 
@@ -121,7 +121,7 @@ def test_worker_monitor_disabled_requires_force(client):
         operator,
         project_id,
         'worker-batch-server',
-        '10.0.0.27',
+        '198.51.100.27',
         'device-batch-server',
     )
 

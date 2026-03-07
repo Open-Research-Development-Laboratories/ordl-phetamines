@@ -1,9 +1,13 @@
 param(
-  [string]$RepoRoot = "C:\Users\Winsock\Documents\GitHub\ordl-phetamines",
+  [string]$RepoRoot = "",
   [string]$Bind = "lan"
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $RepoRoot) {
+  $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+}
 
 $stateDir = Join-Path $RepoRoot "fleet_api\state"
 $logFile = Join-Path $stateDir "ordlctl-hub.log"

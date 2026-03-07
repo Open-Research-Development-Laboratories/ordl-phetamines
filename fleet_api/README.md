@@ -25,9 +25,9 @@ Set environment:
 $env:FLEET_API_KEY = "set-a-real-key"
 $env:FLEET_SSH_PASSWORD = "your-worker-ssh-password"
 $env:FLEET_WORKSPACE_ROOT = "C:\development"
-$env:FLEET_LAPTOP_HOST = "10.0.0.28"
-$env:FLEET_SERVER_HOST = "10.0.0.27"
-$env:FLEET_HUB_HOST = "10.0.0.48"
+$env:FLEET_LAPTOP_HOST = "worker-laptop.example.internal"
+$env:FLEET_SERVER_HOST = "worker-batch.example.internal"
+$env:FLEET_HUB_HOST = "fleet-gateway.example.internal"
 $env:FLEET_STATUS_MAX_PARALLEL = "4"
 $env:FLEET_HEALTH_SIGNAL_RECENCY_MINUTES = "180"
 $env:CLOUDFLARE_TUNNEL_TOKEN = "optional-named-tunnel-token"
@@ -84,7 +84,7 @@ powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\run-middleman-cycle
 If needed, pass worker SSH password directly:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\run-middleman-cycle.ps1 -SshPassword 'War7!HolyOptSysGo'
+powershell -ExecutionPolicy Bypass -File .\fleet_api\scripts\run-middleman-cycle.ps1 -SshPassword $env:FLEET_SSH_PASSWORD
 ```
 
 UI:

@@ -1,7 +1,7 @@
 param(
   [string]$ApiBase = "http://127.0.0.1:8890",
   [string]$ApiKey = $env:FLEET_API_KEY,
-  [string[]]$Cidrs = @("10.0.0.0/24"),
+  [string[]]$Cidrs = @("198.51.100.0/24"),
   [string[]]$Hosts = @(),
   [int]$MaxHosts = 256,
   [switch]$NoSshProbe,

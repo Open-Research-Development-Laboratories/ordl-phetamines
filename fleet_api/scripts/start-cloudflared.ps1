@@ -1,11 +1,15 @@
 param(
-  [string]$RepoRoot = "C:\Users\Winsock\Documents\GitHub\ordl-phetamines",
+  [string]$RepoRoot = "",
   [string]$TunnelToken = $env:CLOUDFLARE_TUNNEL_TOKEN,
   [string]$LocalUrl = "http://127.0.0.1:8890",
   [string]$CloudflaredPath = ""
 )
 
 $ErrorActionPreference = "Stop"
+
+if (-not $RepoRoot) {
+  $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..")).Path
+}
 
 $stateDir = Join-Path $RepoRoot "fleet_api\state"
 $logFile = Join-Path $stateDir "cloudflared.log"
