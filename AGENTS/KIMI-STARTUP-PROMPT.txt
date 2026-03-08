@@ -1,2 +1,2 @@
 Canonical startup prompt contract is in:
-C:/Users/Winsock/Documents/GitHub/ordl-phetamines/AGENTS.md
+../AGENTS.md

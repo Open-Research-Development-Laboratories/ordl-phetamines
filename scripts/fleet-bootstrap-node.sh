@@ -4,7 +4,7 @@ set -euo pipefail
 # Usage:
 #   ./fleet-bootstrap-node.sh <HUB_HOST> <HUB_TOKEN> [LOCAL_TUNNEL_PORT]
 # Example:
-#   ./fleet-bootstrap-node.sh 10.0.0.48 d842... 55556
+#   ./fleet-bootstrap-node.sh gateway.example.internal hub-token-example 55556
 
 HUB_HOST="${1:-}"
 HUB_TOKEN="${2:-}"

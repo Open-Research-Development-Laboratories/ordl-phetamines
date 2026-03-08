@@ -16,6 +16,13 @@ def _repo_root() -> Path:
     return Path(__file__).resolve().parents[2]
 
 
+def _display_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(_repo_root()).as_posix()
+    except ValueError:
+        return path.name
+
+
 def _extract_urls(text: str) -> list[str]:
     return sorted(set(URL_RE.findall(text)))
 
@@ -166,7 +173,7 @@ def main() -> int:
     out_json.write_text(
         json.dumps(
             {
-                "source": str(in_path),
+                "source": _display_path(in_path),
                 "url_count": len(urls),
                 "categories": dict(categories),
                 "urls": rows,
@@ -188,4 +195,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

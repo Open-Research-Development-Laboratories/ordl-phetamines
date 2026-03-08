@@ -13,9 +13,14 @@ This is the enforcement layer for outbound messaging.
 
 ```bash
 POLICY_GATEWAY_SECRET='set-strong-secret' \
-POLICY_ALERT_DISCORD_TARGET='channel:1379869405164343353' \
 POLICY_ALERT_EMAIL_TO='you@example.com' \
 node policy/gateway-server.js
+```
+
+Optional alert routing:
+
+```bash
+export POLICY_ALERT_DISCORD_TARGET='channel:example-policy-alerts'
 ```
 
 2) Send through gate
@@ -33,9 +38,9 @@ node policy/guarded-send.js /path/to/event.json
 ## Alert fanout on block/hold
 - Discord ping/message via `ordlctl message send`
 - Email via local `sendmail` when `POLICY_ALERT_EMAIL_TO` is set
-- Audit record in `policy/audit.log`
-- Block queue in `policy/blocked-queue.jsonl`
-- Status signal in `policy/status.json` (red when blocked)
+- Audit record in `policy/runtime/audit.log`
+- Block queue in `policy/runtime/blocked-queue.jsonl`
+- Status signal in `policy/runtime/status.json` (red when blocked)
 
 ## Event format
 Use `specs/policy-schema.json`.
@@ -44,6 +49,7 @@ Use `specs/policy-schema.json`.
 - Fail closed: if gateway is down, sends fail.
 - Do not send directly to provider APIs from automations.
 - Route all outbound automations through `guarded-send.js` or equivalent adapter.
+- Runtime outputs are intentionally excluded from git tracking.
 
 ## Current scope
 This enforces automated sends routed through this wrapper.

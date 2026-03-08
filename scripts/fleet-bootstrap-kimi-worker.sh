@@ -4,7 +4,7 @@ set -euo pipefail
 # Usage:
 #   ./fleet-bootstrap-kimi-worker.sh <WORKER_ID> <HUB_WS_URL> <HUB_TOKEN> <KIMI_TOKEN> <KIMI_USER_ID> [AGENT_ID]
 # Example:
-#   ./fleet-bootstrap-kimi-worker.sh worker-build-laptop ws://10.0.0.48:18789 d842... sk-... 19cb... arch
+#   ./fleet-bootstrap-kimi-worker.sh worker-build-laptop ws://gateway.example.internal:18789 hub-token-example kimi-token-example kimi-user-id-example arch
 
 WORKER_ID="${1:-}"
 HUB_WS_URL="${2:-}"

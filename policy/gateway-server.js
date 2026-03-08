@@ -8,12 +8,23 @@ const { sendDiscordAlert, sendEmailAlert } = require('./alerts');
 
 const PORT = Number(process.env.POLICY_GATEWAY_PORT || 8789);
 const SECRET = process.env.POLICY_GATEWAY_SECRET || 'change-me';
-const LOG_PATH = process.env.POLICY_GATEWAY_LOG || path.join(__dirname, 'audit.log');
-const STATUS_PATH = process.env.POLICY_STATUS_PATH || path.join(__dirname, 'status.json');
-const QUEUE_PATH = process.env.POLICY_QUEUE_PATH || path.join(__dirname, 'blocked-queue.jsonl');
+const RUNTIME_DIR = process.env.POLICY_RUNTIME_DIR || path.join(__dirname, 'runtime');
+const LOG_PATH = process.env.POLICY_GATEWAY_LOG || path.join(RUNTIME_DIR, 'audit.log');
+const STATUS_PATH = process.env.POLICY_STATUS_PATH || path.join(RUNTIME_DIR, 'status.json');
+const QUEUE_PATH = process.env.POLICY_QUEUE_PATH || path.join(RUNTIME_DIR, 'blocked-queue.jsonl');
 
-const ALERT_DISCORD_TARGET = process.env.POLICY_ALERT_DISCORD_TARGET || 'channel:1379869405164343353';
+const ALERT_DISCORD_TARGET = process.env.POLICY_ALERT_DISCORD_TARGET || '';
 const ALERT_EMAIL_TO = process.env.POLICY_ALERT_EMAIL_TO || '';
+
+function ensureParentDir(filePath) {
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+}
+
+function ensureRuntimeLayout() {
+  ensureParentDir(LOG_PATH);
+  ensureParentDir(STATUS_PATH);
+  ensureParentDir(QUEUE_PATH);
+}
 
 function readJson(req) {
   return new Promise((resolve, reject) => {
@@ -36,14 +47,17 @@ function signDecision(payload) {
 }
 
 function writeAudit(row) {
+  ensureParentDir(LOG_PATH);
   fs.appendFileSync(LOG_PATH, JSON.stringify(row) + '\n');
 }
 
 function writeStatus(status) {
+  ensureParentDir(STATUS_PATH);
   fs.writeFileSync(STATUS_PATH, JSON.stringify(status, null, 2));
 }
 
 function enqueueBlocked(row) {
+  ensureParentDir(QUEUE_PATH);
   fs.appendFileSync(QUEUE_PATH, JSON.stringify(row) + '\n');
 }
 
@@ -72,7 +86,10 @@ async function alertOnBlock(event, out) {
     `event=${out.event_id}`
   ].join(' | ');
 
-  const discord = await sendDiscordAlert({ target: ALERT_DISCORD_TARGET, message: msg });
+  let discord = { ok: false, skipped: true, reason: 'not configured' };
+  if (ALERT_DISCORD_TARGET) {
+    discord = await sendDiscordAlert({ target: ALERT_DISCORD_TARGET, message: msg });
+  }
   let email = { ok: false, skipped: true, reason: 'not configured' };
   if (ALERT_EMAIL_TO) {
     email = await sendEmailAlert({
@@ -167,6 +184,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+ensureRuntimeLayout();
 if (!fs.existsSync(STATUS_PATH)) writeStatus(nowStatus('green', null));
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`policy-gateway listening on http://127.0.0.1:${PORT}`);

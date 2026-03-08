@@ -87,6 +87,7 @@ At `mount=secret`, `path=ordl`, provision:
    - `powershell -ExecutionPolicy Bypass -File ordl_platform/scripts/release-gate.ps1`
 2. Run sneak-preview preflight (env validation + compose validation + fleet pairing gate):
    - `powershell -ExecutionPolicy Bypass -File ordl_platform/scripts/sneak-preview-preflight.ps1 -InitEnvFile`
+   - Copy `ordl_platform/infra/.env.prod.example` to local `ordl_platform/infra/.env.prod`
    - Fill `ordl_platform/infra/.env.prod`
    - Re-run:
    - `powershell -ExecutionPolicy Bypass -File ordl_platform/scripts/sneak-preview-preflight.ps1`

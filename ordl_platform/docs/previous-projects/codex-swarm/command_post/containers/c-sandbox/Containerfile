@@ -1,9 +1,0 @@
-FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
-USER root
-RUN microdnf install -y --nodocs gcc gcc-c++ make && microdnf clean all
-RUN useradd -m -s /bin/bash -u 1000 sandbox && mkdir -p /sandbox && chown -R sandbox:sandbox /sandbox
-USER sandbox
-WORKDIR /sandbox
-COPY --chown=sandbox:sandbox entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]

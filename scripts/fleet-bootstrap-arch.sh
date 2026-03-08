@@ -4,7 +4,7 @@ set -euo pipefail
 # Usage:
 #   ./fleet-bootstrap-arch.sh [LAN_IP]
 # Example:
-#   ./fleet-bootstrap-arch.sh 10.0.0.48
+#   ./fleet-bootstrap-arch.sh 198.51.100.48
 
 if ! command -v ordlctl >/dev/null 2>&1; then
   echo "ordlctl not found in PATH" >&2

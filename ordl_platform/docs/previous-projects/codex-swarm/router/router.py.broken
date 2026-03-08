@@ -1,7 +1,0 @@
-                            s = c["text"].strip()
-                            if s:
-                                parts.append(s)
-        return "
-".join(parts).strip()
-    return str(inp).strip()
-

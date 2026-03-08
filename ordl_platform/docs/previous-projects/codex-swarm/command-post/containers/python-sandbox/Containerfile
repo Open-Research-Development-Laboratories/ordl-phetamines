@@ -1,8 +1,0 @@
-FROM registry.access.redhat.com/ubi9/python-311:latest
-USER root
-RUN dnf install -y --nodocs libseccomp libcap-ng && dnf clean all
-RUN useradd -m -s /bin/bash -u 1000 sandbox && mkdir -p /sandbox && chown -R sandbox:sandbox /sandbox
-RUN pip install --no-cache-dir numpy pandas requests
-USER sandbox
-WORKDIR /sandbox
-ENTRYPOINT ["python"]

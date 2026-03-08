@@ -23,10 +23,17 @@ pytesttmp/
 # Fleet runtime artifacts
 fleet_api/state/**
 !fleet_api/state/.gitignore
+policy/runtime/**
+!policy/runtime/.gitignore
+policy/audit.log
+policy/blocked-queue.jsonl
+policy/status.json
 
 # Local deployment secrets
+ordl_platform/infra/.env.prod
 ordl_platform/infra/.env.local
 ordl_platform/infra/.env.*.local
 
 # Archived project runtime logs
 ordl_platform/docs/previous-projects/**/logs/*.log
+ordl_platform/docs/previous-projects/codex-swarm/

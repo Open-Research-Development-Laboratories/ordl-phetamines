@@ -2,7 +2,7 @@
 ## Revision 9 to Backend /v1 Migration
 
 **Date:** 2026-03-07  
-**Target:** `C:/Users/Winsock/Documents/GitHub/ordl-phetamines/ordl_platform/docs/faceplate/revision-9-fixed-app/ordl_fixed/app/blueprints/api.py`  
+**Target:** `ordl_platform/docs/faceplate/revision-9-fixed-app/ordl_fixed/app/blueprints/api.py`  
 **Backend Contract:** `/v1` API (119 paths in current contract export)
 
 ---
