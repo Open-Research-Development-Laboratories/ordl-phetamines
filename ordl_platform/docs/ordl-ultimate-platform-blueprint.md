@@ -1060,20 +1060,6 @@ GA release rule:
 
 - no launch until parity suite and surpass suite both pass at target reliability thresholds.
 
-## 38) Companion Spec Pack (authoritative extensions)
-
-The following documents are part of this blueprint and should be treated as required implementation detail:
-
-- `ordl_platform/docs/ordl-complete-route-catalog.md`
-- `ordl_platform/docs/ordl-data-contract-catalog.md`
-- `ordl_platform/docs/ordl-api-endpoint-catalog.md`
-- `ordl_platform/docs/ordl-admin-ops-runbook.md`
-- `ordl_platform/docs/ordl-launch-readiness-matrix.md`
-- `ordl_platform/docs/ordl-ui-ux-component-system.md`
-- `ordl_platform/docs/ordl-test-and-validation-master-plan.md`
-
-Implementation teams should use these companion documents to build exact views, APIs, storage contracts, and release gates without placeholders.
-
 ---
 
 This blueprint is intentionally expansive. It is the full target reference for building the ORDL platform into an end-to-end AI model IDE plus fleet command system.
