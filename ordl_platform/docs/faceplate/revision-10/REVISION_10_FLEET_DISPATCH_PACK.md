@@ -3,10 +3,12 @@
 Use these dispatches as-is for the next Revision 10 cleanup and integration pass.
 
 Reporting recipients:
+
 - Aaron Marshall Ferguson (Winsock)
 - ORDL board review route
 
 Postback requirement:
+
 - Worker must post the full report body into chat.
 - Header-only completion is invalid.
 

@@ -7,21 +7,25 @@ Timestamp: 2026-03-07 17:34 GMT+8
 Executed By: subagent:1459535f-2aa9-4e1d-ae7f-e2f58326ccf4
 
 ================================================================================
+
 1) SUMMARY
-================================================================================
+   ================================================================================
 
 TEST EXECUTION STATUS: ✅ ALL TESTS PASSED (42/42)
 
 SCOPE LIMITATION:
+
 - This report covers ONLY test_model_governance_policies.py (42 tests)
 - test_ordl_api.py exists but is EXCLUDED per execution constraints
 - No revision-11 intake review file present in repository
 
 --------------------------------------------------------------------------------
+
 REPRODUCIBLE TEST COMMANDS
 --------------------------------------------------------------------------------
 
 # Run model governance policy tests (ONLY reproducible test suite)
+
 $ cd ordl_platform/backend && python3 -m pytest tests/test_model_governance_policies.py -v
 ============================= test session starts ==============================
 platform linux -- Python 3.12.3, pytest-9.0.2
@@ -30,6 +34,7 @@ tests/test_model_governance_policies.py .................................. [100%
 ============================== 42 passed, 249 warnings in X.XXs ==============
 
 --------------------------------------------------------------------------------
+
 VALIDATION ITEMS COMPLETED
 --------------------------------------------------------------------------------
 
@@ -94,20 +99,23 @@ VALIDATION ITEMS COMPLETED
     - test_failover_with_active_workers: PASSED
 
 --------------------------------------------------------------------------------
+
 SOURCE FILES UNDER TEST
 --------------------------------------------------------------------------------
 
-  - dispatch.py: 526 lines
-  - models_governance.py: 521 lines
+- dispatch.py: 526 lines
+- models_governance.py: 521 lines
 
 --------------------------------------------------------------------------------
+
 TEST FILE STATISTICS
 --------------------------------------------------------------------------------
 
-  - test_model_governance_policies.py: 988 lines (42 tests)
-  - Total: 988 lines of test code (excluded: test_ordl_api.py per constraints)
+- test_model_governance_policies.py: 988 lines (42 tests)
+- Total: 988 lines of test code (excluded: test_ordl_api.py per constraints)
 
 --------------------------------------------------------------------------------
+
 ENVIRONMENT NOTES
 --------------------------------------------------------------------------------
 
@@ -120,48 +128,57 @@ pytest: 9.0.2
 ================================================================================
 
 CRITICAL RISKS (0):
-  - None identified
+
+- None identified
 
 HIGH RISKS (2):
-  1. In-Memory State Storage
-     - Current: Workers, gateways, and policies stored in module-level dicts
-     - Risk: State lost on process restart; not suitable for production
-     - Mitigation: Implement Redis/database persistence before production
-     - Verification Command:
-       grep -n "^_workers\|^_gateways\|^_policies" \
-         ordl_platform/backend/app/routers/dispatch.py \
-         ordl_platform/backend/app/routers/models_governance.py
 
-  2. test_ordl_api.py EXCLUDED From Report
-     - Constraint: Per execution order, test_ordl_api.py must not be cited
-     - Risk: 50 additional tests in test_ordl_api.py are NOT validated here
-     - Impact: API endpoint coverage (foundations, governance, security,
-               control) is unverified in this report
-     - Mitigation: Run test_ordl_api.py separately if coverage needed
+1. In-Memory State Storage
+   
+   - Current: Workers, gateways, and policies stored in module-level dicts
+   - Risk: State lost on process restart; not suitable for production
+   - Mitigation: Implement Redis/database persistence before production
+   - Verification Command:
+     grep -n "^_workers\|^_gateways\|^_policies" \
+       ordl_platform/backend/app/routers/dispatch.py \
+       ordl_platform/backend/app/routers/models_governance.py
+
+2. test_ordl_api.py EXCLUDED From Report
+   
+   - Constraint: Per execution order, test_ordl_api.py must not be cited
+   - Risk: 50 additional tests in test_ordl_api.py are NOT validated here
+   - Impact: API endpoint coverage (foundations, governance, security,
+     
+             control) is unverified in this report
+   - Mitigation: Run test_ordl_api.py separately if coverage needed
 
 MEDIUM RISKS (2):
-  1. Deprecated datetime.utcnow() Usage (249 warnings)
-     - Current: Code uses datetime.utcnow() which is deprecated in Python 3.12+
-     - Risk: Future Python versions may remove this function
-     - Mitigation: Migrate to datetime.now(datetime.UTC)
-     - Verification Command:
-       grep -rn "utcnow()" ordl_platform/backend/app/routers/ \
-         ordl_platform/backend/tests/
-     - Files Affected:
-       - dispatch.py (10 occurrences)
-       - models_governance.py (6 occurrences)
-       - test_model_governance_policies.py (1 occurrence)
 
-  2. Missing Revision 11 Intake Review
-     - Current: No ORDL_REVISION_11_INTAKE_REVIEW.md found in repository
-     - Risk: Requirements traceability gap; cannot verify test alignment
-     - Mitigation: Create intake review document or verify against Rev10
+1. Deprecated datetime.utcnow() Usage (249 warnings)
+   
+   - Current: Code uses datetime.utcnow() which is deprecated in Python 3.12+
+   - Risk: Future Python versions may remove this function
+   - Mitigation: Migrate to datetime.now(datetime.UTC)
+   - Verification Command:
+     grep -rn "utcnow()" ordl_platform/backend/app/routers/ \
+       ordl_platform/backend/tests/
+   - Files Affected:
+     - dispatch.py (10 occurrences)
+     - models_governance.py (6 occurrences)
+     - test_model_governance_policies.py (1 occurrence)
+
+2. Missing Revision 11 Intake Review
+   
+   - Current: No ORDL_REVISION_11_INTAKE_REVIEW.md found in repository
+   - Risk: Requirements traceability gap; cannot verify test alignment
+   - Mitigation: Create intake review document or verify against Rev10
 
 LOW RISKS (1):
-  1. Test Coverage Gaps
-     - No load testing for concurrent worker reconnects
-     - No chaos testing for partial gateway failures
-     - No WebSocket connection stress tests
+
+1. Test Coverage Gaps
+   - No load testing for concurrent worker reconnects
+   - No chaos testing for partial gateway failures
+   - No WebSocket connection stress tests
 
 ================================================================================
 3) ACTION LIST
@@ -217,7 +234,9 @@ FOLLOW-UP ACTIONS (Post-Deployment):
 
 10. [P2] Evaluate test_ordl_api.py Inclusion
     Description: Assess if test_ordl_api.py (50 tests) should be added to
+    
                  reliability validation for complete coverage
+    
     Constraint Check: Verify with execution order authority
 
 ================================================================================
@@ -266,6 +285,7 @@ OPERATIONAL QUESTIONS:
    Status: Confirmation needed if this is permanent
 
 REPORT CONSTRAINTS ACKNOWLEDGED:
+
 - ✅ Used only tests that exist in current repo (42 tests from test_model_governance_policies.py)
 - ✅ Did NOT cite test_ordl_api.py (50 tests excluded per constraint)
 - ✅ Included environment limitation (missing Rev11 intake review file)
@@ -275,6 +295,7 @@ APPENDIX: REPRODUCIBLE TEST COMMANDS
 ================================================================================
 
 # Run specific validation test classes
+
 pytest ordl_platform/backend/tests/test_model_governance_policies.py::TestFailClosedBehavior -v
 pytest ordl_platform/backend/tests/test_model_governance_policies.py::TestDispatchKeepalive -v
 pytest ordl_platform/backend/tests/test_model_governance_policies.py::TestNodeReconnect -v
@@ -282,9 +303,11 @@ pytest ordl_platform/backend/tests/test_model_governance_policies.py::TestGatewa
 pytest ordl_platform/backend/tests/test_model_governance_policies.py::TestWorkerRestartRecovery -v
 
 # Run all available tests (excluding test_ordl_api.py per constraints)
+
 pytest ordl_platform/backend/tests/test_model_governance_policies.py -v --tb=short
 
 # Verify fail-closed invariant
+
 python3 -c "
 import sys
 sys.path.insert(0, 'ordl_platform/backend')
@@ -295,6 +318,7 @@ print('Fail-closed invariant: VALID')
 "
 
 # Check worker recovery for .27/.28
+
 python3 -c "
 import sys
 sys.path.insert(0, 'ordl_platform/backend')
@@ -307,6 +331,7 @@ print('Worker recovery (.27/.28): VERIFIED')
 "
 
 # Check for deprecated datetime usage
+
 grep -rn "utcnow()" ordl_platform/backend/app/routers/
 
 ================================================================================
