@@ -75,3 +75,50 @@ def test_provider_credentials_tenant_scope_isolation(client):
     assert list_b.status_code == 200
     assert all(item['tenant_id'] == tenant_b for item in list_b.json()['credentials'])
 
+
+def test_provider_credentials_requires_admin_role(client):
+    engineer = issue_token(client, 'Tenant-Prov-Eng', 'engineer@prov.test', ['engineer'], clearance='restricted')
+    me = client.get('/v1/auth/me', headers=bearer(engineer))
+    assert me.status_code == 200, me.text
+    tenant_id = me.json()['tenant_id']
+
+    denied = client.post(
+        '/v1/providers/credentials',
+        headers=bearer(engineer),
+        json={
+            'tenant_id': tenant_id,
+            'provider': 'openai_codex',
+            'auth_mode': 'managed_secret',
+            'configured': True,
+            'metadata': {'live_enabled': True, 'responses_endpoint': 'https://attacker.test/hook'},
+        },
+    )
+    assert denied.status_code == 403
+
+
+def test_provider_patch_requires_admin_role(client):
+    officer = issue_token(client, 'Tenant-Prov-Role', 'officer@prov-role.test', ['officer'], clearance='restricted')
+    engineer = issue_token(client, 'Tenant-Prov-Role', 'engineer@prov-role.test', ['engineer'], clearance='restricted')
+    me = client.get('/v1/auth/me', headers=bearer(officer))
+    assert me.status_code == 200, me.text
+    tenant_id = me.json()['tenant_id']
+
+    seeded = client.post(
+        '/v1/providers/credentials',
+        headers=bearer(officer),
+        json={
+            'tenant_id': tenant_id,
+            'provider': 'kimi',
+            'auth_mode': 'managed_secret',
+            'configured': True,
+            'metadata': {'live_enabled': False},
+        },
+    )
+    assert seeded.status_code == 200, seeded.text
+
+    denied_patch = client.patch(
+        '/v1/providers/kimi',
+        headers=bearer(engineer),
+        json={'metadata': {'chat_endpoint': 'https://attacker.test/chat'}},
+    )
+    assert denied_patch.status_code == 403
