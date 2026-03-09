@@ -159,3 +159,35 @@ def test_worker_monitor_disabled_requires_force(client):
     assert forced.json().get('skipped') is None
     assert forced.json()['total_workers'] == 1
 
+
+def test_worker_monitor_get_config_does_not_create_for_read_only_role(client):
+    officer = issue_token(client, 'Tenant-Monitor-3', 'officer3@monitor.test', ['officer'], clearance='restricted')
+    engineer = issue_token(client, 'Tenant-Monitor-3', 'engineer3@monitor.test', ['engineer'], clearance='internal')
+    _, _, project_id = setup_project(client, officer)
+
+    me = client.get('/v1/auth/me', headers=bearer(engineer))
+    assert me.status_code == 200, me.text
+    engineer_user_id = me.json()['user_id']
+    seat = client.post(
+        '/v1/seats',
+        headers=bearer(officer),
+        json={
+            'project_id': project_id,
+            'user_id': engineer_user_id,
+            'role': 'engineer',
+            'rank': 'member',
+            'position': 'platform_engineer',
+            'group_name': 'eng',
+            'clearance_tier': 'internal',
+            'compartments': ['alpha'],
+            'status': 'active',
+        },
+    )
+    assert seat.status_code == 200, seat.text
+
+    read_attempt = client.get(
+        '/v1/workers/monitor/config',
+        headers=bearer(engineer),
+        params={'project_id': project_id},
+    )
+    assert read_attempt.status_code == 404, read_attempt.text
