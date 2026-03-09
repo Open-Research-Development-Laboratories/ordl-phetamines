@@ -19,6 +19,11 @@ router = APIRouter(prefix='/providers', tags=['providers'])
 _PROVIDER_ADMIN_ROLES = {'board_member', 'officer', 'operator'}
 
 
+def _require_provider_admin(principal: Principal) -> None:
+    if not any(role in {'officer', 'board_member'} for role in principal.roles):
+        raise HTTPException(status_code=403, detail='provider admin role required')
+
+
 def _metadata(value: str | None) -> dict[str, Any]:
     try:
         loaded = json.loads(value or '{}')
