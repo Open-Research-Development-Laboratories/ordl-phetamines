@@ -688,14 +688,15 @@ class FleetOrchestrator:
                     progress(f"[resync] role={role} done")
 
         if progress:
-            progress("[resync] approving pending desktop pairing requests")
-        approvals = self.approve_pending_devices()
-        if progress:
-            progress("[resync] approvals complete")
+            progress("[resync] skipping automatic desktop pairing approvals")
         return {
             "token_bundle": bundle["masked"],
             "workers": results,
-            "approvals": approvals,
+            "approvals": {
+                "ok": True,
+                "auto_approved": False,
+                "message": "automatic pending device approval disabled; run manual approval flow if needed",
+            },
         }
 
     def approve_pending_devices(self) -> dict[str, Any]:
