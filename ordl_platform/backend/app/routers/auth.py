@@ -20,8 +20,8 @@ def issue_token(payload: TokenRequest, db: Session = Depends(get_db)) -> TokenRe
     from app.config import get_settings
 
     settings = get_settings()
-    if settings.oidc_required and not settings.allow_local_token_issuer:
-        raise HTTPException(status_code=403, detail="local token issuance disabled in oidc-required mode")
+    if not settings.allow_local_token_issuer:
+        raise HTTPException(status_code=403, detail="local token issuance disabled")
 
     # Token issuance runs before a tenant-scoped identity exists.
     enable_rls_bypass(db)
