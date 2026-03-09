@@ -290,7 +290,10 @@ class FleetOrchestrator:
     ) -> dict[str, Any]:
         roles = roles or self.list_worker_roles()
         ordered_roles = _order_roles_for_canary(roles, canary_role)
-        command = (update_command or self.cfg.update_default_command).strip()
+        command_override = (update_command or "").strip()
+        if command_override and not self.cfg.remote_command_enabled:
+            raise PermissionError("custom update_command is disabled")
+        command = command_override or self.cfg.update_default_command.strip()
         recency = max(5, verify_recency_minutes or self.cfg.update_verify_recency_minutes)
         results: dict[str, Any] = {}
         all_ok = True
