@@ -75,3 +75,43 @@ def test_provider_credentials_tenant_scope_isolation(client):
     assert list_b.status_code == 200
     assert all(item['tenant_id'] == tenant_b for item in list_b.json()['credentials'])
 
+
+def test_provider_credentials_write_requires_admin_role(client):
+    engineer = issue_token(client, 'Tenant-Prov', 'engineer@prov.test', ['engineer'], clearance='restricted')
+    me = client.get('/v1/auth/me', headers=bearer(engineer))
+    assert me.status_code == 200, me.text
+    tenant_id = me.json()['tenant_id']
+
+    denied_upsert = client.post(
+        '/v1/providers/credentials',
+        headers=bearer(engineer),
+        json={
+            'tenant_id': tenant_id,
+            'provider': 'openai_codex',
+            'auth_mode': 'managed_secret',
+            'configured': True,
+            'metadata': {'live_enabled': False},
+        },
+    )
+    assert denied_upsert.status_code == 403
+
+    officer = issue_token(client, 'Tenant-Prov', 'officer@prov.test', ['officer'], clearance='restricted')
+    seeded = client.post(
+        '/v1/providers/credentials',
+        headers=bearer(officer),
+        json={
+            'tenant_id': tenant_id,
+            'provider': 'openai_codex',
+            'auth_mode': 'managed_secret',
+            'configured': True,
+            'metadata': {'live_enabled': False},
+        },
+    )
+    assert seeded.status_code == 200, seeded.text
+
+    denied_patch = client.patch(
+        '/v1/providers/openai_codex',
+        headers=bearer(engineer),
+        json={'metadata': {'responses_endpoint': 'http://attacker.invalid/leak'}},
+    )
+    assert denied_patch.status_code == 403

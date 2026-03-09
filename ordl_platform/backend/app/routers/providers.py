@@ -16,6 +16,8 @@ from app.security import Principal, get_current_principal
 
 router = APIRouter(prefix='/providers', tags=['providers'])
 
+_PROVIDER_ADMIN_ROLES = {'board_member', 'officer', 'operator'}
+
 
 def _metadata(value: str | None) -> dict[str, Any]:
     try:
@@ -23,6 +25,12 @@ def _metadata(value: str | None) -> dict[str, Any]:
     except json.JSONDecodeError:
         return {}
     return loaded if isinstance(loaded, dict) else {}
+
+
+def _require_provider_admin(principal: Principal) -> None:
+    if any(role in _PROVIDER_ADMIN_ROLES for role in principal.roles):
+        return
+    raise HTTPException(status_code=403, detail='provider credential management denied')
 
 
 @router.get('')
@@ -36,6 +44,7 @@ def create_provider_profile(
     principal: Principal = Depends(get_current_principal),
     db: Session = Depends(get_db),
 ) -> dict:
+    _require_provider_admin(principal)
     provider = str(payload.get('provider') or payload.get('id') or '').strip()
     if not provider:
         raise HTTPException(status_code=400, detail='provider is required')
@@ -81,6 +90,7 @@ def upsert_credentials(
     principal: Principal = Depends(get_current_principal),
     db: Session = Depends(get_db),
 ) -> dict:
+    _require_provider_admin(principal)
     if payload.tenant_id != principal.tenant_id:
         raise HTTPException(status_code=403, detail='tenant scope denied')
     if payload.provider not in PROVIDER_REGISTRY:
@@ -150,6 +160,7 @@ def patch_provider_profile(
     principal: Principal = Depends(get_current_principal),
     db: Session = Depends(get_db),
 ) -> dict:
+    _require_provider_admin(principal)
     row = db.scalar(
         select(ProviderCredential).where(
             ProviderCredential.tenant_id == principal.tenant_id,
@@ -182,6 +193,7 @@ def delete_provider_profile(
     principal: Principal = Depends(get_current_principal),
     db: Session = Depends(get_db),
 ) -> dict:
+    _require_provider_admin(principal)
     row = db.scalar(
         select(ProviderCredential).where(
             ProviderCredential.tenant_id == principal.tenant_id,
@@ -247,6 +259,7 @@ def force_failover(
     principal: Principal = Depends(get_current_principal),
     db: Session = Depends(get_db),
 ) -> dict:
+    _require_provider_admin(principal)
     source = str(payload.get('from') or '').strip()
     target = str(payload.get('to') or '').strip()
     if not source or not target:
@@ -286,6 +299,7 @@ def put_provider_priority(
     principal: Principal = Depends(get_current_principal),
     db: Session = Depends(get_db),
 ) -> dict:
+    _require_provider_admin(principal)
     order = payload.get('order') or payload.get('providers') or []
     provider_order: list[str] = []
     if isinstance(order, list):
@@ -335,6 +349,7 @@ def create_provider_probe(
     principal: Principal = Depends(get_current_principal),
     db: Session = Depends(get_db),
 ) -> dict:
+    _require_provider_admin(principal)
     row = db.scalar(
         select(ProviderCredential).where(
             ProviderCredential.tenant_id == principal.tenant_id,
@@ -363,6 +378,7 @@ def patch_provider_probe(
     principal: Principal = Depends(get_current_principal),
     db: Session = Depends(get_db),
 ) -> dict:
+    _require_provider_admin(principal)
     row = db.scalar(
         select(ProviderCredential).where(
             ProviderCredential.tenant_id == principal.tenant_id,
@@ -392,6 +408,7 @@ def put_provider_probes(
     principal: Principal = Depends(get_current_principal),
     db: Session = Depends(get_db),
 ) -> dict:
+    _require_provider_admin(principal)
     provider = str(payload.get('provider') or '').strip()
     if not provider:
         raise HTTPException(status_code=400, detail='provider is required')
