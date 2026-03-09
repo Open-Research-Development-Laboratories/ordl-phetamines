@@ -595,13 +595,13 @@ def get_worker_monitor_config(
 ) -> WorkerMonitorConfigOut:
     ensure_project_scope(db, principal, project_id)
     _authorize_worker_read(principal)
-    row = ensure_monitor_config(
-        db,
-        project_id=project_id,
-        actor_user_id=principal.user_id,
-        settings=get_settings(),
+    row = db.scalar(
+        select(WorkerConnectivityMonitor)
+        .where(WorkerConnectivityMonitor.project_id == project_id)
+        .limit(1)
     )
-    db.commit()
+    if row is None:
+        raise HTTPException(status_code=404, detail='worker monitor config not found')
     return _monitor_out(row)
 
 

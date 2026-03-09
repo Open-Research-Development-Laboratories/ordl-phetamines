@@ -16,6 +16,8 @@ from app.security import Principal, get_current_principal
 
 router = APIRouter(prefix='/providers', tags=['providers'])
 
+_PROVIDER_ADMIN_ROLES = {'board_member', 'officer', 'operator'}
+
 
 def _require_provider_admin(principal: Principal) -> None:
     if not any(role in {'officer', 'board_member'} for role in principal.roles):
@@ -28,6 +30,12 @@ def _metadata(value: str | None) -> dict[str, Any]:
     except json.JSONDecodeError:
         return {}
     return loaded if isinstance(loaded, dict) else {}
+
+
+def _require_provider_admin(principal: Principal) -> None:
+    if any(role in _PROVIDER_ADMIN_ROLES for role in principal.roles):
+        return
+    raise HTTPException(status_code=403, detail='provider credential management denied')
 
 
 @router.get('')

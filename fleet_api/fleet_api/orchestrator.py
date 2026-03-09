@@ -290,7 +290,10 @@ class FleetOrchestrator:
     ) -> dict[str, Any]:
         roles = roles or self.list_worker_roles()
         ordered_roles = _order_roles_for_canary(roles, canary_role)
-        command = (update_command or self.cfg.update_default_command).strip()
+        command_override = (update_command or "").strip()
+        if command_override and not self.cfg.remote_command_enabled:
+            raise PermissionError("custom update_command is disabled")
+        command = command_override or self.cfg.update_default_command.strip()
         recency = max(5, verify_recency_minutes or self.cfg.update_verify_recency_minutes)
         results: dict[str, Any] = {}
         all_ok = True
@@ -685,14 +688,15 @@ class FleetOrchestrator:
                     progress(f"[resync] role={role} done")
 
         if progress:
-            progress("[resync] approving pending desktop pairing requests")
-        approvals = self.approve_pending_devices()
-        if progress:
-            progress("[resync] approvals complete")
+            progress("[resync] skipping automatic desktop pairing approvals")
         return {
             "token_bundle": bundle["masked"],
             "workers": results,
-            "approvals": approvals,
+            "approvals": {
+                "ok": True,
+                "auto_approved": False,
+                "message": "automatic pending device approval disabled; run manual approval flow if needed",
+            },
         }
 
     def approve_pending_devices(self) -> dict[str, Any]:
@@ -1372,13 +1376,21 @@ def _role_suffix(role: str) -> str:
 
 
 def _iter_local_files(root: Path, includes: Iterable[str]) -> Iterable[tuple[Path, str]]:
+    root_resolved = root.resolve()
     seen: set[str] = set()
     for rel in includes:
-        path = root / rel
+        rel_path = Path(rel)
+        if rel_path.is_absolute() or ".." in rel_path.parts:
+            continue
+        path = (root_resolved / rel_path).resolve()
+        try:
+            path.relative_to(root_resolved)
+        except ValueError:
+            continue
         if not path.exists():
             continue
         if path.is_file():
-            as_rel = path.relative_to(root).as_posix()
+            as_rel = path.relative_to(root_resolved).as_posix()
             if as_rel not in seen:
                 seen.add(as_rel)
                 yield path, as_rel
@@ -1386,11 +1398,15 @@ def _iter_local_files(root: Path, includes: Iterable[str]) -> Iterable[tuple[Pat
         for item in path.rglob("*"):
             if not item.is_file():
                 continue
-            as_rel = item.relative_to(root).as_posix()
+            resolved_item = item.resolve()
+            try:
+                as_rel = resolved_item.relative_to(root_resolved).as_posix()
+            except ValueError:
+                continue
             if as_rel in seen:
                 continue
             seen.add(as_rel)
-            yield item, as_rel
+            yield resolved_item, as_rel
 
 
 def _ensure_remote_dir(sftp: paramiko.SFTPClient, remote_file: str) -> None:

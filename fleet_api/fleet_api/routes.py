@@ -245,12 +245,15 @@ def fleet_stage_handoff():
 @bp.post("/v1/fleet/update/rolling")
 @require_api_key
 def fleet_update_rolling():
+    cfg = current_app.extensions["fleet.config"]
     orch = current_app.extensions["fleet.orchestrator"]
     jobs = current_app.extensions["fleet.jobs"]
     payload = request.get_json(silent=True) or {}
     roles = _roles_from_payload(payload)
     canary_role = payload.get("canary_role")
     update_command = payload.get("update_command")
+    if update_command and not cfg.remote_command_enabled:
+        return jsonify({"ok": False, "error": "custom update_command is disabled"}), 403
     rollback_on_fail = bool(payload.get("rollback_on_fail", True))
     verify_recency_minutes = payload.get("verify_recency_minutes")
     if _want_async(payload):
