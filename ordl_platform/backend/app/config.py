@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     oidc_tenant_claim: str = "tenant_id"
     oidc_subject_claim: str = "sub"
     oidc_email_claim: str = "email"
-    allow_local_token_issuer: bool = True
+    allow_local_token_issuer: bool = False
 
     access_token_ttl_seconds: int = 3600
     policy_token_ttl_seconds: int = 300

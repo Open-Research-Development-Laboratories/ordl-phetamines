@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 def client(tmp_path: Path):
     db_path = tmp_path / 'test.db'
     os.environ['ORDL_DATABASE_URL'] = f"sqlite:///{db_path.as_posix()}"
+    os.environ['ORDL_ALLOW_LOCAL_TOKEN_ISSUER'] = 'true'
 
     from app.config import get_settings
 
