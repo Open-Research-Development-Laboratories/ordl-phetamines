@@ -1372,13 +1372,21 @@ def _role_suffix(role: str) -> str:
 
 
 def _iter_local_files(root: Path, includes: Iterable[str]) -> Iterable[tuple[Path, str]]:
+    root_resolved = root.resolve()
     seen: set[str] = set()
     for rel in includes:
-        path = root / rel
+        rel_path = Path(rel)
+        if rel_path.is_absolute() or ".." in rel_path.parts:
+            continue
+        path = (root_resolved / rel_path).resolve()
+        try:
+            path.relative_to(root_resolved)
+        except ValueError:
+            continue
         if not path.exists():
             continue
         if path.is_file():
-            as_rel = path.relative_to(root).as_posix()
+            as_rel = path.relative_to(root_resolved).as_posix()
             if as_rel not in seen:
                 seen.add(as_rel)
                 yield path, as_rel
@@ -1386,11 +1394,15 @@ def _iter_local_files(root: Path, includes: Iterable[str]) -> Iterable[tuple[Pat
         for item in path.rglob("*"):
             if not item.is_file():
                 continue
-            as_rel = item.relative_to(root).as_posix()
+            resolved_item = item.resolve()
+            try:
+                as_rel = resolved_item.relative_to(root_resolved).as_posix()
+            except ValueError:
+                continue
             if as_rel in seen:
                 continue
             seen.add(as_rel)
-            yield item, as_rel
+            yield resolved_item, as_rel
 
 
 def _ensure_remote_dir(sftp: paramiko.SFTPClient, remote_file: str) -> None:
