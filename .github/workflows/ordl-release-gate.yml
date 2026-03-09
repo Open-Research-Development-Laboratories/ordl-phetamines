@@ -1,4 +1,4 @@
-name: ORDL Release Gate
+name: ORDL Release Gate v2
 
 on:
   push:
