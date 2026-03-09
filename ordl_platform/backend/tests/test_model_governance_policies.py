@@ -143,3 +143,64 @@ def test_eval_required_before_model_promotion_and_deployment(client):
     assert deployed.status_code == 200, deployed.text
     assert deployed.json()["status"] == "deployed"
 
+
+
+def test_promotion_rejects_cross_project_eval_run_id(client):
+    officer = issue_token(client, "Tenant-Model-Gate-XProj", "officer@modelgate-xproj.test", ["officer"], clearance="restricted")
+    _, _, project_a = setup_project(client, officer)
+    _, _, project_b = setup_project(client, officer)
+
+    eval_run = client.post(
+        "/v1/models/evals/runs",
+        headers=bearer(officer),
+        json={
+            "project_id": project_a,
+            "provider": "openai_codex",
+            "model": "gpt-5.4-ordl-v1",
+            "suite_name": "release",
+            "score_bp": 9100,
+            "threshold_bp": 8500,
+            "status": "pass",
+            "metrics": {"accuracy": 0.91},
+            "findings": [],
+        },
+    )
+    assert eval_run.status_code == 200, eval_run.text
+
+    fine_tune_b = client.post(
+        "/v1/models/fine-tunes",
+        headers=bearer(officer),
+        json={
+            "project_id": project_b,
+            "provider": "openai_codex",
+            "base_model": "gpt-5.4",
+            "target_model": "gpt-5.4-ordl-v1",
+            "dataset_uri": "s3://ordl/datasets/train-v1.jsonl",
+            "dataset_digest": "sha256:abc123",
+            "dataset_provenance": {
+                "source": "internal_corpus",
+                "collection_method": "curated",
+                "rights_basis": "owned_or_licensed",
+            },
+            "training_params": {"epochs": 3},
+        },
+    )
+    assert fine_tune_b.status_code == 200, fine_tune_b.text
+
+    blocked = client.post(
+        "/v1/models/promotions",
+        headers=bearer(officer),
+        json={
+            "project_id": project_b,
+            "provider": "openai_codex",
+            "model": "gpt-5.4-ordl-v1",
+            "environment": "staging",
+            "fine_tune_run_id": fine_tune_b.json()["id"],
+            "eval_run_id": eval_run.json()["id"],
+            "mode": "promote",
+        },
+    )
+    assert blocked.status_code == 409, blocked.text
+    detail = blocked.json().get("detail", {})
+    assert detail.get("reason") == "eval_gate_failed"
+    assert "missing_eval_run" in detail.get("reason_codes", [])

@@ -112,7 +112,14 @@ def _resolve_eval_for_gate(
     requested_eval_run_id: str | None,
 ) -> ModelEvalRun | None:
     if requested_eval_run_id:
-        return db.get(ModelEvalRun, requested_eval_run_id)
+        return db.scalar(
+            select(ModelEvalRun).where(
+                ModelEvalRun.id == requested_eval_run_id,
+                ModelEvalRun.project_id == project_id,
+                ModelEvalRun.provider == provider,
+                ModelEvalRun.model == model,
+            )
+        )
     return db.scalar(
         select(ModelEvalRun)
         .where(
@@ -441,4 +448,3 @@ def list_model_promotions(
         .order_by(ModelPromotion.created_at.desc(), ModelPromotion.id.desc())
     ).all()
     return [_promotion_out(row) for row in rows]
-
